@@ -397,8 +397,8 @@ section:nth-child(even) {
 /* GitHub Project Card Styling */
 .github-card {
     box-sizing: border-box;
-    width: 100%;
-    padding: 0;
+    width: 500px;
+    max-width: 100%;
     background-color: var(--card-background);
     border-radius: 12px;
     box-shadow: var(--card-shadow);
@@ -406,6 +406,12 @@ section:nth-child(even) {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.github-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
 }
 
 /* TOP section */
@@ -413,13 +419,13 @@ section:nth-child(even) {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px 24px;
     background-color: var(--rose-pine-pine); /* Default language color */
     color: white;
+    padding: 16px 20px;
 }
 
 .card-header.rust {
-    background-color: var(--rose-pine-love);
+    background-color: #e8a55c; /* burnished copper */
 }
 
 .card-header.javascript {
@@ -427,50 +433,60 @@ section:nth-child(even) {
 }
 
 .card-header.python {
-    background-color: var(--rose-pine-foam);
+    background-color: #7fb3a3; /* sage green */
 }
 
 .card-header.scala {
-    background-color: var(--rose-pine-iris);
+    background-color: #d67c7c; /* muted crimson */
 }
 
 .card-header.html {
-    background-color: var(--rose-pine-rose);
+    background-color: #c9a96e; /* warm sand */
+}
+
+.card-header.shell {
+    background-color: #8b9dc3; /* storm blue-gray */
 }
 
 .repo-info {
-    font-weight: 500;
+    font-weight: 600;
     color: white;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 70%;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .stars {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     color: white;
+    font-weight: 500;
 }
 
 /* MIDDLE section */
 .repo-description {
-    line-height: 1.5;
+    line-height: 1.6;
     margin: 0;
-    padding: 24px;
-    color: var(--light-text);
+    padding: 20px;
+    color: var(--text-color);
     overflow-wrap: break-word;
     word-wrap: break-word;
+    font-size: 0.95rem;
 }
 
 /* BOTTOM section */
 .card-footer {
     display: flex;
     align-items: center;
-    padding: 16px 24px;
     border-top: 1px solid var(--border-color);
     background-color: var(--light-background);
+    padding: 15px 20px;
 }
 
 .avatar {
@@ -481,21 +497,135 @@ section:nth-child(even) {
     object-fit: cover;
 }
 
-/* Original Project Card Styling (keeping for backward compatibility) */
+/* Project Card Styling */
 .project-card {
+    box-sizing: border-box;
+    width: 500px;
+    max-width: 100%;
     background-color: var(--card-background);
     border-radius: 12px;
     overflow: hidden;
     box-shadow: var(--card-shadow);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 2rem;
     display: flex;
     flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     height: 100%;
 }
 
 .project-card:hover {
-    transform: translateY(-8px);
+    transform: translateY(-5px);
     box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* Project Header Styling */
+.project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--primary-color); /* Default language color */
+    color: white;
+    padding: 16px 20px;
+    border-radius: 0;
+}
+
+.project-title {
+    font-weight: 600;
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 70%;
+    margin: 0;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.project-stars {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: white;
+    font-weight: 500;
+}
+
+/* Project Description */
+.project-description {
+    line-height: 1.6;
+    margin: 0;
+    padding: 20px;
+    color: var(--text-color);
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    font-size: 0.95rem;
+}
+
+/* Technologies */
+.technologies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0 20px 10px;
+}
+
+.tech-tag {
+    background-color: var(--accent-color);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+/* Project Links */
+.project-links {
+    display: flex;
+    gap: 12px;
+    padding: 15px 20px;
+    border-top: 1px solid var(--border-color);
+    background-color: var(--light-background);
+}
+
+.project-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--accent-color);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.project-link:hover {
+    color: var(--primary-color);
+}
+
+/* Language-specific styling */
+.project-header.rust {
+    background-color: #e8a55c; /* burnished copper */
+}
+
+.project-header.scala {
+    background-color: #d67c7c; /* muted crimson */
+}
+
+.project-header.javascript {
+    background-color: var(--rose-pine-gold);
+}
+
+.project-header.python {
+    background-color: #7fb3a3; /* sage green */
+}
+
+.project-header.html {
+    background-color: #c9a96e; /* warm sand */
+}
+
+.project-header.shell {
+    background-color: #8b9dc3; /* storm blue-gray */
 }
 
 .project-image {
@@ -624,7 +754,7 @@ section:nth-child(even) {
 /* Floating Download Button */
 .floating-download {
     position: fixed;
-    left: calc(50% + 400px);
+    left: calc(50% + 500px);
     top: 50%;
     transform: translateY(-50%);
     z-index: 99;
@@ -1343,14 +1473,38 @@ a:focus, button:focus, input:focus, textarea:focus, select:focus,
         padding: 1rem;
     }
 
-    .github-card .card-header,
-    .github-card .repo-description,
-    .github-card .card-footer {
+    .github-card {
+        margin-bottom: 1.5rem;
+    }
+
+    .project-card {
+        margin-bottom: 1.5rem;
+    }
+
+    .card-header, .project-header {
         padding: 12px 16px;
     }
 
-    .github-card .project-links {
-        padding: 0 16px;
+    .repo-description, .project-description {
+        padding: 16px;
+        font-size: 0.9rem;
+    }
+
+    .technologies {
+        padding: 0 16px 8px;
+    }
+
+    .tech-tag {
+        padding: 3px 8px;
+        font-size: 0.75rem;
+    }
+
+    .card-footer, .project-links {
+        padding: 12px 16px;
+    }
+
+    .project-link {
+        font-size: 0.85rem;
     }
 }
 

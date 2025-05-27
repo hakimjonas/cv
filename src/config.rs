@@ -7,6 +7,15 @@ use anyhow::{Context, Result};
 use im::HashMap;
 use std::path::{Path, PathBuf};
 
+/// Configuration key for the GitHub API token
+pub const GITHUB_TOKEN_KEY: &str = "github_token";
+
+/// Configuration key for the GitHub cache file
+pub const GITHUB_CACHE_KEY: &str = "github_cache";
+
+/// Default path for the GitHub cache file
+pub const DEFAULT_GITHUB_CACHE_PATH: &str = "data/github_cache.json";
+
 /// Represents the application configuration
 #[derive(Debug, Clone)]
 pub struct Config {
@@ -28,6 +37,9 @@ pub struct Config {
     /// Path where the PDF CV will be written
     pub pdf_output: PathBuf,
 
+    /// Path to the GitHub cache file
+    pub github_cache_path: PathBuf,
+
     /// Additional configuration options
     #[allow(dead_code)]
     pub options: HashMap<String, String>,
@@ -45,6 +57,7 @@ impl Default for Config {
             html_output: output_dir.join("cv.html"),
             typst_temp: PathBuf::from("temp_cv.typ"),
             pdf_output: output_dir.join("cv.pdf"),
+            github_cache_path: PathBuf::from(DEFAULT_GITHUB_CACHE_PATH),
             options: HashMap::new(),
         }
     }
@@ -69,6 +82,7 @@ impl Config {
             html_output,
             typst_temp,
             pdf_output,
+            github_cache_path: PathBuf::from(DEFAULT_GITHUB_CACHE_PATH),
             options: HashMap::new(),
         }
     }
@@ -117,5 +131,19 @@ impl Config {
     /// Gets the data path as a string
     pub fn data_path_str(&self) -> Result<String> {
         self.path_to_string(&self.data_path)
+    }
+
+    /// Gets the GitHub API token from the options, if available
+    pub fn github_token(&self) -> Option<&str> {
+        self.options.get(GITHUB_TOKEN_KEY).map(|s| s.as_str())
+    }
+
+    /// Gets the GitHub cache path, either from options or the default
+    pub fn github_cache_path_str(&self) -> Result<String> {
+        if let Some(path) = self.options.get(GITHUB_CACHE_KEY) {
+            Ok(path.clone())
+        } else {
+            self.path_to_string(&self.github_cache_path)
+        }
     }
 }

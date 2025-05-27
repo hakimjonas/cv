@@ -243,19 +243,24 @@ fn list_directory_entries(dir_path: &str) -> Result<Vector<FsEntry>> {
         .with_context(|| format!("Failed to read directory: {}", dir_path))?;
 
     // Convert DirEntry stream to Vector<FsEntry> using functional patterns
-    let mut result = Vector::new();
-
-    for entry_result in entries {
-        let entry = entry_result.context("Failed to read directory entry")?;
-        let path = entry.path();
-
-        if path.is_file() {
-            result.push_back(FsEntry::File(path));
-        } else if path.is_dir() {
-            result.push_back(FsEntry::Directory(path));
-        }
-        // Skip other types of entries (symlinks, etc.)
-    }
+    let result = entries
+        .filter_map(|entry_result| {
+            entry_result
+                .map_err(|e| anyhow::anyhow!("Failed to read directory entry: {}", e))
+                .ok()
+                .and_then(|entry| {
+                    let path = entry.path();
+                    if path.is_file() {
+                        Some(FsEntry::File(path))
+                    } else if path.is_dir() {
+                        Some(FsEntry::Directory(path))
+                    } else {
+                        // Skip other types of entries (symlinks, etc.)
+                        None
+                    }
+                })
+        })
+        .collect::<Vector<_>>();
 
     Ok(result)
 }

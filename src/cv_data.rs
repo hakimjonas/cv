@@ -63,6 +63,13 @@ pub struct Project {
     pub owner_avatar: Option<String>,
 }
 
+/// Represents GitHub sources to fetch projects from
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct GitHubSource {
+    pub username: Option<String>,
+    pub organization: Option<String>,
+}
+
 /// Top-level CV structure that contains all CV data
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Cv {
@@ -73,6 +80,8 @@ pub struct Cv {
     pub projects: Vector<Project>,
     pub languages: im::HashMap<String, String>,
     pub certifications: Vector<String>,
+    #[serde(default)]
+    pub github_sources: Vector<GitHubSource>,
 }
 
 impl Cv {

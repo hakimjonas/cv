@@ -90,12 +90,82 @@ Edit the `data/cv_data.json` file to update your personal information, experienc
 
 The PDF template is generated in code in the `src/typst_generator.rs` file. Modify the `generate_typst_markup` function to change the structure and styling of the PDF CV.
 
+## GitHub Integration
+
+This project can fetch your GitHub repositories and include them in your CV. To use this feature:
+
+1. Add your GitHub username and/or organization to the `github_sources` field in `data/cv_data.json`:
+   ```json
+   {
+     "github_sources": [
+       {
+         "username": "yourusername",
+         "organization": null
+       },
+       {
+         "username": null,
+         "organization": "yourorganization"
+       }
+     ]
+   }
+   ```
+
+2. **Important: GitHub API Rate Limiting**
+
+   The GitHub API has rate limits:
+   - Unauthenticated requests: 60 requests per hour
+   - Authenticated requests: 5,000 requests per hour
+
+   To avoid rate limiting, you can provide a GitHub API token using one of the following methods (in order of preference):
+
+   a. Create a personal access token on GitHub:
+      - Go to GitHub Settings → Developer settings → Personal access tokens
+      - Generate a new token with the `public_repo` scope
+
+   b. Store the token in your git config (recommended for local development):
+      ```bash
+      git config --global cv.github.token "your-token-here"
+      ```
+      This stores the token securely in your global git config, which is not committed to version control.
+
+   c. Set the token as an environment variable:
+      ```bash
+      GITHUB_TOKEN=your-token-here cargo run
+      ```
+
+3. **For Production Deployment with GitHub Actions**
+
+   When deploying with GitHub Actions, you can use GitHub Secrets to store your token securely:
+
+   a. Add your token as a secret in your GitHub repository:
+      - Go to your repository → Settings → Secrets and variables → Actions
+      - Click "New repository secret"
+      - Name: `GITHUB_TOKEN`
+      - Value: your personal access token
+
+   b. In your GitHub Actions workflow file, make the secret available as an environment variable:
+      ```yaml
+      jobs:
+        build:
+          runs-on: ubuntu-latest
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          steps:
+            - uses: actions/checkout@v3
+            - name: Build CV
+              run: cargo run --release
+      ```
+
+   The application will automatically detect when it's running in GitHub Actions and use the token from the environment.
+
 ## Dependencies
 
 - [serde](https://serde.rs/): For JSON serialization/deserialization
 - [askama](https://github.com/djc/askama): For HTML templating
 - [im](https://docs.rs/im/): For immutable data structures
 - [anyhow](https://docs.rs/anyhow/): For error handling
+- [reqwest](https://github.com/seanmonstar/reqwest): For HTTP requests
+- [tokio](https://tokio.rs/): For async runtime
 - [typst-cli](https://github.com/typst/typst): For PDF generation
 
 ## License

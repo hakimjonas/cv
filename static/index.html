@@ -196,9 +196,16 @@
                 <div class="footer-tech">
                     <h3>Built With</h3>
                     <ul class="tech-list">
-                        <li><i class="fab fa-rust"></i> Rust - Static site generation</li>
-                        <li><i class="fas fa-file-pdf"></i> Typst - PDF resume creation</li>
-                        <li><i class="fas fa-box"></i> Dependencies - im, serde, tera</li>
+                        <li><i class="fab fa-rust"></i> <a href="https://www.rust-lang.org/" target="_blank" rel="noopener">Rust</a> - Static site generation</li>
+                        <li><i class="fas fa-file-pdf"></i> <a href="https://typst.app/" target="_blank" rel="noopener">Typst</a> - PDF resume creation</li>
+                        <li><i class="fas fa-box"></i> Dependencies:</li>
+                        <li><i class="fas fa-cube"></i> <a href="https://serde.rs/" target="_blank" rel="noopener">serde</a> (v1.0) - Serialization framework</li>
+                        <li><i class="fas fa-cube"></i> <a href="https://github.com/serde-rs/json" target="_blank" rel="noopener">serde_json</a> (v1.0) - JSON support</li>
+                        <li><i class="fas fa-cube"></i> <a href="https://github.com/djc/askama" target="_blank" rel="noopener">askama</a> (v0.14.0) - Templating engine</li>
+                        <li><i class="fas fa-cube"></i> <a href="https://github.com/bodil/im-rs" target="_blank" rel="noopener">im</a> (v15.1) - Immutable data structures</li>
+                        <li><i class="fas fa-cube"></i> <a href="https://github.com/dtolnay/anyhow" target="_blank" rel="noopener">anyhow</a> (v1.0) - Error handling</li>
+                        <li><i class="fas fa-cube"></i> <a href="https://github.com/seanmonstar/reqwest" target="_blank" rel="noopener">reqwest</a> (v0.12.15) - HTTP client</li>
+                        <li><i class="fas fa-cube"></i> <a href="https://tokio.rs/" target="_blank" rel="noopener">tokio</a> (v1) - Async runtime</li>
                     </ul>
                 </div>
             </div>
@@ -292,8 +299,20 @@
                     // Create repo info
                     const repoInfoDiv = document.createElement('div');
                     repoInfoDiv.className = 'repo-info';
+
+                    // Add language icon
+                    const langIcon = document.createElement('i');
+                    if (repoInfo.language.toLowerCase() === 'rust') {
+                        langIcon.className = 'fab fa-rust';
+                    } else {
+                        langIcon.className = 'fas fa-code';
+                    }
+
+                    // Add repo name
                     const repoSpan = document.createElement('span');
-                    repoSpan.textContent = `${repoInfo.owner}/${repoInfo.repo}`;
+                    repoSpan.textContent = ` / ${repoInfo.repo} / ${repoInfo.owner}`;
+
+                    repoInfoDiv.appendChild(langIcon);
                     repoInfoDiv.appendChild(repoSpan);
 
                     // Create stars info
@@ -326,13 +345,8 @@
                     avatar.src = user.avatar_url;
                     avatar.alt = user.login;
 
-                    // Create owner name
-                    const ownerName = document.createElement('span');
-                    ownerName.textContent = user.login;
-
-                    // Add avatar and owner name to footer
+                    // Add avatar to footer
                     footer.appendChild(avatar);
-                    footer.appendChild(ownerName);
 
                     // Create GitHub link
                     const linkContainer = document.createElement('div');

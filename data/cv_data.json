@@ -182,5 +182,15 @@
   },
   "certifications": [
     "Python Certified Developer Professional – Superusers (2020)"
+  ],
+  "github_sources": [
+    {
+      "username": "hakimjonas",
+      "organization": null
+    },
+    {
+      "username": null,
+      "organization": "fungal-lang"
+    }
   ]
 }

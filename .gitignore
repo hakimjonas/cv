@@ -1,0 +1,11 @@
+/target
+/dist
+/temp_cv.typ
+**/*.rs.bk
+Cargo.lock
+.junie
+.jetbrains
+.idea
+/.vscode
+/.vscode-test
+

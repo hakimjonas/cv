@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Personal website and blog of {{ cv.personal_info.name }} showcasing projects, skills, and thoughts on technology.">
+    <meta name="keywords" content="developer, portfolio, blog, projects, technology, {{ cv.personal_info.title }}">
+    <meta name="author" content="{{ cv.personal_info.name }}">
+    <meta name="theme-color" content="#286983">
+    <title>{{ cv.personal_info.name }} - Blog & Portfolio</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <header>
+        <div class="container">
+            <a href="index.html" class="logo">
+                <h1>{{ cv.personal_info.name }}</h1>
+            </a>
+            <nav aria-label="Main navigation">
+                <ul>
+                    <li><a href="index.html" aria-current="page">Blog</a></li>
+                    <li><a href="cv.html">CV</a></li>
+                    <li><a href="#projects">Projects</a></li>
+                </ul>
+                <div class="theme-switch-wrapper">
+                    <label class="theme-switch" for="checkbox" title="Toggle dark/light theme">
+                        <input type="checkbox" id="checkbox" />
+                        <div class="slider round"></div>
+                    </label>
+                    <em id="theme-label">Light Mode</em>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main id="main-content">
+        <section class="featured-post" id="blog">
+            <div class="container">
+                <h2 class="section-title">Latest Posts</h2>
+                <article class="blog-card featured">
+                    <div class="blog-card-content">
+                        <div class="blog-meta">
+                            <span class="blog-date" data-date="2023-06-15">June 15, 2023</span>
+                            <span class="blog-category">Technology</span>
+                        </div>
+                        <h3 class="blog-title">Getting Started with Rust and Functional Programming</h3>
+                        <p class="blog-excerpt">
+                            Rust combines the performance of low-level languages with the safety of high-level ones. 
+                            In this post, I explore how to apply functional programming principles in Rust...
+                        </p>
+                        <a href="#" class="read-more">Read More <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                    <div class="blog-image">
+                        <img src="https://via.placeholder.com/600x400" alt="Rust Programming" />
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="blog-posts">
+            <div class="container">
+                <div class="blog-grid">
+                    <article class="blog-card">
+                        <div class="blog-meta">
+                            <span class="blog-date" data-date="2023-05-28">May 28, 2023</span>
+                            <span class="blog-category">Development</span>
+                        </div>
+                        <h3 class="blog-title">Building Responsive Web Applications</h3>
+                        <p class="blog-excerpt">
+                            Modern web applications need to work on devices of all sizes. Here's my approach to creating 
+                            truly responsive experiences...
+                        </p>
+                        <a href="#" class="read-more">Read More <i class="fas fa-arrow-right"></i></a>
+                    </article>
+
+                    <article class="blog-card">
+                        <div class="blog-meta">
+                            <span class="blog-date" data-date="2023-04-12">April 12, 2023</span>
+                            <span class="blog-category">Career</span>
+                        </div>
+                        <h3 class="blog-title">Transitioning from Data Science to Engineering</h3>
+                        <p class="blog-excerpt">
+                            My journey from analyzing data to building the systems that process it. Lessons learned and 
+                            skills that transferred...
+                        </p>
+                        <a href="#" class="read-more">Read More <i class="fas fa-arrow-right"></i></a>
+                    </article>
+
+                    <article class="blog-card">
+                        <div class="blog-meta">
+                            <span class="blog-date" data-date="2023-03-05">March 5, 2023</span>
+                            <span class="blog-category">Tools</span>
+                        </div>
+                        <h3 class="blog-title">My Development Environment Setup</h3>
+                        <p class="blog-excerpt">
+                            A detailed look at the tools, extensions, and configurations I use to maximize productivity 
+                            in my daily work...
+                        </p>
+                        <a href="#" class="read-more">Read More <i class="fas fa-arrow-right"></i></a>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="featured-projects" id="projects">
+            <div class="container">
+                <h2 class="section-title">Featured Projects</h2>
+                <div class="projects-grid" id="featured-projects">
+                    {% if !cv.projects.is_empty() %}
+                        {% for project in cv.projects %}
+                        <article class="project-card">
+                            <div class="project-header" {% if project.technologies.len() > 0 %}data-tech="{{ project.technologies[0] }}"{% endif %}>
+                                <div class="project-header-content">
+                                    {% if project.technologies.len() > 0 %}
+                                    <div class="project-language">{{ project.technologies[0] }}</div>
+                                    {% endif %}
+                                    <h3 class="project-header-title">{{ project.name }}</h3>
+                                    {% if project.repository.is_some() %}
+                                    <div class="project-repo">
+                                        <i class="fab fa-github"></i> GitHub
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="project-content">
+                                <div class="project-meta">
+                                    {% if project.owner_username.is_some() %}
+                                        {% if project.owner_avatar.is_some() %}
+                                        <div class="project-owner">
+                                            <img src="{{ project.owner_avatar.as_ref().unwrap() }}" alt="{{ project.owner_username.as_ref().unwrap() }}" class="owner-avatar">
+                                            <span class="owner-username">{{ project.owner_username.as_ref().unwrap() }}</span>
+                                        </div>
+                                        {% endif %}
+                                    {% endif %}
+                                    {% if project.stars.is_some() %}
+                                    <div class="project-stars">
+                                        <i class="fas fa-star"></i>
+                                        <span>{{ project.stars.unwrap() }}</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <h3 class="project-title">{{ project.name }}</h3>
+                                <p class="project-description">{{ project.description }}</p>
+                                <div class="technologies">
+                                    {% for tech in project.technologies %}
+                                    <span class="tech-tag">{{ tech }}</span>
+                                    {% endfor %}
+                                </div>
+                                <div class="project-links">
+                                    {% if project.repository.is_some() %}
+                                    <a href="{{ project.repository.as_ref().unwrap() }}" class="project-link" target="_blank" rel="noopener">
+                                        <i class="fab fa-github"></i> View on GitHub
+                                    </a>
+                                    {% endif %}
+                                    {% if project.url.is_some() %}
+                                    <a href="{{ project.url.as_ref().unwrap() }}" class="project-link" target="_blank" rel="noopener">
+                                        <i class="fas fa-external-link-alt"></i> Visit Website
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </article>
+                        {% endfor %}
+                    {% else %}
+                        <p>No projects found. Check back soon!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+
+        <section class="about" id="about">
+            <div class="container">
+                <div class="about-content">
+                    <h2 class="section-title">About Me</h2>
+                    <p>{{ cv.personal_info.summary }}</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="contact" id="contact">
+            <div class="container">
+                <h2 class="section-title">Get In Touch</h2>
+                <p>Feel free to reach out to me at <a href="mailto:{{ cv.personal_info.email }}" id="email">{{ cv.personal_info.email }}</a></p>
+                <div class="social-links" id="social-links">
+                    {% for entry in cv.personal_info.social_links %}
+                    <a href="{{ entry.1 }}" class="social-link" target="_blank" rel="noopener" aria-label="{{ entry.0 }} profile">
+                        <i class="fab fa-{{ entry.0 | lower }}"></i>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-nav">
+                    <h3>Navigation</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="cv.html">CV</a></li>
+                        <li><a href="#blog">Blog</a></li>
+                        <li><a href="#projects">Projects</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-social">
+                    <h3>Connect</h3>
+                    <div class="social-links">
+                        {% for entry in cv.personal_info.social_links %}
+                        <a href="{{ entry.1 }}" class="social-link" target="_blank" rel="noopener" aria-label="{{ entry.0 }} profile">
+                            <i class="fab fa-{{ entry.0 | lower }}"></i>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; <span id="current-year">2023</span> {{ cv.personal_info.name }}. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Update the current year
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+
+        // Format blog dates
+        document.querySelectorAll('.blog-date[data-date]').forEach(dateElement => {
+            const dateStr = dateElement.getAttribute('data-date');
+            const date = new Date(dateStr);
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            dateElement.textContent = date.toLocaleDateString('en-US', options);
+        });
+
+        // Theme switcher functionality
+        const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+        const themeLabel = document.getElementById('theme-label');
+
+        // Function to set a theme
+        function setTheme(theme) {
+            document.documentElement.className = theme;
+            localStorage.setItem('theme', theme);
+
+            if (theme === 'theme-dark') {
+                toggleSwitch.checked = true;
+                themeLabel.textContent = 'Dark Mode';
+            } else {
+                toggleSwitch.checked = false;
+                themeLabel.textContent = 'Light Mode';
+            }
+        }
+
+        // Check for saved theme preference or use system preference
+        const currentTheme = localStorage.getItem('theme') || 
+            (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'theme-dark' : 'theme-light');
+
+        // Apply the theme
+        setTheme(currentTheme);
+
+        // Listen for theme toggle
+        toggleSwitch.addEventListener('change', function(e) {
+            if (e.target.checked) {
+                setTheme('theme-dark');
+            } else {
+                setTheme('theme-light');
+            }
+        });
+    </script>
+</body>
+</html>

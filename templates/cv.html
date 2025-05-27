@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Professional CV of {{ cv.personal_info.name }}, {{ cv.personal_info.title }}">
+    <meta name="keywords" content="cv, resume, {{ cv.personal_info.title }}, professional">
+    <meta name="author" content="{{ cv.personal_info.name }}">
+    <meta name="theme-color" content="#286983">
+    <title>{{ cv.personal_info.name }} - CV</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <header>
+        <div class="container">
+            <a href="index.html" class="logo">
+                <h1>{{ cv.personal_info.name }}</h1>
+            </a>
+            <nav aria-label="Main navigation">
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="cv.html" aria-current="page">CV</a></li>
+                    <li><a href="index.html#blog">Blog</a></li>
+                    <li><a href="index.html#projects">Projects</a></li>
+                </ul>
+                <div class="theme-switch-wrapper">
+                    <label class="theme-switch" for="checkbox" title="Toggle dark/light theme">
+                        <input type="checkbox" id="checkbox" />
+                        <div class="slider round"></div>
+                    </label>
+                    <em id="theme-label">Light Mode</em>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main id="main-content">
+        <div class="cv-container">
+            <div class="cv-header">
+                <div class="profile-header">
+                    <div class="profile-info">
+                        <h1>{{ cv.personal_info.name }}</h1>
+                        <p class="tagline">{{ cv.personal_info.title }}</p>
+                        <p>
+                            <a href="mailto:{{ cv.personal_info.email }}" aria-label="Email {{ cv.personal_info.email }}">{{ cv.personal_info.email }}</a>
+                        {% if cv.personal_info.phone.is_some() %}
+                         | <a href="tel:{{ cv.personal_info.phone.as_ref().unwrap() }}" aria-label="Call {{ cv.personal_info.phone.as_ref().unwrap() }}">{{ cv.personal_info.phone.as_ref().unwrap() }}</a>
+                        {% endif %}
+                        {% if cv.personal_info.location.is_some() %}
+                         | <span aria-label="Location">{{ cv.personal_info.location.as_ref().unwrap() }}</span>
+                        {% endif %}
+                        </p>
+                    </div>
+                    <div class="profile-image">
+                        <img src="img/profile_picture.jpg" alt="{{ cv.personal_info.name }}" />
+                    </div>
+                </div>
+
+                {% if cv.personal_info.website.is_some() %}
+                <p><a href="{{ cv.personal_info.website.as_ref().unwrap() }}" target="_blank" rel="noopener">{{ cv.personal_info.website.as_ref().unwrap() }}</a></p>
+                {% endif %}
+
+                <div class="social-links">
+                    {% for entry in cv.personal_info.social_links %}
+                    <a href="{{ entry.1 }}" class="social-link" target="_blank" rel="noopener" aria-label="{{ entry.0 }} profile">
+                        <i class="fab fa-{{ entry.0 | lower }}"></i> {{ entry.0 }}
+                    </a>
+                    {% endfor %}
+                </div>
+
+                <div class="summary">
+                    <p>{{ cv.personal_info.summary }}</p>
+                </div>
+
+                <div class="cta-buttons">
+                    <a href="cv.pdf" class="btn primary" download aria-label="Download CV as PDF">Download CV (PDF)</a>
+                </div>
+            </div>
+
+            <!-- Experience Section -->
+            {% if !cv.experiences.is_empty() %}
+            <div class="cv-section">
+                <h2 class="cv-section-title">Professional Experience</h2>
+                {% for exp in cv.experiences %}
+                <div class="experience-item">
+                    <div class="item-header">
+                        <div>
+                            <h3 class="item-title">{{ exp.position }}</h3>
+                            <p class="item-subtitle">{{ exp.company }}
+                            {% if exp.location.is_some() %}
+                             | {{ exp.location.as_ref().unwrap() }}
+                            {% endif %}
+                            </p>
+                        </div>
+                        <div class="item-date">
+                            {{ exp.start_date }} - 
+                            {% if exp.end_date.is_some() %}
+                                {{ exp.end_date.as_ref().unwrap() }}
+                            {% else %}
+                                Present
+                            {% endif %}
+                        </div>
+                    </div>
+                    <p>{{ exp.description }}</p>
+
+                    {% if !exp.achievements.is_empty() %}
+                    <ul>
+                        {% for achievement in exp.achievements %}
+                        <li>{{ achievement }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+
+                    {% if !exp.technologies.is_empty() %}
+                    <div class="technologies">
+                        {% for tech in exp.technologies %}
+                        <span class="tech-tag">{{ tech }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Education Section -->
+            {% if !cv.education.is_empty() %}
+            <div class="cv-section">
+                <h2 class="cv-section-title">Education</h2>
+                {% for edu in cv.education %}
+                <div class="education-item">
+                    <div class="item-header">
+                        <div>
+                            <h3 class="item-title">{{ edu.degree }} in {{ edu.field }}</h3>
+                            <p class="item-subtitle">{{ edu.institution }}
+                            {% if edu.location.is_some() %}
+                             | {{ edu.location.as_ref().unwrap() }}
+                            {% endif %}
+                            </p>
+                        </div>
+                        <div class="item-date">
+                            {{ edu.start_date }} - 
+                            {% if edu.end_date.is_some() %}
+                                {{ edu.end_date.as_ref().unwrap() }}
+                            {% else %}
+                                Present
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if edu.gpa.is_some() %}
+                    <p>GPA: {{ edu.gpa.as_ref().unwrap() }}</p>
+                    {% endif %}
+
+                    {% if !edu.achievements.is_empty() %}
+                    <ul>
+                        {% for achievement in edu.achievements %}
+                        <li>{{ achievement }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Skills Section -->
+            {% if !cv.skill_categories.is_empty() %}
+            <div class="cv-section">
+                <h2 class="cv-section-title">Skills</h2>
+                <div class="skills-grid">
+                    {% for category in cv.skill_categories %}
+                    <div class="skill-category">
+                        <h4>{{ category.name }}</h4>
+                        <ul class="skill-list">
+                            {% for skill in category.skills %}
+                            <li>{{ skill }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Projects Section -->
+            {% if !cv.projects.is_empty() %}
+            <div class="cv-section">
+                <h2 class="cv-section-title">Projects</h2>
+                {% for project in cv.projects %}
+                <div class="project-item">
+                    <div class="item-header">
+                        <h3 class="item-title">
+                            {{ project.name }}
+                            {% if project.url.is_some() %}
+                            <a href="{{ project.url.as_ref().unwrap() }}" target="_blank">(Link)</a>
+                            {% endif %}
+                            {% if project.repository.is_some() %}
+                            <a href="{{ project.repository.as_ref().unwrap() }}" target="_blank">(Repository)</a>
+                            {% endif %}
+                        </h3>
+                    </div>
+                    <p>{{ project.description }}</p>
+
+                    {% if !project.highlights.is_empty() %}
+                    <ul>
+                        {% for highlight in project.highlights %}
+                        <li>{{ highlight }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+
+                    {% if !project.technologies.is_empty() %}
+                    <div class="technologies">
+                        {% for tech in project.technologies %}
+                        <span class="tech-tag">{{ tech }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Languages Section -->
+            {% if !cv.languages.is_empty() %}
+            <div class="cv-section">
+                <h2 class="cv-section-title">Languages</h2>
+                <ul>
+                    {% for entry in cv.languages %}
+                    <li><strong>{{ entry.0 }}:</strong> {{ entry.1 }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <!-- Certifications Section -->
+            {% if !cv.certifications.is_empty() %}
+            <div class="cv-section">
+                <h2 class="cv-section-title">Certifications</h2>
+                <ul>
+                    {% for certification in cv.certifications %}
+                    <li>{{ certification }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-nav">
+                    <h3>Navigation</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="cv.html">CV</a></li>
+                        <li><a href="index.html#blog">Blog</a></li>
+                        <li><a href="index.html#projects">Projects</a></li>
+                        <li><a href="index.html#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-social">
+                    <h3>Connect</h3>
+                    <div class="social-links">
+                        {% for entry in cv.personal_info.social_links %}
+                        <a href="{{ entry.1 }}" class="social-link" target="_blank" rel="noopener" aria-label="{{ entry.0 }} profile">
+                            <i class="fab fa-{{ entry.0 | lower }}"></i>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; <span id="current-year">2023</span> {{ cv.personal_info.name }}. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Update the current year
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+
+        // Theme switcher functionality
+        const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+        const themeLabel = document.getElementById('theme-label');
+
+        // Function to set a theme
+        function setTheme(theme) {
+            document.documentElement.className = theme;
+            localStorage.setItem('theme', theme);
+
+            if (theme === 'theme-dark') {
+                toggleSwitch.checked = true;
+                themeLabel.textContent = 'Dark Mode';
+            } else {
+                toggleSwitch.checked = false;
+                themeLabel.textContent = 'Light Mode';
+            }
+        }
+
+        // Check for saved theme preference or use system preference
+        const currentTheme = localStorage.getItem('theme') || 
+            (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'theme-dark' : 'theme-light');
+
+        // Apply the theme
+        setTheme(currentTheme);
+
+        // Listen for theme toggle
+        toggleSwitch.addEventListener('change', function(e) {
+            if (e.target.checked) {
+                setTheme('theme-dark');
+            } else {
+                setTheme('theme-light');
+            }
+        });
+    </script>
+</body>
+</html>

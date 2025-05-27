@@ -37,6 +37,25 @@
     </header>
 
     <main id="main-content">
+        <section class="intro-section" id="introduction">
+            <div class="container">
+                <article class="blog-card intro">
+                    <div class="blog-card-content">
+                        <h3 class="blog-title">Welcome to My Blog & Portfolio</h3>
+                        <p class="blog-excerpt">
+                            Hello and welcome! I'm a Data Engineer with a passion for functional programming, 
+                            big data technologies, and compiler design. This blog is where I share my thoughts, 
+                            projects, and experiences in the world of software development.
+                        </p>
+                        <p class="blog-excerpt">
+                            Feel free to explore my projects, read my blog posts, or get in touch if you'd like 
+                            to collaborate or just chat about technology.
+                        </p>
+                    </div>
+                </article>
+            </div>
+        </section>
+
         <section class="featured-post" id="blog">
             <div class="container">
                 <h2 class="section-title">Latest Posts</h2>
@@ -109,64 +128,7 @@
             <div class="container">
                 <h2 class="section-title">Featured Projects</h2>
                 <div class="projects-grid" id="featured-projects">
-                    {% if !cv.projects.is_empty() %}
-                        {% for project in cv.projects %}
-                        <article class="project-card">
-                            <div class="project-header" {% if project.technologies.len() > 0 %}data-tech="{{ project.technologies[0] }}"{% endif %}>
-                                <div class="project-header-content">
-                                    {% if project.technologies.len() > 0 %}
-                                    <div class="project-language">{{ project.technologies[0] }}</div>
-                                    {% endif %}
-                                    <h3 class="project-header-title">{{ project.name }}</h3>
-                                    {% if project.repository.is_some() %}
-                                    <div class="project-repo">
-                                        <i class="fab fa-github"></i> GitHub
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="project-content">
-                                <div class="project-meta">
-                                    {% if project.owner_username.is_some() %}
-                                        {% if project.owner_avatar.is_some() %}
-                                        <div class="project-owner">
-                                            <img src="{{ project.owner_avatar.as_ref().unwrap() }}" alt="{{ project.owner_username.as_ref().unwrap() }}" class="owner-avatar">
-                                            <span class="owner-username">{{ project.owner_username.as_ref().unwrap() }}</span>
-                                        </div>
-                                        {% endif %}
-                                    {% endif %}
-                                    {% if project.stars.is_some() %}
-                                    <div class="project-stars">
-                                        <i class="fas fa-star"></i>
-                                        <span>{{ project.stars.unwrap() }}</span>
-                                    </div>
-                                    {% endif %}
-                                </div>
-                                <h3 class="project-title">{{ project.name }}</h3>
-                                <p class="project-description">{{ project.description }}</p>
-                                <div class="technologies">
-                                    {% for tech in project.technologies %}
-                                    <span class="tech-tag">{{ tech }}</span>
-                                    {% endfor %}
-                                </div>
-                                <div class="project-links">
-                                    {% if project.repository.is_some() %}
-                                    <a href="{{ project.repository.as_ref().unwrap() }}" class="project-link" target="_blank" rel="noopener">
-                                        <i class="fab fa-github"></i> View on GitHub
-                                    </a>
-                                    {% endif %}
-                                    {% if project.url.is_some() %}
-                                    <a href="{{ project.url.as_ref().unwrap() }}" class="project-link" target="_blank" rel="noopener">
-                                        <i class="fas fa-external-link-alt"></i> Visit Website
-                                    </a>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </article>
-                        {% endfor %}
-                    {% else %}
-                        <p>No projects found. Check back soon!</p>
-                    {% endif %}
+                    <!-- Projects will be dynamically populated by JavaScript -->
                 </div>
             </div>
         </section>
@@ -217,6 +179,14 @@
                         </a>
                         {% endfor %}
                     </div>
+                </div>
+                <div class="footer-tech">
+                    <h3>Built With</h3>
+                    <ul class="tech-list">
+                        <li><i class="fab fa-rust"></i> Rust - Static site generation</li>
+                        <li><i class="fas fa-file-pdf"></i> Typst - PDF resume creation</li>
+                        <li><i class="fas fa-box"></i> Dependencies - im, serde, tera</li>
+                    </ul>
                 </div>
             </div>
             <div class="footer-bottom">
@@ -270,6 +240,212 @@
                 setTheme('theme-light');
             }
         });
+
+        // GitHub API integration with fallback for rate limiting
+        async function fetchGitHubRepos() {
+            const projectsContainer = document.getElementById('featured-projects');
+
+            // Define the repositories to fetch
+            const repos = [
+                { owner: 'hakimjonas', repo: 'valar', language: 'scala' },
+                { owner: 'hakimjonas', repo: 'fin', language: 'rust' },
+                { owner: 'fungal-lang', repo: 'spore-print', language: 'rust' }
+            ];
+
+            // Fallback data to use when GitHub API is rate limited
+            const fallbackData = [
+                {
+                    owner: 'hakimjonas',
+                    repo: 'valar',
+                    language: 'scala',
+                    description: 'Valar: Type-safe validation for Scala 3 with boilerplate-free derivation via macros. Features error accumulation and fail-fast modes.',
+                    stars: 2,
+                    avatar_url: 'https://avatars.githubusercontent.com/u/3774539?v=4',
+                    login: 'hakimjonas'
+                },
+                {
+                    owner: 'hakimjonas',
+                    repo: 'fin',
+                    language: 'rust',
+                    description: 'Finë is a simple, GTK4-based session transition tool for Linux desktops—built in Rust with a functional, modular design.',
+                    stars: 2,
+                    avatar_url: 'https://avatars.githubusercontent.com/u/3774539?v=4',
+                    login: 'hakimjonas'
+                },
+                {
+                    owner: 'fungal-lang',
+                    repo: 'spore-print',
+                    language: 'rust',
+                    description: 'A Rust library providing a SporePrint trait and derive macro for immutable string representations.',
+                    stars: 0,
+                    avatar_url: 'https://avatars.githubusercontent.com/u/168653203?v=4',
+                    login: 'fungal-lang'
+                }
+            ];
+
+            try {
+                // Clear any existing content
+                projectsContainer.innerHTML = '';
+
+                // Try to fetch from GitHub API first
+                let useApi = true;
+                let apiData = [];
+
+                try {
+                    for (const repoInfo of repos) {
+                        // Fetch repository data from GitHub API
+                        const response = await fetch(`https://api.github.com/repos/${repoInfo.owner}/${repoInfo.repo}`);
+                        if (!response.ok) {
+                            if (response.status === 403) {
+                                console.warn('GitHub API rate limit exceeded, using fallback data');
+                                useApi = false;
+                                break;
+                            }
+                            throw new Error(`GitHub API error: ${response.status}`);
+                        }
+                        const repo = await response.json();
+
+                        // Fetch user data for avatar
+                        const userResponse = await fetch(`https://api.github.com/users/${repoInfo.owner}`);
+                        if (!userResponse.ok) {
+                            if (userResponse.status === 403) {
+                                console.warn('GitHub API rate limit exceeded, using fallback data');
+                                useApi = false;
+                                break;
+                            }
+                            throw new Error(`GitHub API error: ${userResponse.status}`);
+                        }
+                        const user = await userResponse.json();
+
+                        apiData.push({
+                            owner: repoInfo.owner,
+                            repo: repoInfo.repo,
+                            language: repoInfo.language,
+                            description: repo.description || 'No description available',
+                            stars: repo.stargazers_count,
+                            avatar_url: user.avatar_url,
+                            login: user.login
+                        });
+                    }
+                } catch (apiError) {
+                    console.error('Error fetching from GitHub API:', apiError);
+                    useApi = false;
+                }
+
+                // Use either API data or fallback data
+                const dataToUse = useApi ? apiData : fallbackData;
+
+                // Create cards for each repository
+                for (const data of dataToUse) {
+                    // Create GitHub card element
+                    const card = document.createElement('article');
+                    card.className = 'github-card';
+
+                    // Create card header
+                    const header = document.createElement('div');
+                    header.className = `card-header ${data.language}`;
+
+                    // Create repo info
+                    const repoInfoDiv = document.createElement('div');
+                    repoInfoDiv.className = 'repo-info';
+                    const repoSpan = document.createElement('span');
+                    repoSpan.textContent = `${data.owner}/${data.repo}`;
+                    repoInfoDiv.appendChild(repoSpan);
+
+                    // Create stars info
+                    const starsDiv = document.createElement('div');
+                    starsDiv.className = 'stars';
+                    const starCount = document.createElement('span');
+                    starCount.className = 'star-count';
+                    starCount.textContent = data.stars;
+                    const starIcon = document.createElement('i');
+                    starIcon.className = 'fas fa-star';
+                    starsDiv.appendChild(starCount);
+                    starsDiv.appendChild(starIcon);
+
+                    // Add repo info and stars to header
+                    header.appendChild(repoInfoDiv);
+                    header.appendChild(starsDiv);
+
+                    // Create repo description
+                    const description = document.createElement('p');
+                    description.className = 'repo-description';
+                    description.textContent = data.description;
+
+                    // Create GitHub link
+                    const linkContainer = document.createElement('div');
+                    linkContainer.className = 'project-links';
+
+                    const githubLink = document.createElement('a');
+                    githubLink.className = 'project-link';
+                    githubLink.href = `https://github.com/${data.owner}/${data.repo}`;
+                    githubLink.target = '_blank';
+                    githubLink.rel = 'noopener';
+
+                    const githubIcon = document.createElement('i');
+                    githubIcon.className = 'fab fa-github';
+
+                    githubLink.appendChild(githubIcon);
+                    githubLink.appendChild(document.createTextNode(' View on GitHub'));
+
+                    linkContainer.appendChild(githubLink);
+
+                    // Create card footer
+                    const footer = document.createElement('div');
+                    footer.className = 'card-footer';
+
+                    // Create avatar
+                    const avatar = document.createElement('img');
+                    avatar.className = 'avatar';
+                    avatar.src = data.avatar_url;
+                    avatar.alt = data.login;
+
+                    // Create owner name
+                    const ownerName = document.createElement('span');
+                    ownerName.textContent = data.login;
+
+                    // Add avatar and owner name to footer
+                    footer.appendChild(avatar);
+                    footer.appendChild(ownerName);
+
+                    // Add all elements to card
+                    card.appendChild(header);
+                    card.appendChild(description);
+                    card.appendChild(linkContainer);
+                    card.appendChild(footer);
+
+                    // Add card to projects container
+                    projectsContainer.appendChild(card);
+                }
+
+                // If we're using fallback data, add a note
+                if (!useApi) {
+                    const noteDiv = document.createElement('div');
+                    noteDiv.className = 'api-note';
+                    noteDiv.style.textAlign = 'center';
+                    noteDiv.style.marginTop = '1rem';
+                    noteDiv.style.fontSize = '0.9rem';
+                    noteDiv.style.color = 'var(--light-text)';
+                    noteDiv.textContent = 'Note: Using cached project data due to GitHub API rate limits.';
+                    projectsContainer.appendChild(noteDiv);
+                }
+            } catch (error) {
+                console.error('Error in project display:', error);
+                projectsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 2rem;">
+                        <p>Unable to load projects at this time.</p>
+                        <p style="font-size: 0.9rem; color: var(--light-text);">
+                            Please check back later or visit 
+                            <a href="https://github.com/hakimjonas" target="_blank" rel="noopener">GitHub</a> 
+                            directly to see my work.
+                        </p>
+                    </div>
+                `;
+            }
+        }
+
+        // Load GitHub repositories when the page is loaded
+        document.addEventListener('DOMContentLoaded', fetchGitHubRepos);
     </script>
 </body>
 </html>

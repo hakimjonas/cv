@@ -14,6 +14,12 @@
 <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
 
+    <div class="floating-download">
+        <a href="cv.pdf" class="btn primary" download aria-label="Download CV as PDF">
+            <i class="fas fa-download"></i> Download CV (PDF)
+        </a>
+    </div>
+
     <header>
         <div class="container">
             <a href="index.html" class="logo">
@@ -75,9 +81,6 @@
                     <p>{{ cv.personal_info.summary }}</p>
                 </div>
 
-                <div class="cta-buttons">
-                    <a href="cv.pdf" class="btn primary" download aria-label="Download CV as PDF">Download CV (PDF)</a>
-                </div>
             </div>
 
             <!-- Experience Section -->
@@ -273,6 +276,14 @@
                         </a>
                         {% endfor %}
                     </div>
+                </div>
+                <div class="footer-tech">
+                    <h3>Built With</h3>
+                    <ul class="tech-list">
+                        <li><i class="fab fa-rust"></i> Rust - Static site generation</li>
+                        <li><i class="fas fa-file-pdf"></i> Typst - PDF resume creation</li>
+                        <li><i class="fas fa-box"></i> Dependencies - im, serde, tera</li>
+                    </ul>
                 </div>
             </div>
             <div class="footer-bottom">

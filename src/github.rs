@@ -208,13 +208,21 @@ fn convert_repos_to_projects(repos: Vec<GitHubRepo>) -> Vector<Project> {
                 (None, None)
             };
 
+            // Convert HTTPS URL to SSH URL
+            let ssh_url = if let Some(ref owner) = repo.owner {
+                format!("git@github.com:{}/{}.git", owner.login, repo.name)
+            } else {
+                // Fallback to HTTPS URL if owner is not available
+                repo.html_url.clone()
+            };
+
             Project {
                 name,
                 description: repo
                     .description
                     .unwrap_or_else(|| "No description provided.".to_string()),
                 url: None,
-                repository: Some(repo.html_url),
+                repository: Some(ssh_url),
                 technologies,
                 highlights: Vector::new(), // GitHub API doesn't provide highlights
                 stars: Some(repo.stargazers_count),

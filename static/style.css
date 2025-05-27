@@ -31,8 +31,8 @@
     --error-color: var(--rose-pine-love);
 
     /* Additional variables for blog-like design */
-    --card-background: var(--rose-pine-surface);
-    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    --card-background: #ffffff;
+    --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
     --header-background: var(--rose-pine-overlay);
     --footer-background: var(--rose-pine-overlay);
     --code-background: var(--rose-pine-overlay);
@@ -73,8 +73,8 @@
         --error-color: var(--rose-pine-love);
 
         /* Additional variables for blog-like design */
-        --card-background: var(--rose-pine-surface);
-        --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        --card-background: #232136;
+        --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         --header-background: var(--rose-pine-overlay);
         --footer-background: var(--rose-pine-overlay);
         --code-background: var(--rose-pine-overlay);
@@ -112,8 +112,8 @@
     --error-color: var(--rose-pine-love);
 
     /* Additional variables for blog-like design */
-    --card-background: var(--rose-pine-surface);
-    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    --card-background: #232136;
+    --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     --header-background: var(--rose-pine-overlay);
     --footer-background: var(--rose-pine-overlay);
     --code-background: var(--rose-pine-overlay);
@@ -149,8 +149,8 @@
     --error-color: var(--rose-pine-love);
 
     /* Additional variables for blog-like design */
-    --card-background: var(--rose-pine-surface);
-    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    --card-background: #ffffff;
+    --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
     --header-background: var(--rose-pine-overlay);
     --footer-background: var(--rose-pine-overlay);
     --code-background: var(--rose-pine-overlay);
@@ -538,18 +538,27 @@ section:nth-child(even) {
 .technologies {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.6rem;
+    gap: 0.8rem;
     margin-bottom: 1.5rem;
 }
 
 .tech-tag {
     background-color: var(--light-background);
-    padding: 0.4rem 0.8rem;
-    border-radius: 20px;
-    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+    border-radius: 30px;
+    font-size: 0.9rem;
     color: var(--primary-color);
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: all 0.3s ease;
     font-weight: 500;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    letter-spacing: 0.01em;
+}
+
+.tech-tag:hover {
+    background-color: var(--primary-color);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .project-links {
@@ -624,15 +633,28 @@ section:nth-child(even) {
 .floating-download .btn {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 1rem 1.5rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    gap: 0.7rem;
+    padding: 1.1rem 1.6rem;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
     transition: all 0.3s ease;
+    font-size: 1.1rem;
+    font-weight: 500;
+    border-radius: 8px;
+    letter-spacing: 0.01em;
+}
+
+.floating-download .btn i {
+    font-size: 1.2rem;
 }
 
 .floating-download .btn:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Remove redundant download button in header */
+.cv-header .cta-buttons {
+    display: none;
 }
 
 /* Logo */
@@ -716,30 +738,18 @@ section:nth-child(even) {
     transform: translateX(4px);
 }
 
-/* Pinned Post */
-.pinned-post {
+/* Intro Section */
+.intro-section {
     padding: 3rem 0 1rem;
-    background-color: var(--card-background);
+    background-color: var(--background-color);
     border-bottom: 1px solid var(--border-color);
 }
 
-.pinned-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.4rem 0.8rem;
-    background-color: var(--accent-color);
-    color: white;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    margin-bottom: 1rem;
-}
-
-.blog-card.pinned {
-    background-color: var(--light-background);
+.blog-card.intro {
+    background-color: var(--card-background);
     border-left: 4px solid var(--accent-color);
     padding: 1.5rem 2rem;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
 /* Featured Post */
@@ -842,7 +852,7 @@ footer {
     margin-bottom: 2rem;
 }
 
-.footer-nav h3, .footer-social h3 {
+.footer-nav h3, .footer-social h3, .footer-tech h3 {
     margin-bottom: 1rem;
     font-size: 1.2rem;
 }
@@ -886,6 +896,25 @@ footer {
     transform: translateY(-3px);
 }
 
+.footer-tech .tech-list {
+    list-style: none;
+}
+
+.footer-tech .tech-list li {
+    margin-bottom: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--light-text);
+}
+
+.footer-tech .tech-list li i {
+    color: var(--accent-color);
+    font-size: 1.1rem;
+    width: 1.5rem;
+    text-align: center;
+}
+
 .footer-bottom {
     text-align: center;
     padding-top: 1.5rem;
@@ -897,7 +926,7 @@ footer {
 .cv-container {
     max-width: 900px;
     margin: 2rem auto;
-    padding: 2rem;
+    padding: 2.5rem;
     background-color: var(--card-background);
     box-shadow: var(--card-shadow);
     border-radius: 8px;
@@ -906,14 +935,14 @@ footer {
 
 .cv-header {
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 3rem;
 }
 
 .profile-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
 }
 
 .profile-info {
@@ -921,34 +950,98 @@ footer {
     flex: 1;
 }
 
+.profile-info h1 {
+    font-size: 2.8rem;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
+}
+
+.profile-info .tagline {
+    font-size: 1.4rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.profile-info p {
+    font-size: 1.05rem;
+    line-height: 1.7;
+}
+
 .profile-image {
-    margin-left: 2rem;
+    margin-left: 2.5rem;
 }
 
 .profile-image img {
-    width: 150px;
-    height: 150px;
+    width: 160px;
+    height: 160px;
     border-radius: 50%;
     object-fit: cover;
     border: 3px solid var(--primary-color);
     transition: border-color 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.summary {
+    max-width: 800px;
+    margin: 0 auto 2.5rem;
+    text-align: left;
+}
+
+.summary p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: var(--text-color);
+    letter-spacing: 0.01em;
+}
+
+.social-links {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.social-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 1.2rem;
+    background-color: var(--light-background);
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    font-size: 1.05rem;
+}
+
+.social-link:hover {
+    background-color: var(--primary-color);
+    color: white;
+    transform: translateY(-2px);
 }
 
 .cv-section {
-    margin-bottom: 2rem;
-    padding: 1.5rem;
+    margin-bottom: 3rem;
+    padding: 2rem;
     background-color: var(--card-background);
-    border-radius: 8px;
+    border-radius: 10px;
     box-shadow: var(--card-shadow);
-    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    transition: all 0.3s ease;
+}
+
+.cv-section:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 }
 
 .cv-section-title {
     position: relative;
-    padding-bottom: 0.5rem;
-    margin-bottom: 1.5rem;
+    padding-bottom: 0.8rem;
+    margin-bottom: 2rem;
     color: var(--text-color);
     transition: color 0.3s ease;
+    font-size: 1.8rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
 }
 
 .cv-section-title::after {
@@ -963,8 +1056,8 @@ footer {
 }
 
 .experience-item, .education-item, .project-item {
-    margin-bottom: 2rem;
-    padding-bottom: 1.5rem;
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
     border-bottom: 1px solid var(--border-color);
     transition: border-color 0.3s ease;
 }
@@ -978,40 +1071,53 @@ footer {
 .item-header {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 0.75rem;
+    margin-bottom: 1rem;
     flex-wrap: wrap;
+    align-items: flex-start;
 }
 
 .item-title {
     font-weight: 600;
-    font-size: 1.2rem;
-    color: var(--text-color);
+    font-size: 1.3rem;
+    color: var(--primary-color);
     transition: color 0.3s ease;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.4rem;
+    letter-spacing: -0.01em;
 }
 
 .item-subtitle {
     color: var(--light-text);
     transition: color 0.3s ease;
+    font-size: 1.05rem;
+    font-weight: 500;
 }
 
 .item-date {
     color: var(--light-text);
     font-style: italic;
     transition: color 0.3s ease;
+    font-weight: 500;
+    background-color: var(--light-background);
+    padding: 0.3rem 0.8rem;
+    border-radius: 4px;
+    font-size: 0.95rem;
 }
 
 .skills-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 2rem;
 }
 
 .skill-category h4 {
-    margin-bottom: 0.75rem;
+    margin-bottom: 1rem;
     color: var(--primary-color);
     transition: color 0.3s ease;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
 }
 
 .skill-list {
@@ -1019,11 +1125,13 @@ footer {
 }
 
 .skill-list li {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.8rem;
     position: relative;
-    padding-left: 1.25rem;
+    padding-left: 1.5rem;
     color: var(--text-color);
     transition: color 0.3s ease;
+    font-size: 1.05rem;
+    line-height: 1.6;
 }
 
 .skill-list li::before {
@@ -1032,6 +1140,27 @@ footer {
     left: 0;
     color: var(--accent-color);
     transition: color 0.3s ease;
+    font-size: 1.2rem;
+    line-height: 1.4;
+}
+
+.experience-item p, .education-item p, .project-item p {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    margin-bottom: 1.2rem;
+    color: var(--text-color);
+}
+
+.experience-item ul, .education-item ul, .project-item ul {
+    margin-bottom: 1.5rem;
+    padding-left: 1.2rem;
+}
+
+.experience-item li, .education-item li, .project-item li {
+    margin-bottom: 0.7rem;
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: var(--text-color);
 }
 
 /* Improved focus styles for accessibility */

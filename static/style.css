@@ -310,10 +310,30 @@ input:checked + .slider:before {
     transform: translateX(24px);
 }
 
-.theme-switch-wrapper em {
-    margin-left: 8px;
+.theme-icon {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
     font-size: 0.8rem;
     color: var(--light-text);
+}
+
+.light-icon {
+    left: 6px;
+    opacity: 1;
+}
+
+.dark-icon {
+    right: 6px;
+    opacity: 0;
+}
+
+input:checked + .slider .light-icon {
+    opacity: 0;
+}
+
+input:checked + .slider .dark-icon {
+    opacity: 1;
 }
 
 /* Sections */
@@ -497,8 +517,28 @@ section:nth-child(even) {
     object-fit: cover;
 }
 
+.avatar-placeholder {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 12px;
+    background-color: var(--light-background);
+    border: 1px solid var(--border-color);
+}
+
+.owner-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.owner-name {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
 /* Project Card Styling */
-.project-card {
+.projects-grid .project-card {
     box-sizing: border-box;
     width: 500px;
     max-width: 100%;
@@ -513,13 +553,13 @@ section:nth-child(even) {
     height: 100%;
 }
 
-.project-card:hover {
+.projects-grid .project-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
 }
 
 /* Project Header Styling */
-.project-header {
+.projects-grid .project-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -529,7 +569,7 @@ section:nth-child(even) {
     border-radius: 0;
 }
 
-.project-title {
+.projects-grid .project-title {
     font-weight: 600;
     color: white;
     white-space: nowrap;
@@ -543,7 +583,7 @@ section:nth-child(even) {
     gap: 6px;
 }
 
-.project-stars {
+.projects-grid .project-stars {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -552,7 +592,7 @@ section:nth-child(even) {
 }
 
 /* Project Description */
-.project-description {
+.projects-grid .project-description {
     line-height: 1.6;
     margin: 0;
     padding: 20px;
@@ -563,14 +603,14 @@ section:nth-child(even) {
 }
 
 /* Technologies */
-.technologies {
+.projects-grid .technologies {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
     padding: 0 20px 10px;
 }
 
-.tech-tag {
+.projects-grid .tech-tag {
     background-color: var(--accent-color);
     color: white;
     padding: 4px 10px;
@@ -580,7 +620,7 @@ section:nth-child(even) {
 }
 
 /* Project Links */
-.project-links {
+.projects-grid .project-links {
     display: flex;
     gap: 12px;
     padding: 15px 20px;
@@ -588,7 +628,7 @@ section:nth-child(even) {
     background-color: var(--light-background);
 }
 
-.project-link {
+.projects-grid .project-link {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -599,7 +639,7 @@ section:nth-child(even) {
     font-size: 0.9rem;
 }
 
-.project-link:hover {
+.projects-grid .project-link:hover {
     color: var(--primary-color);
 }
 
@@ -640,7 +680,7 @@ section:nth-child(even) {
     transition: transform 0.5s ease;
 }
 
-.project-card:hover .project-image img {
+.projects-grid .project-card:hover .project-image img {
     transform: scale(1.05);
 }
 
@@ -755,8 +795,7 @@ section:nth-child(even) {
 .floating-download {
     position: fixed;
     left: calc(50% + 500px);
-    top: 50%;
-    transform: translateY(-50%);
+    top: 120px;
     z-index: 99;
 }
 
@@ -1043,6 +1082,46 @@ footer {
     font-size: 1.1rem;
     width: 1.5rem;
     text-align: center;
+}
+
+/* Accordion styles */
+.accordion-header {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.accordion-header:hover {
+    color: var(--primary-color);
+}
+
+.accordion-icon {
+    margin-left: 8px;
+    transition: transform 0.3s ease;
+    font-size: 0.8rem;
+}
+
+.accordion-header.active .accordion-icon {
+    transform: rotate(180deg);
+}
+
+.accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    padding-left: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.accordion-content.active {
+    max-height: 500px; /* Adjust as needed */
+}
+
+.accordion-content li {
+    margin-left: 1.5rem;
 }
 
 .footer-bottom {

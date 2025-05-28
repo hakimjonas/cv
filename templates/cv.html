@@ -10,6 +10,10 @@
     <title>{{ cv.personal_info.name }} - CV</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="img/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="img/icon-512.png">
+    <link rel="apple-touch-icon" href="img/icon-192.png">
 </head>
 <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -35,9 +39,11 @@
                 <div class="theme-switch-wrapper">
                     <label class="theme-switch" for="checkbox" title="Toggle dark/light theme">
                         <input type="checkbox" id="checkbox" />
-                        <div class="slider round"></div>
+                        <div class="slider round">
+                            <i class="fas fa-sun theme-icon light-icon"></i>
+                            <i class="fas fa-moon theme-icon dark-icon"></i>
+                        </div>
                     </label>
-                    <em id="theme-label">Light Mode</em>
                 </div>
             </nav>
         </div>
@@ -298,7 +304,6 @@
 
         // Theme switcher functionality
         const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
-        const themeLabel = document.getElementById('theme-label');
 
         // Function to set a theme
         function setTheme(theme) {
@@ -307,10 +312,8 @@
 
             if (theme === 'theme-dark') {
                 toggleSwitch.checked = true;
-                themeLabel.textContent = 'Dark Mode';
             } else {
                 toggleSwitch.checked = false;
-                themeLabel.textContent = 'Light Mode';
             }
         }
 
@@ -329,6 +332,21 @@
                 setTheme('theme-light');
             }
         });
+    </script>
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('Service Worker registered with scope:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.error('Service Worker registration failed:', error);
+                    });
+            });
+        }
     </script>
 </body>
 </html>

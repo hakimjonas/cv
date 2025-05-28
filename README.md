@@ -57,22 +57,96 @@ This project generates a personal website with a dynamically generated CV in bot
    cargo build --release
    ```
 
+> **For Developers**: See [README-dev.md](README-dev.md) for detailed development guidelines, including functional programming principles and best practices.
+
 ## Usage
 
 1. Customize your CV data in `data/cv_data.json`
 
 2. Generate your website:
+
+   For development:
+   ```bash
+   cargo run
+   ```
+
+   For production:
    ```bash
    cargo run --release
    ```
 
-3. The generated files will be in the `dist/` directory:
+3. The generated files will be in:
+   - Development build: `dist/` directory
+   - Production build: `release/` directory
+
+   Each directory contains:
    - `index.html`: The landing page
    - `cv.html`: The HTML version of your CV
    - `cv.pdf`: The PDF version of your CV
    - `style.css`: The CSS styles for the website
+   - Additional optimized assets and configuration files (in production build)
 
-4. Deploy the contents of the `dist/` directory to your web server or hosting service
+4. Deploy the contents of the `release/` directory to your web server or hosting service
+
+## Deployment
+
+The production build (created with `cargo run --release`) includes several optimizations and server configuration files:
+
+1. **Minified HTML, CSS, and JavaScript**: All text-based assets are minified to reduce file size
+2. **Gzipped versions**: Pre-compressed versions of files are created for faster delivery
+3. **Server configuration files**:
+   - `.htaccess` for Apache servers
+   - `web.config` for IIS servers
+   - `_headers` and `_redirects` for Netlify
+   - `robots.txt` for search engines
+   - `manifest.json` and `service-worker.js` for Progressive Web App (PWA) support
+
+### Deployment Options
+
+#### Option 1: Traditional Web Hosting
+
+1. Run `cargo run --release` to generate the production build
+2. Upload all contents of the `release/` directory to your web hosting service
+3. Ensure your server is configured to use the provided configuration files
+
+#### Option 2: GitHub Pages
+
+1. Create a GitHub repository for your website
+2. Add a GitHub Actions workflow to build and deploy your site:
+   ```yaml
+   name: Build and Deploy
+   on:
+     push:
+       branches: [ main ]
+   jobs:
+     build-and-deploy:
+       runs-on: ubuntu-latest
+       steps:
+         - uses: actions/checkout@v3
+         - name: Install Rust
+           uses: actions-rs/toolchain@v1
+           with:
+             toolchain: stable
+             override: true
+         - name: Install Typst
+           run: cargo install typst-cli
+         - name: Build site
+           run: cargo run --release
+         - name: Deploy to GitHub Pages
+           uses: JamesIves/github-pages-deploy-action@4.1.4
+           with:
+             branch: gh-pages
+             folder: release
+   ```
+
+#### Option 3: Netlify
+
+1. Connect your GitHub repository to Netlify
+2. Set the build command to:
+   ```
+   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && source $HOME/.cargo/env && cargo install typst-cli && cargo run --release
+   ```
+3. Set the publish directory to `release`
 
 ## Customization
 
@@ -166,7 +240,11 @@ This project can fetch your GitHub repositories and include them in your CV. To 
 - [anyhow](https://docs.rs/anyhow/): For error handling
 - [reqwest](https://github.com/seanmonstar/reqwest): For HTTP requests
 - [tokio](https://tokio.rs/): For async runtime
-- [typst-cli](https://github.com/typst/typst): For PDF generation
+- [git2](https://github.com/rust-lang/git2-rs): For Git configuration access
+- [flate2](https://github.com/rust-lang/flate2-rs): For Gzip compression
+- [minify-html](https://github.com/wilsonzlin/minify-html): For HTML minification
+- [regex](https://github.com/rust-lang/regex): For CSS minification
+- [typst-cli](https://github.com/typst/typst): For PDF generation (external dependency)
 
 ## License
 

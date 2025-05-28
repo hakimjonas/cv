@@ -12,7 +12,6 @@ anyhow = "1.0"
 reqwest = { version = "0.12.15", features = ["json", "blocking"] }
 tokio = { version = "1", features = ["full"] }
 git2 = "0.20.2"
-flate2 = "1.0.28"
-lightningcss = { version = "1.0.0-alpha.66" }
+flate2 = "1.1.1"
 minify-html = "0.16.4"
-regex = "1.10.3"
+regex = "1.11.1"

@@ -48,7 +48,12 @@ pub struct Config {
 impl Default for Config {
     /// Creates a default configuration
     fn default() -> Self {
-        let output_dir = PathBuf::from("dist");
+        // Use different output directories for debug and release builds
+        let output_dir = if cfg!(debug_assertions) {
+            PathBuf::from("dist")
+        } else {
+            PathBuf::from("release")
+        };
 
         Self {
             data_path: PathBuf::from("data/cv_data.json"),

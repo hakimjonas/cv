@@ -76,9 +76,7 @@ pub fn generate_experience_section(cv: &Cv) -> String {
         .pipe(|s| append_lines(s, "== Professional Experience"));
 
     // Use fold to accumulate experience entries
-    cv.experiences
-        .iter()
-        .fold(base, |acc, exp| append_experience_entry(acc, exp))
+    cv.experiences.iter().fold(base, append_experience_entry)
 }
 
 /// Generates Typst markup for a single experience entry
@@ -145,9 +143,7 @@ pub fn generate_projects_section(cv: &Cv) -> String {
         let base = String::new().pipe(|s| append_lines(s, "= Projects"));
 
         // Use fold to accumulate project entries
-        cv.projects
-            .iter()
-            .fold(base, |acc, project| append_project_entry(acc, project))
+        cv.projects.iter().fold(base, append_project_entry)
     } else {
         String::new()
     }
@@ -227,9 +223,7 @@ pub fn generate_skills_section(cv: &Cv) -> String {
             .pipe(|s| append_lines(s, "== Key Skills"));
 
         // Use fold to accumulate skill categories
-        cv.skill_categories
-            .iter()
-            .fold(base, |acc, category| append_skill_category(acc, category))
+        cv.skill_categories.iter().fold(base, append_skill_category)
     } else {
         String::new()
     }
@@ -301,9 +295,7 @@ pub fn generate_education_section(cv: &Cv) -> String {
             .pipe(|s| append_lines(s, "== Education"));
 
         // Use fold to accumulate education entries
-        cv.education
-            .iter()
-            .fold(header, |acc, edu| append_education_entry(acc, edu))
+        cv.education.iter().fold(header, append_education_entry)
     } else {
         base
     };

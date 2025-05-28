@@ -1,0 +1,8 @@
+# Redirect HTTP to HTTPS
+http://:hostname/* https://:hostname/:splat 301!
+
+# Handle 404 errors
+/* /index.html 404
+
+# Redirect www to non-www
+https://www.:hostname/* https://:hostname/:splat 301!

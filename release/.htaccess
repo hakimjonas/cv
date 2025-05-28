@@ -1,0 +1,71 @@
+# Enable gzip compression
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/javascript application/json
+  BrowserMatch ^Mozilla/4 gzip-only-text/html
+  BrowserMatch ^Mozilla/4\.0[678] no-gzip
+  BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
+</IfModule>
+
+# Serve pre-compressed files if available
+<IfModule mod_headers.c>
+  <FilesMatch "\.(js|css|html)$">
+    RewriteEngine On
+    RewriteCond %{HTTP:Accept-Encoding} gzip
+    RewriteCond %{REQUEST_FILENAME}.gz -f
+    RewriteRule ^(.*)$ $1.gz [L]
+
+    # Set proper content type for compressed files
+    <Files *.js.gz>
+      ForceType application/javascript
+      Header set Content-Encoding gzip
+    </Files>
+    <Files *.css.gz>
+      ForceType text/css
+      Header set Content-Encoding gzip
+    </Files>
+    <Files *.html.gz>
+      ForceType text/html
+      Header set Content-Encoding gzip
+    </Files>
+  </FilesMatch>
+</IfModule>
+
+# Set cache headers
+<IfModule mod_expires.c>
+  ExpiresActive On
+
+  # Images
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/gif "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+
+  # CSS and JavaScript
+  ExpiresByType text/css "access plus 1 month"
+  ExpiresByType application/javascript "access plus 1 month"
+
+  # HTML - shorter cache time
+  ExpiresByType text/html "access plus 1 day"
+
+  # Fonts
+  ExpiresByType font/ttf "access plus 1 year"
+  ExpiresByType font/otf "access plus 1 year"
+  ExpiresByType font/woff "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+
+  # Default
+  ExpiresDefault "access plus 1 month"
+</IfModule>
+
+# Add security headers
+<IfModule mod_headers.c>
+  # Protect against XSS attacks
+  Header set X-XSS-Protection "1; mode=block"
+
+  # Prevent MIME-type sniffing
+  Header set X-Content-Type-Options "nosniff"
+
+  # Referrer policy
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>

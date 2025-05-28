@@ -1,0 +1,45 @@
+# Global headers for all pages
+/*
+  X-Content-Type-Options: nosniff
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
+  Content-Security-Policy: default-src 'self'; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; script-src 'self' 'unsafe-inline'; font-src 'self' https://cdnjs.cloudflare.com; img-src 'self' data: https://avatars.githubusercontent.com;
+
+# Cache control for HTML files - shorter cache time
+/*.html
+  Cache-Control: public, max-age=86400
+
+# Cache control for CSS and JS files
+/*.css
+  Cache-Control: public, max-age=2592000
+/*.js
+  Cache-Control: public, max-age=2592000
+
+# Cache control for images and fonts - longer cache time
+/*.jpg
+  Cache-Control: public, max-age=31536000
+/*.jpeg
+  Cache-Control: public, max-age=31536000
+/*.png
+  Cache-Control: public, max-age=31536000
+/*.gif
+  Cache-Control: public, max-age=31536000
+/*.svg
+  Cache-Control: public, max-age=31536000
+/*.webp
+  Cache-Control: public, max-age=31536000
+/*.woff
+  Cache-Control: public, max-age=31536000
+/*.woff2
+  Cache-Control: public, max-age=31536000
+/*.ttf
+  Cache-Control: public, max-age=31536000
+/*.otf
+  Cache-Control: public, max-age=31536000
+
+# Brotli and Gzip pre-compressed files
+/*.br
+  Content-Encoding: br
+/*.gz
+  Content-Encoding: gzip

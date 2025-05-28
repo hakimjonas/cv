@@ -264,7 +264,7 @@ fn minify_html_content(content: &str) -> Result<Vec<u8>> {
     // Configure HTML minification
     let cfg = Cfg {
         minify_css: true,
-        minify_js: true,
+        minify_js: false, // Disabled JS minification to avoid panic in minify-js
         ..Cfg::default()
     };
 

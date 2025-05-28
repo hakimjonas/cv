@@ -794,7 +794,7 @@ section:nth-child(even) {
 /* Floating Download Button */
 .floating-download {
     position: fixed;
-    left: calc(50% + 500px);
+    right: 2rem;
     top: 120px;
     z-index: 99;
 }
@@ -1383,11 +1383,9 @@ a:focus, button:focus, input:focus, textarea:focus, select:focus,
 @media (max-width: 768px) {
     .floating-download {
         position: fixed;
-        left: auto;
         right: 1rem;
         bottom: 1rem;
         top: auto;
-        transform: none;
     }
 
     header .container {

@@ -1,0 +1,45 @@
+<!-- Experience section component -->
+{% if !cv.experiences.is_empty() %}
+<div class="cv-section">
+    <h2 class="cv-section-title">Professional Experience</h2>
+    {% for exp in cv.experiences %}
+    <div class="experience-item">
+        <div class="item-header">
+            <div>
+                <h3 class="item-title">{{ exp.position }}</h3>
+                <p class="item-subtitle">{{ exp.company }}
+                {% if exp.location.is_some() %}
+                 | {{ exp.location.as_ref().unwrap() }}
+                {% endif %}
+                </p>
+            </div>
+            <div class="item-date">
+                {{ exp.start_date }} - 
+                {% if exp.end_date.is_some() %}
+                    {{ exp.end_date.as_ref().unwrap() }}
+                {% else %}
+                    Present
+                {% endif %}
+            </div>
+        </div>
+        <p>{{ exp.description }}</p>
+
+        {% if !exp.achievements.is_empty() %}
+        <ul>
+            {% for achievement in exp.achievements %}
+            <li>{{ achievement }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        {% if !exp.technologies.is_empty() %}
+        <div class="technologies">
+            {% for tech in exp.technologies %}
+            <span class="tech-tag">{{ tech }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}

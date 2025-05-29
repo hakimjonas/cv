@@ -61,6 +61,12 @@ pub struct Project {
     pub stars: Option<u32>,
     pub owner_username: Option<String>,
     pub owner_avatar: Option<String>,
+    #[serde(skip)]
+    pub language: Option<String>,
+    #[serde(skip)]
+    pub language_icon: Option<String>,
+    #[serde(skip)]
+    pub display_name: Option<String>,
 }
 
 /// Represents GitHub sources to fetch projects from

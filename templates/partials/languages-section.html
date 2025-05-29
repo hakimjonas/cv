@@ -1,0 +1,11 @@
+<!-- Languages section component -->
+{% if !cv.languages.is_empty() %}
+<div class="cv-section">
+    <h2 class="cv-section-title">Languages</h2>
+    <ul>
+        {% for entry in cv.languages %}
+        <li><strong>{{ entry.0 }}:</strong> {{ entry.1 }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}

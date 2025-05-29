@@ -3,4 +3,5 @@ pub mod config;
 pub mod cv_data;
 pub mod github;
 pub mod html_generator;
+pub mod language_icons;
 pub mod typst_generator;

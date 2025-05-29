@@ -1,13 +1,20 @@
 use anyhow::{Context, Result};
 use im::Vector;
+use once_cell::sync::Lazy;
 use reqwest::header::{AUTHORIZATION, HeaderMap, HeaderValue, USER_AGENT};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
+use std::sync::Arc;
 use std::time::{Duration, SystemTime};
+use tokio::runtime::Runtime;
 
 use crate::config;
 use crate::cv_data::{GitHubSource, Project};
+
+// Shared Tokio runtime for all synchronous API calls
+static RUNTIME: Lazy<Arc<Runtime>> =
+    Lazy::new(|| Arc::new(Runtime::new().expect("Failed to create Tokio runtime")));
 
 /// Creates headers for GitHub API requests
 ///
@@ -261,13 +268,8 @@ fn convert_repos_to_projects(repos: Vec<GitHubRepo>) -> Vector<Project> {
                 (None, None)
             };
 
-            // Convert HTTPS URL to SSH URL
-            let ssh_url = if let Some(ref owner) = repo.owner {
-                format!("git@github.com:{}/{}.git", owner.login, repo.name)
-            } else {
-                // Fallback to HTTPS URL if the owner is not available
-                repo.html_url.clone()
-            };
+            // Use the public HTTPS URL directly
+            let repo_url = repo.html_url.clone();
 
             Project {
                 name,
@@ -275,12 +277,15 @@ fn convert_repos_to_projects(repos: Vec<GitHubRepo>) -> Vector<Project> {
                     .description
                     .unwrap_or_else(|| "No description provided.".to_string()),
                 url: None,
-                repository: Some(ssh_url),
+                repository: Some(repo_url),
                 technologies,
                 highlights: Vector::new(), // GitHub API doesn't provide highlights
                 stars: Some(repo.stargazers_count),
                 owner_username,
                 owner_avatar,
+                language: None,
+                language_icon: None,
+                display_name: None,
             }
         })
         .collect::<Vector<_>>()
@@ -298,11 +303,8 @@ fn convert_repos_to_projects(repos: Vec<GitHubRepo>) -> Vector<Project> {
 /// A Result containing a Vector of Project structs
 #[allow(dead_code)]
 pub fn fetch_github_projects_sync(username: &str, token: Option<&str>) -> Result<Vector<Project>> {
-    // Create a runtime for the async function
-    let rt = tokio::runtime::Runtime::new().context("Failed to create Tokio runtime")?;
-
-    // Run the async function in the runtime
-    rt.block_on(fetch_github_projects(username, token))
+    // Use the shared runtime to run the async function
+    RUNTIME.block_on(fetch_github_projects(username, token))
 }
 
 /// Synchronous version of fetch_github_org_projects for use in non-async contexts
@@ -320,11 +322,8 @@ pub fn fetch_github_org_projects_sync(
     org_name: &str,
     token: Option<&str>,
 ) -> Result<Vector<Project>> {
-    // Create a runtime for the async function
-    let rt = tokio::runtime::Runtime::new().context("Failed to create Tokio runtime")?;
-
-    // Run the async function in the runtime
-    rt.block_on(fetch_github_org_projects(org_name, token))
+    // Use the shared runtime to run the async function
+    RUNTIME.block_on(fetch_github_org_projects(org_name, token))
 }
 
 /// Synchronous version of fetch_all_github_projects for use in non-async contexts
@@ -538,11 +537,8 @@ pub fn fetch_projects_from_sources_sync(
         }
     }
 
-    // Create a runtime for the async function
-    let rt = tokio::runtime::Runtime::new().context("Failed to create Tokio runtime")?;
-
-    // Run the async function in the runtime
-    let projects = rt.block_on(fetch_projects_from_sources(sources, token))?;
+    // Use the shared runtime to run the async function
+    let projects = RUNTIME.block_on(fetch_projects_from_sources(sources, token))?;
 
     // Write the results to the cache
     if let Err(e) = write_github_cache(cache_path, &projects) {

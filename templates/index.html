@@ -10,6 +10,7 @@
     <title>{{ cv.personal_info.name }} - Blog & Portfolio</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.15.1/devicon.min.css">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" sizes="192x192" href="img/icon-192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="img/icon-512.png">
@@ -18,29 +19,7 @@
 <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
 
-    <header>
-        <div class="container">
-            <a href="index.html" class="logo">
-                <h1>{{ cv.personal_info.name }}</h1>
-            </a>
-            <nav aria-label="Main navigation">
-                <ul>
-                    <li><a href="index.html" aria-current="page">Blog</a></li>
-                    <li><a href="cv.html">CV</a></li>
-                    <li><a href="#projects">Projects</a></li>
-                </ul>
-                <div class="theme-switch-wrapper">
-                    <label class="theme-switch" for="checkbox" title="Toggle dark/light theme">
-                        <input type="checkbox" id="checkbox" />
-                        <div class="slider round">
-                            <i class="fas fa-sun theme-icon light-icon"></i>
-                            <i class="fas fa-moon theme-icon dark-icon"></i>
-                        </div>
-                    </label>
-                </div>
-            </nav>
-        </div>
-    </header>
+    {% include "partials/header.html" %}
 
     <main id="main-content">
         <section class="intro-section" id="introduction">
@@ -59,6 +38,72 @@
                         </p>
                     </div>
                 </article>
+            </div>
+        </section>
+
+        <section class="featured-project">
+            <div class="container">
+                <h2 class="section-title">Featured Project</h2>
+                {% if !cv.projects.is_empty() %}
+                    {% set project = cv.projects[0] %}
+                    <div class="github-card featured">
+                        <div class="card-header{% if project.language.is_some() %} {{ project.language.as_ref().unwrap() }}{% endif %}">
+                            <h3 class="project-title">
+                                {% if project.language_icon.is_some() %}
+                                <span class="{{ project.language.as_ref().unwrap() }}-icon">{{ project.language_icon.as_ref().unwrap() }}</span>
+                                {% endif %}
+                                {% if project.display_name.is_some() %}
+                                {{ project.display_name.as_ref().unwrap() }}
+                                {% else %}
+                                {{ project.name }}
+                                {% endif %}
+                            </h3>
+                            {% if project.stars.is_some() %}
+                            <div class="stars">
+                                <i class="fas fa-star"></i> {{ project.stars.unwrap() }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <p class="repo-description">{{ project.description }}</p>
+
+                        {% if !project.highlights.is_empty() %}
+                        <div class="project-highlights">
+                            <h4>Highlights:</h4>
+                            <ul>
+                                {% for highlight in project.highlights %}
+                                <li>{{ highlight }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+
+                        {% if !project.technologies.is_empty() %}
+                        <div class="technologies">
+                            {% for tech in project.technologies %}
+                            <span class="tech-tag">{{ tech }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <div class="project-links">
+                            {% if project.repository.is_some() %}
+                            <a href="{{ project.repository.as_ref().unwrap() }}" class="project-link" target="_blank" rel="noopener">
+                                <i class="fab fa-github"></i> Repository
+                            </a>
+                            {% endif %}
+                            {% if project.url.is_some() %}
+                            <a href="{{ project.url.as_ref().unwrap() }}" class="project-link" target="_blank" rel="noopener">
+                                <i class="fas fa-external-link-alt"></i> Live Demo
+                            </a>
+                            {% endif %}
+                            <a href="projects.html" class="project-link">
+                                <i class="fas fa-th"></i> View All Projects
+                            </a>
+                        </div>
+                    </div>
+                {% else %}
+                    <p class="no-projects">No projects found.</p>
+                {% endif %}
             </div>
         </section>
 
@@ -135,8 +180,17 @@
                     {% if !cv.projects.is_empty() %}
                         {% for project in cv.projects %}
                         <div class="github-card">
-                            <div class="card-header">
-                                <h3 class="project-title">{{ project.name }}</h3>
+                            <div class="card-header{% if project.language.is_some() %} {{ project.language.as_ref().unwrap() }}{% endif %}">
+                                <h3 class="project-title">
+                                    {% if project.language_icon.is_some() %}
+                                    <span class="{{ project.language.as_ref().unwrap() }}-icon">{{ project.language_icon.as_ref().unwrap() }}</span>
+                                    {% endif %}
+                                    {% if project.display_name.is_some() %}
+                                    {{ project.display_name.as_ref().unwrap() }}
+                                    {% else %}
+                                    {{ project.name }}
+                                    {% endif %}
+                                </h3>
                                 {% if project.stars.is_some() %}
                                 <div class="stars">
                                     <i class="fas fa-star"></i> {{ project.stars.unwrap() }}
@@ -212,56 +266,7 @@
         </section>
     </main>
 
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-nav">
-                    <h3>Navigation</h3>
-                    <ul>
-                        <li><a href="index.html">Home</a></li>
-                        <li><a href="cv.html">CV</a></li>
-                        <li><a href="#blog">Blog</a></li>
-                        <li><a href="#projects">Projects</a></li>
-                        <li><a href="#contact">Contact</a></li>
-                    </ul>
-                </div>
-                <div class="footer-social">
-                    <h3>Connect</h3>
-                    <div class="social-links">
-                        {% for entry in cv.personal_info.social_links %}
-                        <a href="{{ entry.1 }}" class="social-link" target="_blank" rel="noopener" aria-label="{{ entry.0 }} profile">
-                            <i class="fab fa-{{ entry.0 | lower }}"></i>
-                        </a>
-                        {% endfor %}
-                    </div>
-                </div>
-                <div class="footer-tech">
-                    <h3>Built With</h3>
-                    <ul class="tech-list">
-                        <li><i class="fab fa-rust"></i> <a href="https://www.rust-lang.org/" target="_blank" rel="noopener">Rust</a> - Static site generation</li>
-                        <li><i class="fas fa-file-pdf"></i> <a href="https://typst.app/" target="_blank" rel="noopener">Typst</a> - PDF resume creation</li>
-                        <li>
-                            <div class="accordion-header">
-                                <i class="fas fa-box"></i> Dependencies <i class="fas fa-chevron-down accordion-icon"></i>
-                            </div>
-                            <ul class="accordion-content" style="max-height: 0;">
-                                <li><i class="fas fa-cube"></i> <a href="https://serde.rs/" target="_blank" rel="noopener">serde</a> (v1.0) - Serialization framework</li>
-                                <li><i class="fas fa-cube"></i> <a href="https://github.com/serde-rs/json" target="_blank" rel="noopener">serde_json</a> (v1.0) - JSON support</li>
-                                <li><i class="fas fa-cube"></i> <a href="https://github.com/djc/askama" target="_blank" rel="noopener">askama</a> (v0.14.0) - Templating engine</li>
-                                <li><i class="fas fa-cube"></i> <a href="https://github.com/bodil/im-rs" target="_blank" rel="noopener">im</a> (v15.1) - Immutable data structures</li>
-                                <li><i class="fas fa-cube"></i> <a href="https://github.com/dtolnay/anyhow" target="_blank" rel="noopener">anyhow</a> (v1.0) - Error handling</li>
-                                <li><i class="fas fa-cube"></i> <a href="https://github.com/seanmonstar/reqwest" target="_blank" rel="noopener">reqwest</a> (v0.12.15) - HTTP client</li>
-                                <li><i class="fas fa-cube"></i> <a href="https://tokio.rs/" target="_blank" rel="noopener">tokio</a> (v1) - Async runtime</li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; <span id="current-year">2023</span> {{ cv.personal_info.name }}. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
+    {% include "partials/footer.html" %}
 
     <script>
         // Update the current year
@@ -306,70 +311,25 @@
             }
         });
 
-        // No need to fetch GitHub projects as they are now rendered server-side from CV data
-
-        // Update language icons for GitHub cards
+        // Initialize accordion functionality
         document.addEventListener('DOMContentLoaded', function() {
-            const githubCards = document.querySelectorAll('.github-card');
+            const accordionHeader = document.querySelector('.accordion-header');
+            if (accordionHeader) {
+                // Toggle accordion on click
+                accordionHeader.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                    const content = this.nextElementSibling;
+                    content.classList.toggle('active');
 
-            githubCards.forEach(card => {
-                const header = card.querySelector('.card-header');
-                const title = card.querySelector('.project-title').textContent.toLowerCase();
-
-                // Add language class to header based on project title or technologies
-                if (title.includes('scala')) {
-                    header.classList.add('scala');
-
-                    // Add Scala icon
-                    const titleElement = card.querySelector('.project-title');
-                    if (titleElement && !titleElement.querySelector('i')) {
-                        const icon = document.createElement('i');
-                        icon.className = 'fab fa-java'; // Using Java icon for Scala as it's the closest in Font Awesome
-                        titleElement.prepend(icon);
-                        titleElement.insertBefore(document.createTextNode(' '), titleElement.childNodes[1]);
-                    }
-                } else if (title.includes('rust')) {
-                    header.classList.add('rust');
-
-                    // Add Rust icon
-                    const titleElement = card.querySelector('.project-title');
-                    if (titleElement && !titleElement.querySelector('i')) {
-                        const icon = document.createElement('i');
-                        icon.className = 'fab fa-rust';
-                        titleElement.prepend(icon);
-                        titleElement.insertBefore(document.createTextNode(' '), titleElement.childNodes[1]);
-                    }
-                }
-
-                // Check technologies for language hints
-                const techTags = card.querySelectorAll('.tech-tag');
-                techTags.forEach(tag => {
-                    const tagText = tag.textContent.toLowerCase();
-                    if (tagText === 'scala' || tagText === 'scala3') {
-                        header.classList.add('scala');
-                    } else if (tagText === 'rust') {
-                        header.classList.add('rust');
+                    if (content.classList.contains('active')) {
+                        // Open the accordion
+                        content.style.maxHeight = content.scrollHeight + 'px';
+                    } else {
+                        // Close the accordion
+                        content.style.maxHeight = '0';
                     }
                 });
-            });
-
-            // Initialize accordion functionality
-            const accordionHeader = document.querySelector('.accordion-header');
-
-            // Toggle accordion on click
-            accordionHeader.addEventListener('click', function() {
-                this.classList.toggle('active');
-                const content = this.nextElementSibling;
-                content.classList.toggle('active');
-
-                if (content.classList.contains('active')) {
-                    // Open the accordion
-                    content.style.maxHeight = content.scrollHeight + 'px';
-                } else {
-                    // Close the accordion
-                    content.style.maxHeight = '0';
-                }
-            });
+            }
         });
     </script>
 

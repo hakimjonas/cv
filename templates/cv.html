@@ -19,35 +19,12 @@
     <a href="#main-content" class="skip-link">Skip to main content</a>
 
     <div class="floating-download">
-        <a href="cv.pdf" class="btn primary" download aria-label="Download CV as PDF">
+        <a href="cv.pdf" class="btn btn--primary" download aria-label="Download CV as PDF">
             <i class="fas fa-download"></i> Download CV (PDF)
         </a>
     </div>
 
-    <header>
-        <div class="container">
-            <a href="index.html" class="logo">
-                <h1>{{ cv.personal_info.name }}</h1>
-            </a>
-            <nav aria-label="Main navigation">
-                <ul>
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="cv.html" aria-current="page">CV</a></li>
-                    <li><a href="index.html#blog">Blog</a></li>
-                    <li><a href="index.html#projects">Projects</a></li>
-                </ul>
-                <div class="theme-switch-wrapper">
-                    <label class="theme-switch" for="checkbox" title="Toggle dark/light theme">
-                        <input type="checkbox" id="checkbox" />
-                        <div class="slider round">
-                            <i class="fas fa-sun theme-icon light-icon"></i>
-                            <i class="fas fa-moon theme-icon dark-icon"></i>
-                        </div>
-                    </label>
-                </div>
-            </nav>
-        </div>
-    </header>
+    {% include "partials/header.html" %}
 
     <main id="main-content">
         <div class="cv-container">
@@ -83,7 +60,8 @@
                     {% endfor %}
                 </div>
 
-                <div class="summary">
+                <div class="cv-section">
+                    <h2 class="cv-section-title">Profile</h2>
                     <p>{{ cv.personal_info.summary }}</p>
                 </div>
 
@@ -260,43 +238,7 @@
         </div>
     </main>
 
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-nav">
-                    <h3>Navigation</h3>
-                    <ul>
-                        <li><a href="index.html">Home</a></li>
-                        <li><a href="cv.html">CV</a></li>
-                        <li><a href="index.html#blog">Blog</a></li>
-                        <li><a href="index.html#projects">Projects</a></li>
-                        <li><a href="index.html#contact">Contact</a></li>
-                    </ul>
-                </div>
-                <div class="footer-social">
-                    <h3>Connect</h3>
-                    <div class="social-links">
-                        {% for entry in cv.personal_info.social_links %}
-                        <a href="{{ entry.1 }}" class="social-link" target="_blank" rel="noopener" aria-label="{{ entry.0 }} profile">
-                            <i class="fab fa-{{ entry.0 | lower }}"></i>
-                        </a>
-                        {% endfor %}
-                    </div>
-                </div>
-                <div class="footer-tech">
-                    <h3>Built With</h3>
-                    <ul class="tech-list">
-                        <li><i class="fab fa-rust"></i> Rust - Static site generation</li>
-                        <li><i class="fas fa-file-pdf"></i> Typst - PDF resume creation</li>
-                        <li><i class="fas fa-box"></i> Dependencies - im, serde, tera</li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; <span id="current-year">2023</span> {{ cv.personal_info.name }}. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
+    {% include "partials/footer.html" %}
 
     <script>
         // Update the current year

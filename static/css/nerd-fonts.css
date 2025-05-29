@@ -1,0 +1,51 @@
+/* Nerd Fonts CSS */
+@font-face {
+    font-family: 'FiraCode Nerd Font';
+    src: url('https://cdn.jsdelivr.net/gh/mshaugh/nerdfont-webfonts@v3.3.0/build/woff2/FiraCode-Regular-Nerd-Font-Complete.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Ensure icons are displayed correctly */
+[class$="-icon"] {
+    font-family: 'FiraCode Nerd Font', monospace !important;
+    font-weight: normal;
+    font-style: normal;
+    font-size: 1.2em;
+    line-height: 1;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 0.2em;
+    /* Ensure the icon is visible */
+    opacity: 1;
+    /* Add a slight shadow to make the icon more visible */
+    text-shadow: 0 0 1px rgba(0, 0, 0, 0.2);
+}
+
+/* Language-specific icons */
+.rust-icon::before {
+    content: "\e7a8"; /* Rust icon */
+}
+
+.javascript-icon::before {
+    content: "\e781"; /* JavaScript icon */
+}
+
+.typescript-icon::before {
+    content: "\e628"; /* TypeScript icon */
+}
+
+.python-icon::before {
+    content: "\e73c"; /* Python icon */
+}
+
+.scala-icon::before {
+    content: "\e737"; /* Scala icon */
+}
+
+.java-icon::before {
+    content: "\e738"; /* Java icon */
+}
+
+/* Add more language-specific icons as needed */

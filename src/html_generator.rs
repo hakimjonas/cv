@@ -3,9 +3,7 @@ use askama::Template;
 use flate2::Compression;
 use flate2::write::GzEncoder;
 use im::Vector;
-// Removed unused imports from lightningcss
 use minify_html::{Cfg, minify};
-// Removed unused import of std::env
 use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -26,6 +24,13 @@ struct IndexTemplate<'a> {
     cv: &'a Cv,
 }
 
+/// Template for the projects HTML page
+#[derive(Template)]
+#[template(path = "projects.html")]
+struct ProjectsTemplate<'a> {
+    cv: &'a Cv,
+}
+
 /// Generate HTML from CV data and save it to the specified path
 ///
 /// # Arguments
@@ -40,16 +45,28 @@ pub fn generate_html(cv: &Cv, output_path: &str) -> Result<()> {
     // Generate CV HTML
     generate_cv_html(cv, output_path)?;
 
-    // Generate index HTML
-    let index_path = Path::new(output_path)
+    // Get parent directory for other HTML files
+    let parent_dir = Path::new(output_path)
         .parent()
-        .context("Failed to get parent directory")?
+        .context("Failed to get parent directory")?;
+
+    // Generate index HTML
+    let index_path = parent_dir
         .join("index.html")
         .to_str()
         .context("Failed to convert path to string")?
         .to_string();
 
     generate_index_html(cv, &index_path)?;
+
+    // Generate projects HTML
+    let projects_path = parent_dir
+        .join("projects.html")
+        .to_str()
+        .context("Failed to convert path to string")?
+        .to_string();
+
+    generate_projects_html(cv, &projects_path)?;
 
     // In release mode, generate server configuration files
     if !cfg!(debug_assertions) {
@@ -161,6 +178,32 @@ fn generate_index_html(cv: &Cv, output_path: &str) -> Result<()> {
     let html = template
         .render()
         .context("Failed to render index HTML template")?;
+
+    // Ensure the output directory exists and write the HTML
+    ensure_parent_dir_exists(output_path)?;
+    write_file(output_path, &html)?;
+
+    Ok(())
+}
+
+/// Generate projects HTML from CV data and save it to the specified path
+///
+/// # Arguments
+///
+/// * `cv` - The CV data to generate HTML from
+/// * `output_path` - Path where the HTML will be written
+///
+/// # Returns
+///
+/// A Result indicating success or failure
+fn generate_projects_html(cv: &Cv, output_path: &str) -> Result<()> {
+    // Create the template with the CV data
+    let template = ProjectsTemplate { cv };
+
+    // Render the template to HTML
+    let html = template
+        .render()
+        .context("Failed to render projects HTML template")?;
 
     // Ensure the output directory exists and write the HTML
     ensure_parent_dir_exists(output_path)?;

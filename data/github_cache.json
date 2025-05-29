@@ -3,7 +3,7 @@
     "name": "valar - Scala",
     "description": "Valar: Type-safe validation for Scala 3 with boilerplate-free derivation via macros. Features error accumulation and fail-fast modes.",
     "url": null,
-    "repository": "git@github.com:hakimjonas/valar.git",
+    "repository": "https://github.com/hakimjonas/valar",
     "technologies": [
       "Scala",
       "data-validation",
@@ -23,7 +23,7 @@
     "name": "fin - Rust",
     "description": "Finë is a simple, GTK4-based session transition tool for Linux desktops—built in Rust with a functional, modular design. ",
     "url": null,
-    "repository": "git@github.com:hakimjonas/fin.git",
+    "repository": "https://github.com/hakimjonas/fin",
     "technologies": [
       "Rust"
     ],
@@ -36,7 +36,7 @@
     "name": "spore-print (Fungal) - Rust",
     "description": "A Rust library providing a SporePrint trait and derive macro for immutable string representations.",
     "url": null,
-    "repository": "git@github.com:fungal-lang/spore-print.git",
+    "repository": "https://github.com/fungal-lang/spore-print",
     "technologies": [
       "Rust"
     ],

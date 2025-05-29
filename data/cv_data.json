@@ -151,7 +151,7 @@
       "name": "Functional Programming Language",
       "description": "A personal project exploring compiler and language design in Rust, focusing on type systems and parsing techniques.",
       "url": null,
-      "repository": "https://github.com/hakimghoula/fp-language",
+      "repository": "https://github.com/hakimjonas/fp-language",
       "technologies": [
         "Rust", "Compiler Design", "Type Systems", "Parsing"
       ],
@@ -165,7 +165,7 @@
       "name": "Personal CV Website",
       "description": "A responsive personal website built with Rust for content generation, HTML/CSS for the web interface, and Typst for PDF output.",
       "url": null,
-      "repository": "https://github.com/hakimghoula/cv-website",
+      "repository": "https://github.com/hakimjonas/cv-website",
       "technologies": [
         "Rust", "HTML/CSS", "Typst", "Functional Programming"
       ],

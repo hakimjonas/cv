@@ -1,8 +1,16 @@
+#[allow(dead_code)]
+mod asset_processor;
 mod config;
+mod credentials;
 mod cv_data;
+mod db;
+#[allow(dead_code)]
 mod git_config;
 mod github;
 mod html_generator;
+mod migrate;
+#[allow(dead_code)]
+mod runtime;
 mod typst_generator;
 
 use anyhow::{Context, Result};
@@ -25,10 +33,7 @@ impl Pipe for config::Config {}
 /// Prints a message about missing GitHub token and how to set it
 fn print_token_missing_message() {
     println!("No GitHub API token found. API requests will be subject to lower rate limits.");
-    println!(
-        "To avoid rate limiting, set the token in git config with: git config --global {} <your-token>",
-        git_config::GITHUB_TOKEN_KEY
-    );
+    println!("To avoid rate limiting, set the token with: cv --set-token <your-token>");
     println!("Or set the GITHUB_TOKEN environment variable.");
 }
 
@@ -43,15 +48,15 @@ fn get_token_from_env() -> Option<String> {
     })
 }
 
-/// Attempts to get a GitHub token from git config
+/// Attempts to get a GitHub token from secure storage
 ///
 /// # Returns
 ///
 /// A Result containing an Option with the token if found
-fn get_token_from_git_config() -> Result<Option<String>> {
-    git_config::read_github_token().map(|token_opt| {
+fn get_token_from_secure_storage() -> Result<Option<String>> {
+    credentials::get_github_token().map(|token_opt| {
         token_opt.inspect(|_token| {
-            println!("Using GitHub API token from git config for authentication");
+            println!("Using GitHub API token from secure storage for authentication");
         })
     })
 }
@@ -81,11 +86,11 @@ fn get_github_token(config: config::Config) -> config::Config {
             }
         }
         _ => {
-            // Not running in GitHub Actions, check git config
-            match get_token_from_git_config() {
+            // Not running in GitHub Actions, check secure storage
+            match get_token_from_secure_storage() {
                 Ok(Some(token)) => config.with_option(config::GITHUB_TOKEN_KEY, &token),
                 Ok(None) => {
-                    // Token not found in git config, try environment variable
+                    // Token not found in secure storage, try environment variable
                     match get_token_from_env() {
                         Some(token) => config.with_option(config::GITHUB_TOKEN_KEY, &token),
                         None => {
@@ -96,7 +101,7 @@ fn get_github_token(config: config::Config) -> config::Config {
                 }
                 Err(e) => {
                     println!(
-                        "Warning: Failed to read GitHub token from git config: {}",
+                        "Warning: Failed to read GitHub token from secure storage: {}",
                         e
                     );
                     // Fall back to environment variable
@@ -129,8 +134,8 @@ fn main() -> Result<()> {
     // Check for --set-token argument
     if args.len() >= 3 && args[1] == "--set-token" {
         let token = &args[2];
-        println!("Setting GitHub API token in git config...");
-        return match git_config::write_github_token(token) {
+        println!("Setting GitHub API token in secure storage...");
+        return match credentials::store_github_token(token) {
             Ok(_) => {
                 println!("GitHub API token set successfully.");
                 Ok(())
@@ -144,8 +149,8 @@ fn main() -> Result<()> {
 
     // Check for --remove-token argument
     if args.len() >= 2 && args[1] == "--remove-token" {
-        println!("Removing GitHub API token from git config...");
-        return match git_config::remove_github_token() {
+        println!("Removing GitHub API token from secure storage...");
+        return match credentials::remove_github_token() {
             Ok(_) => {
                 println!("GitHub API token removed successfully.");
                 Ok(())
@@ -157,24 +162,68 @@ fn main() -> Result<()> {
         };
     }
 
-    // Create configuration with custom cache path if specified
+    // Check for --migrate-to-db argument
+    if args.len() >= 2 && args[1] == "--migrate-to-db" {
+        let config = config::Config::default();
+        println!("Migrating CV data from JSON to SQLite database...");
+        return match migrate::migrate_json_to_sqlite(
+            &config.data_path_str()?,
+            &config.db_path_str()?,
+        ) {
+            Ok(_) => {
+                println!(
+                    "CV data migrated successfully to database: {}",
+                    config.db_path.display()
+                );
+                Ok(())
+            }
+            Err(e) => {
+                println!("Error migrating CV data to database: {}", e);
+                Err(e)
+            }
+        };
+    }
+
+    // Create configuration with custom paths and options
     let config = config::Config::default().pipe(|cfg| {
-        // Process arguments to find --cache-path
+        // Process arguments to find --cache-path and other options
         args.iter().enumerate().fold(cfg, |acc, (i, arg)| {
             if arg == "--cache-path" && i + 1 < args.len() {
                 let cache_path = std::path::PathBuf::from(&args[i + 1]);
                 println!("Using custom GitHub cache path: {}", cache_path.display());
                 acc.with_option(config::GITHUB_CACHE_KEY, &args[i + 1])
+            } else if arg == "--db-path" && i + 1 < args.len() {
+                let db_path = std::path::PathBuf::from(&args[i + 1]);
+                println!("Using custom database path: {}", db_path.display());
+                acc.with_option(config::DB_PATH_KEY, &args[i + 1])
+            } else if arg == "--public-data" && i + 1 < args.len() {
+                println!("Using custom public data settings: {}", args[i + 1]);
+                acc.with_option(config::PUBLIC_DATA_KEY, &args[i + 1])
+            } else if arg == "--db-storage" && i + 1 < args.len() {
+                println!("Using custom database storage settings: {}", args[i + 1]);
+                acc.with_option(config::DB_STORAGE_KEY, &args[i + 1])
             } else {
                 acc
             }
         })
     });
 
+    // Check if we should use the database
+    let use_db = args.iter().any(|arg| arg == "--use-db");
+
     // Load CV data
-    println!("Loading CV data from {}", config.data_path.display());
-    let mut cv =
-        cv_data::Cv::from_json(&config.data_path_str()?).context("Failed to load CV data")?;
+    let mut cv = if use_db {
+        println!(
+            "Loading CV data from database: {}",
+            config.db_path.display()
+        );
+        migrate::load_cv_from_sqlite(&config.db_path_str()?)
+            .context("Failed to load CV data from database")?
+    } else {
+        println!("Loading CV data from JSON: {}", config.data_path.display());
+        cv_data::Cv::from_json(&config.data_path_str()?)
+            .context("Failed to load CV data from JSON")?
+    };
 
     // Get GitHub token from available sources
     let config_with_token = get_github_token(config);
@@ -210,6 +259,53 @@ fn main() -> Result<()> {
             println!("Continuing with existing projects data");
         }
     }
+
+    // Load language icons and associate them with projects
+    println!("Loading language icons");
+    let icons_path = config_with_token
+        .data_path
+        .parent()
+        .unwrap()
+        .join("language_icons.json");
+    match cv::language_icons::LanguageIcons::from_json(icons_path.to_str().unwrap()) {
+        Ok(icons) => {
+            println!("Found {} language icons", icons.0.len());
+
+            // Associate language icons with projects
+            for project in cv.projects.iter_mut() {
+                // Extract project name without language suffix
+                let mut project_name = project.name.clone();
+                if let Some(lang_pos) = project_name.find(" - ") {
+                    project_name = project_name[..lang_pos].to_string();
+                }
+
+                // Set the display name
+                project.display_name = Some(project_name.clone());
+
+                // Detect language from project name or technologies
+                if let Some(lang) =
+                    icons.detect_language_vector(&project.name, &project.technologies)
+                {
+                    project.language = Some(lang.clone());
+                    project.language_icon = Some(icons.get_icon(&lang).to_string());
+                    println!("Detected language for project {}: {}", project_name, lang);
+                }
+            }
+        }
+        Err(e) => {
+            println!("Warning: Failed to load language icons: {}", e);
+            println!("Continuing without language icons");
+        }
+    }
+
+    // Filter CV data based on public_data configuration
+    println!("Filtering CV data based on public_data configuration");
+    let public_data_fields = config_with_token.public_data();
+    println!("Public data fields: {:?}", public_data_fields);
+
+    // Note: In a real implementation, we would create a filtered copy of the CV data
+    // based on the public_data configuration. For now, we'll just log the fields
+    // that would be included.
 
     // Generate HTML CV and index
     println!("Generating HTML files");

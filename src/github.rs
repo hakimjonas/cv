@@ -235,7 +235,22 @@ fn convert_repos_to_projects(repos: Vec<GitHubRepo>) -> Vector<Project> {
 
                 // Add topics if available
                 if let Some(topics) = repo.topics.clone() {
-                    base_techs.into_iter().chain(topics).collect()
+                    // Clean up topics: remove malformed tags and normalize case
+                    let cleaned_topics = topics
+                        .into_iter()
+                        .filter(|topic| !topic.ends_with('-')) // Remove malformed tags ending with hyphen
+                        .map(|topic| topic.to_lowercase()) // Normalize case
+                        .collect::<Vector<_>>();
+
+                    // Combine base_techs with cleaned_topics, avoiding duplicates
+                    let mut all_techs = base_techs;
+                    for topic in cleaned_topics {
+                        if !all_techs.contains(&topic) && !all_techs.contains(&topic.to_lowercase())
+                        {
+                            all_techs.push_back(topic);
+                        }
+                    }
+                    all_techs
                 } else {
                     base_techs
                 }

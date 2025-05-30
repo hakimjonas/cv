@@ -86,7 +86,22 @@ impl LanguageIcons {
 
         // Check project name for language hints, prioritizing longer language names
         for lang in &lang_keys {
-            if normalized_name.contains(lang) {
+            // Check if the language name is a whole word
+            if normalized_name == *lang {
+                return Some(lang.clone());
+            }
+
+            // Check if the language name is part of a compound word
+            // Only match if it's a word boundary or part of a compound word with hyphens/underscores
+            let lang_pattern = format!(
+                "\\b{}\\b|\\b{}-|-{}\\b|\\b{}_|_{}\\b",
+                lang, lang, lang, lang, lang
+            );
+            if regex::Regex::new(&lang_pattern)
+                .ok()
+                .filter(|re| re.is_match(&normalized_name))
+                .is_some()
+            {
                 return Some(lang.clone());
             }
         }
@@ -94,8 +109,23 @@ impl LanguageIcons {
         // Check technologies for language hints, prioritizing longer language names
         for tech in technologies {
             let normalized_tech = tech.to_lowercase();
+
+            // Direct match with a technology
+            if let Some(lang) = lang_keys.iter().find(|&lang| normalized_tech == *lang) {
+                return Some(lang.clone());
+            }
+
+            // Check if the technology contains a language name at word boundaries
             for lang in &lang_keys {
-                if normalized_tech == *lang || normalized_tech.contains(lang) {
+                let lang_pattern = format!(
+                    "\\b{}\\b|\\b{}-|-{}\\b|\\b{}_|_{}\\b",
+                    lang, lang, lang, lang, lang
+                );
+                if regex::Regex::new(&lang_pattern)
+                    .ok()
+                    .filter(|re| re.is_match(&normalized_tech))
+                    .is_some()
+                {
                     return Some(lang.clone());
                 }
             }

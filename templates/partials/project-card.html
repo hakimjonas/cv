@@ -35,38 +35,40 @@
   {% endif %}
 
   <div class="card-footer">
-    {% if project.owner_avatar.is_some() %}
-    <img src="{{ project.owner_avatar.as_ref().unwrap() }}" alt="Owner avatar" class="avatar" />
-    {% else %}
-    <div class="avatar-placeholder"></div>
-    {% endif %}
-
-    <div class="owner-info">
-      {% if project.owner_username.is_some() %}
-      <span class="owner-name">{{ project.owner_username.as_ref().unwrap() }}</span>
+    <div class="owner-section">
+      {% if project.owner_avatar.is_some() %}
+      <img src="{{ project.owner_avatar.as_ref().unwrap() }}" alt="Owner avatar" class="avatar" />
+      {% else %}
+      <div class="avatar-placeholder"></div>
       {% endif %}
-    </div>
-  </div>
 
-  <div class="project-links">
-    {% if project.repository.is_some() %}
-    <a
-      href="{{ project.repository.as_ref().unwrap() }}"
-      class="project-link"
-      target="_blank"
-      rel="noopener"
-    >
-      <i class="nf nf-github"></i> GitHub Repository
-    </a>
-    {% endif %} {% if project.url.is_some() %}
-    <a
-      href="{{ project.url.as_ref().unwrap() }}"
-      class="project-link"
-      target="_blank"
-      rel="noopener"
-    >
-      <i class="nf nf-external-link"></i> Live Demo
-    </a>
-    {% endif %} {% if extra_links is defined %} {{ extra_links | safe }} {% endif %}
+      <div class="owner-info">
+        {% if project.owner_username.is_some() %}
+        <span class="owner-name">{{ project.owner_username.as_ref().unwrap() }}</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="project-links">
+      {% if project.repository.is_some() %}
+      <a
+        href="{{ project.repository.as_ref().unwrap() }}"
+        class="project-link"
+        target="_blank"
+        rel="noopener"
+      >
+        <i class="nf nf-github"></i> GitHub Repository
+      </a>
+      {% endif %} {% if project.url.is_some() %}
+      <a
+        href="{{ project.url.as_ref().unwrap() }}"
+        class="project-link"
+        target="_blank"
+        rel="noopener"
+      >
+        <i class="nf nf-external-link"></i> Live Demo
+      </a>
+      {% endif %} {% if extra_links is defined %} {{ extra_links | safe }} {% endif %}
+    </div>
   </div>
 </div>

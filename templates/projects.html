@@ -11,15 +11,10 @@
     <div id="header-placeholder"></div>
 
     <main id="main-content">
-      <section class="projects-section" id="projects">
+      <section class="featured-projects" id="projects">
         <div class="container">
-          <h1 class="page-title">Personal Projects</h1>
-          <p class="section-intro">
-            Here are some of the projects I've worked on. Each project represents different skills
-            and technologies I've used.
-          </p>
-
-          <div class="projects-grid projects-grid--full-width">
+          <h2 class="section-title">Featured Personal Projects</h2>
+          <div class="projects-grid" id="featured-projects">
             {% if !cv.projects.is_empty() %} {% for project in cv.projects %} {% include
             "partials/project-card.html" %} {% endfor %} {% else %}
             <p class="no-projects">No projects found.</p>
@@ -31,7 +26,7 @@
 
     <div id="footer-placeholder"></div>
 
-    <script src="js/scripts.js"></script>
+    <!-- Module Loader for dynamic header and footer -->
     <script src="js/modules.js"></script>
   </body>
 </html>

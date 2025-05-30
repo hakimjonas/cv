@@ -209,6 +209,7 @@
   display: grid;
   grid-template-columns: repeat(1, 1fr);
   gap: var(--spacing-lg);
+  grid-auto-rows: 1fr;
 }
 
 /* Full-width projects grid for projects.html */

@@ -296,7 +296,7 @@ const ModuleLoader = (function() {
         // Replace repository link
         const repoHTML = projectData.repository ? 
             `<a href="${projectData.repository}" class="project-link" target="_blank" rel="noopener">
-                <i class="nf nf-github"></i>
+                <i class="nf nf-github"></i> GitHub Repository
             </a>` : '';
         processedHTML = processedHTML.replace('__PROJECT_REPOSITORY__', repoHTML);
 

@@ -18,7 +18,7 @@
   content: "★";
 }
 .nf-github::before {
-  content: "";
+  content: "󰊤";
 }
 .nf-external-link::before {
   content: "󰏌";
@@ -56,7 +56,7 @@
 
 /* Social media icons */
 .nf-linkedin::before {
-  content: "";
+  content: "󰌻";
 }
 .nf-twitter::before {
   content: "";

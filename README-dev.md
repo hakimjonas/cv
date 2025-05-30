@@ -48,15 +48,44 @@ Testing is done using standard Rust testing tools:
 
 ### Code Style and Formatting
 
-1. **Code Formatting**:
+1. **Rust Code Formatting**:
    ```bash
    cargo fmt              # Format code according to Rust style guidelines
    ```
 
-2. **Linting**:
+2. **Rust Linting**:
    ```bash
    cargo clippy           # Run the Rust linter
    ```
+
+3. **HTML and CSS Linting and Formatting**:
+   ```bash
+   # Install dependencies
+   npm install
+
+   # Lint HTML files
+   npm run lint:html
+
+   # Lint CSS files
+   npm run lint:css
+
+   # Format HTML files
+   npm run format:html
+
+   # Format CSS files
+   npm run format:css
+
+   # Run all linting
+   npm run lint
+
+   # Run all formatting
+   npm run format
+   ```
+
+4. **Configuration Files**:
+   - `.html-validaterc` - HTML validation rules
+   - `.stylelintrc` - CSS linting rules
+   - `.prettierrc` - Formatting rules for HTML and CSS
 
 ### Functional Programming Guidelines
 

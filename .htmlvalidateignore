@@ -1,0 +1,3 @@
+# Ignore template files with complex template syntax
+templates/partials/project-card.html
+templates/partials/projects-section.html

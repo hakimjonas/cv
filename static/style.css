@@ -30,6 +30,19 @@
     --warning-color: var(--rose-pine-gold);
     --error-color: var(--rose-pine-love);
 
+    /* Aliases for component CSS files */
+    --color-primary: var(--primary-color);
+    --color-secondary: var(--secondary-color);
+    --color-accent: var(--accent-color);
+    --color-text: var(--text-color);
+    --color-text-light: var(--light-text);
+    --color-background: var(--background-color);
+    --color-background-light: var(--light-background);
+    --color-border: var(--border-color);
+    --color-success: var(--success-color);
+    --color-warning: var(--warning-color);
+    --color-error: var(--error-color);
+
     /* Additional variables for blog-like design */
     --card-background: #ffffff;
     --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
@@ -72,6 +85,19 @@
         --warning-color: var(--rose-pine-gold);
         --error-color: var(--rose-pine-love);
 
+        /* Aliases for component CSS files */
+        --color-primary: var(--primary-color);
+        --color-secondary: var(--secondary-color);
+        --color-accent: var(--accent-color);
+        --color-text: var(--text-color);
+        --color-text-light: var(--light-text);
+        --color-background: var(--background-color);
+        --color-background-light: var(--light-background);
+        --color-border: var(--border-color);
+        --color-success: var(--success-color);
+        --color-warning: var(--warning-color);
+        --color-error: var(--error-color);
+
         /* Additional variables for blog-like design */
         --card-background: #232136;
         --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
@@ -111,6 +137,19 @@
     --warning-color: var(--rose-pine-gold);
     --error-color: var(--rose-pine-love);
 
+    /* Aliases for component CSS files */
+    --color-primary: var(--primary-color);
+    --color-secondary: var(--secondary-color);
+    --color-accent: var(--accent-color);
+    --color-text: var(--text-color);
+    --color-text-light: var(--light-text);
+    --color-background: var(--background-color);
+    --color-background-light: var(--light-background);
+    --color-border: var(--border-color);
+    --color-success: var(--success-color);
+    --color-warning: var(--warning-color);
+    --color-error: var(--error-color);
+
     /* Additional variables for blog-like design */
     --card-background: #232136;
     --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
@@ -147,6 +186,19 @@
     --success-color: var(--rose-pine-foam);
     --warning-color: var(--rose-pine-gold);
     --error-color: var(--rose-pine-love);
+
+    /* Aliases for component CSS files */
+    --color-primary: var(--primary-color);
+    --color-secondary: var(--secondary-color);
+    --color-accent: var(--accent-color);
+    --color-text: var(--text-color);
+    --color-text-light: var(--light-text);
+    --color-background: var(--background-color);
+    --color-background-light: var(--light-background);
+    --color-border: var(--border-color);
+    --color-success: var(--success-color);
+    --color-warning: var(--warning-color);
+    --color-error: var(--error-color);
 
     /* Additional variables for blog-like design */
     --card-background: #ffffff;
@@ -322,29 +374,26 @@ input:checked + .slider:before {
 }
 
 .theme-icon {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
     font-size: 0.8rem;
     color: var(--light-text);
+    margin-left: 8px;
+    cursor: pointer;
 }
 
 .light-icon {
-    left: 6px;
-    opacity: 1;
+    display: none;
 }
 
 .dark-icon {
-    right: 6px;
-    opacity: 0;
+    display: inline-block;
 }
 
-input:checked + .slider .light-icon {
-    opacity: 0;
+.theme-dark .light-icon {
+    display: inline-block;
 }
 
-input:checked + .slider .dark-icon {
-    opacity: 1;
+.theme-dark .dark-icon {
+    display: none;
 }
 
 /* Sections */
@@ -423,6 +472,7 @@ section:nth-child(even) {
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 2.5rem;
     margin-top: 2rem;
+    padding-bottom: 2rem; /* Add bottom padding to ensure space after the last card */
 }
 
 /* GitHub Project Card Styling */
@@ -632,9 +682,6 @@ section:nth-child(even) {
     color: #e38c00; /* SQL orange */
 }
 
-.r-icon {
-    color: #276dc3; /* R blue */
-}
 
 .dart-icon {
     color: #0175c2; /* Dart blue */
@@ -1050,7 +1097,7 @@ section:nth-child(even) {
 }
 
 /* Remove redundant download button in header */
-.cv-header .cta-buttons {
+.cv-header-section .cta-buttons {
     display: none;
 }
 
@@ -1370,9 +1417,8 @@ footer {
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.cv-header {
+.cv-header-section {
     text-align: left;
-    margin-bottom: 3rem;
 }
 
 .profile-header {
@@ -1459,11 +1505,33 @@ footer {
 
 .cv-section {
     margin-bottom: 3rem;
-    padding: 2rem;
+    padding: 2.5rem;
     background-color: var(--card-background);
-    border-radius: 10px;
+    border-radius: 8px;
     box-shadow: var(--card-shadow);
     transition: all 0.3s ease;
+    font-family: var(--font-primary);
+    line-height: 1.7;
+}
+
+/* Ensure all text elements within cv-section have proper margins */
+.cv-section p, 
+.cv-section ul, 
+.cv-section ol, 
+.cv-section dl, 
+.cv-section blockquote {
+    margin-bottom: 1.5rem;
+}
+
+/* Additional padding for Profile and Certifications sections */
+.cv-section-profile,
+.cv-section-certifications {
+    padding-bottom: 4rem;
+}
+
+/* Add extra space after certification list items */
+.cv-section-certifications ul li {
+    margin-bottom: 1.5rem;
 }
 
 .cv-section:hover {
@@ -1591,6 +1659,7 @@ footer {
 .experience-item ul, .education-item ul, .project-item ul {
     margin-bottom: 1.5rem;
     padding-left: 1.2rem;
+    list-style-type: disc;
 }
 
 .experience-item li, .education-item li, .project-item li {

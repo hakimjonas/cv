@@ -1,11 +1,15 @@
 <!-- Social links component -->
 <div class="social-links">
-    {% for entry in cv.personal_info.social_links %}
-    <a href="{{ entry.1 }}" class="social-link" target="_blank" rel="noopener" aria-label="{{ entry.0 }} profile">
-        <i class="fab fa-{{ entry.0 | lower }}"></i>
-        {% if show_text %}
-        {{ entry.0 }}
-        {% endif %}
-    </a>
-    {% endfor %}
+  {% for entry in cv.personal_info.social_links %}
+  <a
+    href="{{ entry.1 }}"
+    class="social-link"
+    target="_blank"
+    rel="noopener"
+    aria-label="{{ entry.0 }} profile"
+  >
+    <i class="nf nf-{{ entry.0 | lower }}"></i>
+    {% if show_text %} {{ entry.0 }} {% endif %}
+  </a>
+  {% endfor %}
 </div>

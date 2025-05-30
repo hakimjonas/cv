@@ -7,9 +7,9 @@
 *,
 *::before,
 *::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 /* Remove default margin and padding */
@@ -30,25 +30,25 @@ figcaption,
 blockquote,
 dl,
 dd {
-    margin: 0;
-    padding: 0;
+  margin: 0;
+  padding: 0;
 }
 
 /* Set core body defaults */
 body {
-    min-height: 100vh;
-    scroll-behavior: smooth;
-    text-rendering: optimizeSpeed;
-    line-height: 1.6;
-    font-family: var(--font-family-primary);
-    color: var(--color-text);
-    background-color: var(--color-background);
+  min-height: 100vh;
+  scroll-behavior: smooth;
+  text-rendering: optimizeSpeed;
+  line-height: 1.6;
+  font-family: var(--font-family-primary);
+  color: var(--color-text);
+  background-color: var(--color-background);
 }
 
 /* Make images easier to work with */
 img {
-    max-width: 100%;
-    display: block;
+  max-width: 100%;
+  display: block;
 }
 
 /* Inherit fonts for inputs and buttons */
@@ -56,54 +56,54 @@ input,
 button,
 textarea,
 select {
-    font: inherit;
+  font: inherit;
 }
 
 /* Remove list styles */
 ul,
 ol {
-    list-style: none;
+  list-style: none;
 }
 
 /* Set default link styles */
 a {
-    text-decoration: none;
-    color: var(--color-primary);
-    transition: color var(--transition-fast);
+  text-decoration: none;
+  color: var(--color-primary);
+  transition: color var(--transition-fast);
 }
 
 a:hover {
-    color: var(--color-secondary);
+  color: var(--color-secondary);
 }
 
 /* Remove all animations and transitions for people that prefer not to see them */
 @media (prefers-reduced-motion: reduce) {
-    * {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-        scroll-behavior: auto !important;
-    }
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Focus styles for accessibility */
 :focus {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 /* Skip link for accessibility */
 .skip-link {
-    position: absolute;
-    top: -40px;
-    left: 0;
-    background: var(--color-primary);
-    color: white;
-    padding: 8px;
-    z-index: 100;
-    transition: top 0.3s;
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--color-primary);
+  color: white;
+  padding: 8px;
+  z-index: 100;
+  transition: top 0.3s;
 }
 
 .skip-link:focus {
-    top: 0;
+  top: 0;
 }

@@ -8,4 +8,4 @@ Cargo.lock
 .idea
 /.vscode
 /.vscode-test
-
+/node_modules

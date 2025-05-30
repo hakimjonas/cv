@@ -1,11 +1,11 @@
 <!-- Certifications section component -->
 {% if !cv.certifications.is_empty() %}
 <div class="cv-section">
-    <h2 class="cv-section-title">Certifications</h2>
-    <ul>
-        {% for certification in cv.certifications %}
-        <li>{{ certification }}</li>
-        {% endfor %}
-    </ul>
+  <h2 class="cv-section-title">Certifications</h2>
+  <ul>
+    {% for certification in cv.certifications %}
+    <li>{{ certification }}</li>
+    {% endfor %}
+  </ul>
 </div>
 {% endif %}

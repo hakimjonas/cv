@@ -1,0 +1,45 @@
+/**
+ * Accordion component styles
+ * Following BEM methodology
+ */
+
+/* Accordion styles */
+
+.accordion-header {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.accordion-header:hover {
+  color: var(--color-primary);
+}
+
+.accordion-icon {
+  margin-left: 8px;
+  transition: transform 0.3s ease;
+  font-size: 0.8rem;
+}
+
+.accordion-header.active .accordion-icon {
+  transform: rotate(180deg);
+}
+
+.accordion-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  padding-left: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.accordion-content.active {
+  max-height: 500px; /* Adjust as needed */
+}
+
+.accordion-content li {
+  margin-left: 1.5rem;
+}

@@ -14,18 +14,9 @@
       </div>
       <div class="footer-social">
         <h3>Connect</h3>
-        <div class="social-links">
-          {% for entry in cv.personal_info.social_links %}
-          <a
-            href="{{ entry.1 }}"
-            class="social-link"
-            target="_blank"
-            rel="noopener"
-            aria-label="{{ entry.0 }} profile"
-          >
-            <i class="nf nf-{{ entry.0 | lower }}"></i>
-          </a>
-          {% endfor %}
+        <div class="social-links" id="footer-social-links">
+          <!-- Social links placeholder - will be populated dynamically -->
+          __SOCIAL_LINKS__
         </div>
       </div>
       <div class="footer-tech">
@@ -95,7 +86,8 @@
     </div>
     <div class="footer-bottom">
       <p>
-        &copy; <span id="current-year">2023</span> {{ cv.personal_info.name }}. All rights reserved.
+        &copy; <span id="current-year">2023</span> <span id="footer-name">__AUTHOR_NAME__</span>.
+        All rights reserved.
       </p>
     </div>
   </div>

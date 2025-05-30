@@ -1,351 +1,276 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Personal website and blog of {{ cv.personal_info.name }} showcasing projects, skills, and thoughts on technology.">
-    <meta name="keywords" content="developer, portfolio, blog, projects, technology, {{ cv.personal_info.title }}">
-    <meta name="author" content="{{ cv.personal_info.name }}">
-    <meta name="theme-color" content="#286983">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Personal website and blog of {{ cv.personal_info.name }} showcasing projects, skills, and thoughts on technology."
+    />
+    <meta
+      name="keywords"
+      content="developer, portfolio, blog, projects, technology, {{ cv.personal_info.title }}"
+    />
+    <meta name="author" content="{{ cv.personal_info.name }}" />
+    <meta name="theme-color" content="#286983" />
     <title>{{ cv.personal_info.name }} - Blog & Portfolio</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.15.1/devicon.min.css">
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/png" sizes="192x192" href="img/icon-192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="img/icon-512.png">
-    <link rel="apple-touch-icon" href="img/icon-192.png">
-</head>
-<body>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="css/main.css" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" type="image/png" sizes="192x192" href="img/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="img/icon-512.png" />
+    <link rel="apple-touch-icon" href="img/icon-192.png" />
+  </head>
+  <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
 
-    {% include "partials/header.html" %}
+    <div id="header-placeholder"></div>
 
     <main id="main-content">
-        <section class="intro-section" id="introduction">
-            <div class="container">
-                <article class="blog-card intro">
-                    <div class="blog-card-content">
-                        <h3 class="blog-title">Welcome to My Blog & Portfolio</h3>
-                        <p class="blog-excerpt">
-                            Hello and welcome! I'm a Data Engineer with a passion for functional programming, 
-                            big data technologies, and compiler design. This blog is where I share my thoughts, 
-                            projects, and experiences in the world of software development.
-                        </p>
-                        <p class="blog-excerpt">
-                            Feel free to explore my projects, read my blog posts, or get in touch if you'd like 
-                            to collaborate or just chat about technology.
-                        </p>
-                    </div>
-                </article>
+      <section class="intro-section" id="introduction">
+        <div class="container">
+          <article class="blog-card intro">
+            <div class="blog-card-content">
+              <h3 class="blog-title">Welcome to My Blog & Portfolio</h3>
+              <p class="blog-excerpt">
+                Hello and welcome! I'm a Data Engineer with a passion for functional programming,
+                big data technologies, and compiler design. This blog is where I share my thoughts,
+                projects, and experiences in the world of software development.
+              </p>
+              <p class="blog-excerpt">
+                Feel free to explore my projects, read my blog posts, or get in touch if you'd like
+                to collaborate or just chat about technology.
+              </p>
             </div>
-        </section>
+          </article>
+        </div>
+      </section>
 
-        <section class="featured-project">
-            <div class="container">
-                <h2 class="section-title">Featured Project</h2>
-                {% if !cv.projects.is_empty() %}
-                    {% set project = cv.projects[0] %}
-                    <div class="github-card featured">
-                        <div class="card-header{% if project.language.is_some() %} {{ project.language.as_ref().unwrap() }}{% endif %}">
-                            <h3 class="project-title">
-                                {% if project.language_icon.is_some() %}
-                                <span class="{{ project.language.as_ref().unwrap() }}-icon">{{ project.language_icon.as_ref().unwrap() }}</span>
-                                {% endif %}
-                                {% if project.display_name.is_some() %}
-                                {{ project.display_name.as_ref().unwrap() }}
-                                {% else %}
-                                {{ project.name }}
-                                {% endif %}
-                            </h3>
-                            {% if project.stars.is_some() %}
-                            <div class="stars">
-                                <i class="fas fa-star"></i> {{ project.stars.unwrap() }}
-                            </div>
-                            {% endif %}
-                        </div>
-                        <p class="repo-description">{{ project.description }}</p>
+      <section class="featured-project">
+        <div class="container">
+          <h2 class="section-title">Featured Personal Project</h2>
+          {% if !cv.projects.is_empty() %} {% set project = cv.projects[0] %}
+          <div class="github-card featured">
+            {% include "partials/project-card.html" %}
+            <script>
+              // Add "View All Projects" link to the project card
+              document.addEventListener("DOMContentLoaded", function () {
+                const projectLinks = document.querySelector(".github-card.featured .project-links");
+                if (projectLinks) {
+                  const viewAllLink = document.createElement("a");
+                  viewAllLink.href = "projects.html";
+                  viewAllLink.className = "project-link";
+                  viewAllLink.innerHTML = '<i class="nf nf-grid"></i> View All Personal Projects';
+                  projectLinks.appendChild(viewAllLink);
+                }
+              });
+            </script>
+          </div>
+          {% else %}
+          <p class="no-projects">No projects found.</p>
+          {% endif %}
+        </div>
+      </section>
 
-                        {% if !project.highlights.is_empty() %}
-                        <div class="project-highlights">
-                            <h4>Highlights:</h4>
-                            <ul>
-                                {% for highlight in project.highlights %}
-                                <li>{{ highlight }}</li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                        {% endif %}
-
-                        {% if !project.technologies.is_empty() %}
-                        <div class="technologies">
-                            {% for tech in project.technologies %}
-                            <span class="tech-tag">{{ tech }}</span>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-
-                        <div class="project-links">
-                            {% if project.repository.is_some() %}
-                            <a href="{{ project.repository.as_ref().unwrap() }}" class="project-link" target="_blank" rel="noopener">
-                                <i class="fab fa-github"></i> Repository
-                            </a>
-                            {% endif %}
-                            {% if project.url.is_some() %}
-                            <a href="{{ project.url.as_ref().unwrap() }}" class="project-link" target="_blank" rel="noopener">
-                                <i class="fas fa-external-link-alt"></i> Live Demo
-                            </a>
-                            {% endif %}
-                            <a href="projects.html" class="project-link">
-                                <i class="fas fa-th"></i> View All Projects
-                            </a>
-                        </div>
-                    </div>
-                {% else %}
-                    <p class="no-projects">No projects found.</p>
-                {% endif %}
+      <section class="featured-post" id="blog">
+        <div class="container">
+          <h2 class="section-title">Latest Posts</h2>
+          <article class="blog-card featured">
+            <div class="blog-card-content">
+              <div class="blog-meta">
+                <span class="blog-date" data-date="2023-06-15">June 15, 2023</span>
+                <span class="blog-category">Technology</span>
+              </div>
+              <h3 class="blog-title">Getting Started with Rust and Functional Programming</h3>
+              <p class="blog-excerpt">
+                Rust combines the performance of low-level languages with the safety of high-level
+                ones. In this post, I explore how to apply functional programming principles in
+                Rust...
+              </p>
+              <a href="#" class="read-more">Read More <i class="nf nf-arrow-right"></i></a>
             </div>
-        </section>
+            <!-- Blog image section removed to avoid placeholder images -->
+          </article>
+        </div>
+      </section>
 
-        <section class="featured-post" id="blog">
-            <div class="container">
-                <h2 class="section-title">Latest Posts</h2>
-                <article class="blog-card featured">
-                    <div class="blog-card-content">
-                        <div class="blog-meta">
-                            <span class="blog-date" data-date="2023-06-15">June 15, 2023</span>
-                            <span class="blog-category">Technology</span>
-                        </div>
-                        <h3 class="blog-title">Getting Started with Rust and Functional Programming</h3>
-                        <p class="blog-excerpt">
-                            Rust combines the performance of low-level languages with the safety of high-level ones. 
-                            In this post, I explore how to apply functional programming principles in Rust...
-                        </p>
-                        <a href="#" class="read-more">Read More <i class="fas fa-arrow-right"></i></a>
-                    </div>
-                    <!-- Blog image section removed to avoid placeholder images -->
-                </article>
-            </div>
-        </section>
+      <section class="blog-posts">
+        <div class="container">
+          <div class="blog-grid">
+            <article class="blog-card">
+              <div class="blog-meta">
+                <span class="blog-date" data-date="2023-05-28">May 28, 2023</span>
+                <span class="blog-category">Development</span>
+              </div>
+              <h3 class="blog-title">Building Responsive Web Applications</h3>
+              <p class="blog-excerpt">
+                Modern web applications need to work on devices of all sizes. Here's my approach to
+                creating truly responsive experiences...
+              </p>
+              <a href="#" class="read-more">Read More <i class="nf nf-arrow-right"></i></a>
+            </article>
 
-        <section class="blog-posts">
-            <div class="container">
-                <div class="blog-grid">
-                    <article class="blog-card">
-                        <div class="blog-meta">
-                            <span class="blog-date" data-date="2023-05-28">May 28, 2023</span>
-                            <span class="blog-category">Development</span>
-                        </div>
-                        <h3 class="blog-title">Building Responsive Web Applications</h3>
-                        <p class="blog-excerpt">
-                            Modern web applications need to work on devices of all sizes. Here's my approach to creating 
-                            truly responsive experiences...
-                        </p>
-                        <a href="#" class="read-more">Read More <i class="fas fa-arrow-right"></i></a>
-                    </article>
+            <article class="blog-card">
+              <div class="blog-meta">
+                <span class="blog-date" data-date="2023-04-12">April 12, 2023</span>
+                <span class="blog-category">Career</span>
+              </div>
+              <h3 class="blog-title">Transitioning from Data Science to Engineering</h3>
+              <p class="blog-excerpt">
+                My journey from analyzing data to building the systems that process it. Lessons
+                learned and skills that transferred...
+              </p>
+              <a href="#" class="read-more">Read More <i class="nf nf-arrow-right"></i></a>
+            </article>
 
-                    <article class="blog-card">
-                        <div class="blog-meta">
-                            <span class="blog-date" data-date="2023-04-12">April 12, 2023</span>
-                            <span class="blog-category">Career</span>
-                        </div>
-                        <h3 class="blog-title">Transitioning from Data Science to Engineering</h3>
-                        <p class="blog-excerpt">
-                            My journey from analyzing data to building the systems that process it. Lessons learned and 
-                            skills that transferred...
-                        </p>
-                        <a href="#" class="read-more">Read More <i class="fas fa-arrow-right"></i></a>
-                    </article>
+            <article class="blog-card">
+              <div class="blog-meta">
+                <span class="blog-date" data-date="2023-03-05">March 5, 2023</span>
+                <span class="blog-category">Tools</span>
+              </div>
+              <h3 class="blog-title">My Development Environment Setup</h3>
+              <p class="blog-excerpt">
+                A detailed look at the tools, extensions, and configurations I use to maximize
+                productivity in my daily work...
+              </p>
+              <a href="#" class="read-more">Read More <i class="nf nf-arrow-right"></i></a>
+            </article>
+          </div>
+        </div>
+      </section>
 
-                    <article class="blog-card">
-                        <div class="blog-meta">
-                            <span class="blog-date" data-date="2023-03-05">March 5, 2023</span>
-                            <span class="blog-category">Tools</span>
-                        </div>
-                        <h3 class="blog-title">My Development Environment Setup</h3>
-                        <p class="blog-excerpt">
-                            A detailed look at the tools, extensions, and configurations I use to maximize productivity 
-                            in my daily work...
-                        </p>
-                        <a href="#" class="read-more">Read More <i class="fas fa-arrow-right"></i></a>
-                    </article>
-                </div>
-            </div>
-        </section>
+      <section class="featured-projects" id="projects">
+        <div class="container">
+          <h2 class="section-title">Featured Personal Projects</h2>
+          <div class="projects-grid" id="featured-projects">
+            {% if !cv.projects.is_empty() %} {% for project in cv.projects %} {% include
+            "partials/project-card.html" %} {% endfor %} {% else %}
+            <p class="no-projects">No projects found.</p>
+            {% endif %}
+          </div>
+        </div>
+      </section>
 
-        <section class="featured-projects" id="projects">
-            <div class="container">
-                <h2 class="section-title">Featured Projects</h2>
-                <div class="projects-grid" id="featured-projects">
-                    {% if !cv.projects.is_empty() %}
-                        {% for project in cv.projects %}
-                        <div class="github-card">
-                            <div class="card-header{% if project.language.is_some() %} {{ project.language.as_ref().unwrap() }}{% endif %}">
-                                <h3 class="project-title">
-                                    {% if project.language_icon.is_some() %}
-                                    <span class="{{ project.language.as_ref().unwrap() }}-icon">{{ project.language_icon.as_ref().unwrap() }}</span>
-                                    {% endif %}
-                                    {% if project.display_name.is_some() %}
-                                    {{ project.display_name.as_ref().unwrap() }}
-                                    {% else %}
-                                    {{ project.name }}
-                                    {% endif %}
-                                </h3>
-                                {% if project.stars.is_some() %}
-                                <div class="stars">
-                                    <i class="fas fa-star"></i> {{ project.stars.unwrap() }}
-                                </div>
-                                {% endif %}
-                            </div>
-                            <p class="repo-description">{{ project.description }}</p>
+      <section class="about" id="about">
+        <div class="container">
+          <div class="about-content">
+            <h2 class="section-title">About Me</h2>
+            <p>{{ cv.personal_info.summary }}</p>
+          </div>
+        </div>
+      </section>
 
-                            {% if !project.technologies.is_empty() %}
-                            <div class="technologies" style="display: none;">
-                                {% for tech in project.technologies %}
-                                <span class="tech-tag">{{ tech }}</span>
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-
-                            <div class="card-footer">
-                                {% if project.owner_avatar.is_some() %}
-                                <img src="{{ project.owner_avatar.as_ref().unwrap() }}" alt="Owner avatar" class="avatar">
-                                {% else %}
-                                <div class="avatar-placeholder"></div>
-                                {% endif %}
-
-                                <div class="owner-info">
-                                    {% if project.owner_username.is_some() %}
-                                    <span class="owner-name">{{ project.owner_username.as_ref().unwrap() }}</span>
-                                    {% endif %}
-                                </div>
-                            </div>
-
-                            <div class="project-links">
-                                {% if project.repository.is_some() %}
-                                <a href="{{ project.repository.as_ref().unwrap() }}" class="project-link" target="_blank" rel="noopener">
-                                    <i class="fab fa-github"></i> Repository
-                                </a>
-                                {% endif %}
-                                {% if project.url.is_some() %}
-                                <a href="{{ project.url.as_ref().unwrap() }}" class="project-link" target="_blank" rel="noopener">
-                                    <i class="fas fa-external-link-alt"></i> Live Demo
-                                </a>
-                                {% endif %}
-                            </div>
-                        </div>
-                        {% endfor %}
-                    {% else %}
-                        <p class="no-projects">No projects found.</p>
-                    {% endif %}
-                </div>
-            </div>
-        </section>
-
-        <section class="about" id="about">
-            <div class="container">
-                <div class="about-content">
-                    <h2 class="section-title">About Me</h2>
-                    <p>{{ cv.personal_info.summary }}</p>
-                </div>
-            </div>
-        </section>
-
-        <section class="contact" id="contact">
-            <div class="container">
-                <h2 class="section-title">Get In Touch</h2>
-                <p>Feel free to reach out to me at <a href="mailto:{{ cv.personal_info.email }}" id="email">{{ cv.personal_info.email }}</a></p>
-                <div class="social-links" id="social-links">
-                    {% for entry in cv.personal_info.social_links %}
-                    <a href="{{ entry.1 }}" class="social-link" target="_blank" rel="noopener" aria-label="{{ entry.0 }} profile">
-                        <i class="fab fa-{{ entry.0 | lower }}"></i>
-                    </a>
-                    {% endfor %}
-                </div>
-            </div>
-        </section>
+      <section class="contact" id="contact">
+        <div class="container">
+          <h2 class="section-title">Get In Touch</h2>
+          <p>
+            Feel free to reach out to me at
+            <a href="mailto:{{ cv.personal_info.email }}" id="email"
+              >{{ cv.personal_info.email }}</a
+            >
+          </p>
+          <div class="social-links" id="social-links">
+            {% for entry in cv.personal_info.social_links %}
+            <a
+              href="{{ entry.1 }}"
+              class="social-link"
+              target="_blank"
+              rel="noopener"
+              aria-label="{{ entry.0 }} profile"
+            >
+              <i class="nf nf-{{ entry.0 | lower }}"></i>
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
     </main>
 
-    {% include "partials/footer.html" %}
+    <div id="footer-placeholder"></div>
 
     <script>
-        // Update the current year
-        document.getElementById('current-year').textContent = new Date().getFullYear();
+      // Update the current year
+      document.getElementById("current-year").textContent = new Date().getFullYear();
 
-        // Format blog dates
-        document.querySelectorAll('.blog-date[data-date]').forEach(dateElement => {
-            const dateStr = dateElement.getAttribute('data-date');
-            const date = new Date(dateStr);
-            const options = { year: 'numeric', month: 'long', day: 'numeric' };
-            dateElement.textContent = date.toLocaleDateString('en-US', options);
-        });
+      // Format blog dates
+      document.querySelectorAll(".blog-date[data-date]").forEach(dateElement => {
+        const dateStr = dateElement.getAttribute("data-date");
+        const date = new Date(dateStr);
+        const options = { year: "numeric", month: "long", day: "numeric" };
+        dateElement.textContent = date.toLocaleDateString("en-US", options);
+      });
 
-        // Theme switcher functionality
-        const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+      // Theme switcher functionality
+      const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
 
-        // Function to set a theme
-        function setTheme(theme) {
-            document.documentElement.className = theme;
-            localStorage.setItem('theme', theme);
+      // Function to set a theme
+      function setTheme(theme) {
+        document.documentElement.className = theme;
+        localStorage.setItem("theme", theme);
 
-            if (theme === 'theme-dark') {
-                toggleSwitch.checked = true;
-            } else {
-                toggleSwitch.checked = false;
-            }
+        if (theme === "theme-dark") {
+          toggleSwitch.checked = true;
+        } else {
+          toggleSwitch.checked = false;
         }
+      }
 
-        // Check for saved theme preference or use system preference
-        const currentTheme = localStorage.getItem('theme') || 
-            (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'theme-dark' : 'theme-light');
+      // Check for saved theme preference or use system preference
+      const currentTheme =
+        localStorage.getItem("theme") ||
+        (window.matchMedia("(prefers-color-scheme: dark)").matches ? "theme-dark" : "theme-light");
 
-        // Apply the theme
-        setTheme(currentTheme);
+      // Apply the theme
+      setTheme(currentTheme);
 
-        // Listen for theme toggle
-        toggleSwitch.addEventListener('change', function(e) {
-            if (e.target.checked) {
-                setTheme('theme-dark');
+      // Listen for theme toggle
+      toggleSwitch.addEventListener("change", function (e) {
+        if (e.target.checked) {
+          setTheme("theme-dark");
+        } else {
+          setTheme("theme-light");
+        }
+      });
+
+      // Initialize accordion functionality
+      document.addEventListener("DOMContentLoaded", function () {
+        const accordionHeader = document.querySelector(".accordion-header");
+        if (accordionHeader) {
+          // Toggle accordion on click
+          accordionHeader.addEventListener("click", function () {
+            this.classList.toggle("active");
+            const content = this.nextElementSibling;
+            content.classList.toggle("active");
+
+            if (content.classList.contains("active")) {
+              // Open the accordion
+              content.style.maxHeight = content.scrollHeight + "px";
             } else {
-                setTheme('theme-light');
+              // Close the accordion
+              content.style.maxHeight = "0";
             }
-        });
-
-        // Initialize accordion functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const accordionHeader = document.querySelector('.accordion-header');
-            if (accordionHeader) {
-                // Toggle accordion on click
-                accordionHeader.addEventListener('click', function() {
-                    this.classList.toggle('active');
-                    const content = this.nextElementSibling;
-                    content.classList.toggle('active');
-
-                    if (content.classList.contains('active')) {
-                        // Open the accordion
-                        content.style.maxHeight = content.scrollHeight + 'px';
-                    } else {
-                        // Close the accordion
-                        content.style.maxHeight = '0';
-                    }
-                });
-            }
-        });
+          });
+        }
+      });
     </script>
+
+    <!-- Module Loader for dynamic header and footer -->
+    <script src="js/modules.js"></script>
 
     <!-- Service Worker Registration -->
     <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js')
-                    .then(registration => {
-                        console.log('Service Worker registered with scope:', registration.scope);
-                    })
-                    .catch(error => {
-                        console.error('Service Worker registration failed:', error);
-                    });
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("/service-worker.js")
+            .then(registration => {
+              console.log("Service Worker registered with scope:", registration.scope);
+            })
+            .catch(error => {
+              console.error("Service Worker registration failed:", error);
             });
-        }
+        });
+      }
     </script>
-</body>
+  </body>
 </html>

@@ -77,7 +77,7 @@ This project generates a personal website with a dynamically generated CV in bot
 
 3. The generated files will be in:
    - Development build: `dist/` directory
-   - Production build: `release/` directory
+   - Production build: `dist/` directory
 
    Each directory contains:
    - `index.html`: The landing page
@@ -86,7 +86,7 @@ This project generates a personal website with a dynamically generated CV in bot
    - `style.css`: The CSS styles for the website
    - Additional optimized assets and configuration files (in production build)
 
-4. Deploy the contents of the `release/` directory to your web server or hosting service
+4. Deploy the contents of the `dist/` directory to your web server or hosting service
 
 ## Deployment
 
@@ -106,7 +106,7 @@ The production build (created with `cargo run --release`) includes several optim
 #### Option 1: Traditional Web Hosting
 
 1. Run `cargo run --release` to generate the production build
-2. Upload all contents of the `release/` directory to your web hosting service
+2. Upload all contents of the `dist/` directory to your web hosting service
 3. Ensure your server is configured to use the provided configuration files
 
 #### Option 2: GitHub Pages
@@ -136,7 +136,7 @@ The production build (created with `cargo run --release`) includes several optim
            uses: JamesIves/github-pages-deploy-action@4.1.4
            with:
              branch: gh-pages
-             folder: release
+             folder: dist
    ```
 
 #### Option 3: Netlify
@@ -146,7 +146,7 @@ The production build (created with `cargo run --release`) includes several optim
    ```
    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && source $HOME/.cargo/env && cargo install typst-cli && cargo run --release
    ```
-3. Set the publish directory to `release`
+3. Set the publish directory to `dist`
 
 ## Customization
 

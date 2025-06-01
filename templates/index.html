@@ -46,31 +46,6 @@
         </div>
       </section>
 
-      <section class="featured-project">
-        <div class="container">
-          <h2 class="section-title">Featured Personal Project</h2>
-          {% if !cv.projects.is_empty() %} {% set project = cv.projects[0] %}
-          <div class="github-card featured">
-            {% include "partials/project-card.html" %}
-            <script>
-              // Add "View All Projects" link to the project card
-              document.addEventListener("DOMContentLoaded", function () {
-                const projectLinks = document.querySelector(".github-card.featured .project-links");
-                if (projectLinks) {
-                  const viewAllLink = document.createElement("a");
-                  viewAllLink.href = "projects.html";
-                  viewAllLink.className = "project-link";
-                  viewAllLink.innerHTML = '<i class="nf nf-grid"></i> View All Personal Projects';
-                  projectLinks.appendChild(viewAllLink);
-                }
-              });
-            </script>
-          </div>
-          {% else %}
-          <p class="no-projects">No projects found.</p>
-          {% endif %}
-        </div>
-      </section>
 
       <section class="featured-post" id="blog">
         <div class="container">
@@ -139,17 +114,6 @@
         </div>
       </section>
 
-      <section class="featured-projects" id="projects">
-        <div class="container">
-          <h2 class="section-title">Featured Personal Projects</h2>
-          <div class="projects-grid" id="featured-projects">
-            {% if !cv.projects.is_empty() %} {% for project in cv.projects %} {% include
-            "partials/project-card.html" %} {% endfor %} {% else %}
-            <p class="no-projects">No projects found.</p>
-            {% endif %}
-          </div>
-        </div>
-      </section>
 
       <section class="about" id="about">
         <div class="container">

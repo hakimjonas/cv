@@ -381,19 +381,19 @@ input:checked + .slider:before {
 }
 
 .light-icon {
-    display: none;
+    display: inline-block;
 }
 
 .dark-icon {
-    display: inline-block;
+    display: none;
 }
 
 .theme-dark .light-icon {
-    display: inline-block;
+    display: none;
 }
 
 .theme-dark .dark-icon {
-    display: none;
+    display: inline-block;
 }
 
 /* Sections */

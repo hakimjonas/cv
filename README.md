@@ -10,7 +10,7 @@ This project generates a personal website with a dynamically generated CV in bot
 - **Customizable**: Easy to customize the design and content
 - **Functional Programming**: Uses immutable data structures and functional programming principles
 
-> **Project Roadmap**: See [ROADMAP.md](ROADMAP.md) for the current project status, ongoing refactoring efforts, and future development plans.
+> **Project Roadmap**: See [PROJECT_ROADMAP.md](PROJECT_ROADMAP.md) for the current project status, completed work, and the plan for future development with a focus on deployment.
 
 ## Directory Structure
 

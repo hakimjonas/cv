@@ -16,25 +16,67 @@ if ! command -v docker-compose &> /dev/null; then
     exit 1
 fi
 
+# Function to check health status
+check_health() {
+    local retries=10
+    local wait_time=3
+    local container_name="blog-api"
+
+    echo "Checking health status of $container_name..."
+
+    for i in $(seq 1 $retries); do
+        if docker inspect --format='{{.State.Health.Status}}' $(docker-compose ps -q $container_name) | grep -q "healthy"; then
+            echo "$container_name is healthy!"
+            return 0
+        fi
+
+        echo "Waiting for $container_name to become healthy (attempt $i/$retries)..."
+        sleep $wait_time
+    done
+
+    echo "$container_name failed to become healthy after $retries attempts."
+    return 1
+}
+
 # Build the Docker image
 echo "Building Docker image..."
 docker-compose build
 
-# Start the service
-echo "Starting the service..."
-docker-compose up -d
-
-# Wait for the service to start
-echo "Waiting for the service to start..."
-sleep 5
-
-# Check if the service is running
+# Check if the service is already running
 if docker-compose ps | grep -q "blog-api.*Up"; then
-    echo "Deployment successful! The blog API is running."
-    echo "You can access it at http://localhost:3000"
+    echo "Service is already running. Performing rolling update..."
+
+    # Pull the latest image (if using a registry)
+    # docker-compose pull
+
+    # Update the service with zero downtime
+    docker-compose up -d --no-deps --build blog-api
+
+    # Check health status
+    if ! check_health; then
+        echo "Rolling update failed. Rolling back..."
+        docker-compose logs blog-api
+        # Here you would implement rollback logic if needed
+        exit 1
+    fi
 else
-    echo "Deployment failed. Please check the logs with 'docker-compose logs'."
-    exit 1
+    # Start the service for the first time
+    echo "Starting the service for the first time..."
+    docker-compose up -d
+
+    # Check health status
+    if ! check_health; then
+        echo "Initial deployment failed. Check the logs:"
+        docker-compose logs blog-api
+        exit 1
+    fi
 fi
+
+echo "Deployment successful! The blog API is running."
+echo "You can access it at http://localhost:3000"
+
+# Perform database migrations if needed
+# echo "Running database migrations..."
+# docker-compose exec blog-api /app/run_migrations.sh
 
 echo "Deployment completed!"

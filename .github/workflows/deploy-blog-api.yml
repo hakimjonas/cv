@@ -1,0 +1,46 @@
+name: Deploy Blog API
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+      - '.github/workflows/deploy-blog-api.yml'
+
+jobs:
+  deploy:
+    name: Deploy to Server
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+
+      - name: Copy files to server
+        run: |
+          rsync -avz --exclude '.git' --exclude 'target' . ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:~/blog-api
+
+      - name: Deploy on server
+        run: |
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "cd ~/blog-api && chmod +x deploy.sh && ./deploy.sh"
+
+      - name: Verify deployment
+        run: |
+          # Wait for the service to start
+          sleep 10
+          # Check if the service is accessible
+          curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.SERVER_IP }}:3000/health | grep -q "200" || (echo "Deployment verification failed" && exit 1)
+          echo "Deployment verified successfully"

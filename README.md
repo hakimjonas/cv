@@ -1,5 +1,9 @@
 # Personal Website with Dynamic CV Generator
 
+[![Rust CI](https://github.com/yourusername/personal-website/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/personal-website/actions/workflows/ci.yml)
+[![Deploy CV](https://github.com/yourusername/personal-website/actions/workflows/deploy.yml/badge.svg)](https://github.com/yourusername/personal-website/actions/workflows/deploy.yml)
+[![Deploy Blog API](https://github.com/yourusername/personal-website/actions/workflows/deploy-blog-api.yml/badge.svg)](https://github.com/yourusername/personal-website/actions/workflows/deploy-blog-api.yml)
+
 This project generates a personal website with a dynamically generated CV in both HTML and PDF formats from a single Rust data source. It leverages Rust for content generation, HTML/CSS for the web interface, and Typst for PDF output.
 
 ## Features
@@ -16,22 +20,44 @@ This project generates a personal website with a dynamically generated CV in bot
 
 ```
 .
+├── .github/             # GitHub configuration
+│   └── workflows/       # GitHub Actions workflows
+│       ├── ci.yml       # CI workflow for testing and linting
+│       ├── deploy.yml   # Workflow for deploying CV to GitHub Pages
+│       └── deploy-blog-api.yml # Workflow for deploying blog API
 ├── Cargo.toml           # Rust project configuration
+├── DEPLOYMENT.md        # Deployment documentation
+├── Dockerfile           # Docker configuration for blog API
+├── PROJECT_ROADMAP.md   # Project roadmap and status
+├── README-dev.md        # Development guidelines
+├── README.md            # This file
 ├── data/
 │   └── cv_data.json     # CV data in JSON format
+├── deploy.sh            # Deployment script for blog API
 ├── dist/                # Generated output files
 │   ├── cv.html          # Generated HTML CV
 │   ├── cv.pdf           # Generated PDF CV
 │   ├── index.html       # Copied from static/
 │   └── style.css        # Copied from static/
+├── docker-compose.yml   # Docker Compose configuration
 ├── src/
 │   ├── main.rs          # Main application entry point
 │   ├── cv_data.rs       # CV data model
 │   ├── html_generator.rs # HTML generation logic
-│   └── typst_generator.rs # PDF generation logic
+│   ├── typst_generator.rs # PDF generation logic
+│   ├── blog_api.rs      # Blog API server
+│   ├── blog_data.rs     # Blog data model
+│   └── db/              # Database access layer
+│       ├── mod.rs       # Database module entry point
+│       ├── repository.rs # Repository pattern implementation
+│       ├── migrations.rs # Database schema migrations
+│       └── error.rs     # Custom error types for database operations
 ├── static/
 │   ├── index.html       # Static landing page
-│   └── style.css        # CSS styles for the website
+│   ├── style.css        # CSS styles for the website
+│   ├── blog-client.html # Blog client interface
+│   └── js/              # JavaScript files
+│       └── blog-debug.js # Debug tool for blog API
 └── templates/
     └── cv.html          # Askama template for CV HTML
 ```
@@ -92,6 +118,8 @@ This project generates a personal website with a dynamically generated CV in bot
 
 ## Deployment
 
+> **Detailed Deployment Guide**: For comprehensive deployment instructions, including CI/CD pipeline setup, Docker configuration, and troubleshooting, see [DEPLOYMENT.md](DEPLOYMENT.md).
+
 The production build (created with `cargo run --release`) includes several optimizations and server configuration files:
 
 1. **Minified HTML, CSS, and JavaScript**: All text-based assets are minified to reduce file size
@@ -105,50 +133,15 @@ The production build (created with `cargo run --release`) includes several optim
 
 ### Deployment Options
 
-#### Option 1: Traditional Web Hosting
+This project supports multiple deployment options:
 
-1. Run `cargo run --release` to generate the production build
-2. Upload all contents of the `dist/` directory to your web hosting service
-3. Ensure your server is configured to use the provided configuration files
+1. **CI/CD Pipeline**: Automated deployment using GitHub Actions
+2. **Traditional Web Hosting**: Manual deployment to any web server
+3. **GitHub Pages**: Automated or manual deployment to GitHub Pages
+4. **Netlify**: Automated deployment to Netlify
+5. **Docker**: Containerized deployment for the blog API
 
-#### Option 2: GitHub Pages
-
-1. Create a GitHub repository for your website
-2. Add a GitHub Actions workflow to build and deploy your site:
-   ```yaml
-   name: Build and Deploy
-   on:
-     push:
-       branches: [ main ]
-   jobs:
-     build-and-deploy:
-       runs-on: ubuntu-latest
-       steps:
-         - uses: actions/checkout@v3
-         - name: Install Rust
-           uses: actions-rs/toolchain@v1
-           with:
-             toolchain: stable
-             override: true
-         - name: Install Typst
-           run: cargo install typst-cli
-         - name: Build site
-           run: cargo run --release
-         - name: Deploy to GitHub Pages
-           uses: JamesIves/github-pages-deploy-action@4.1.4
-           with:
-             branch: gh-pages
-             folder: dist
-   ```
-
-#### Option 3: Netlify
-
-1. Connect your GitHub repository to Netlify
-2. Set the build command to:
-   ```
-   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && source $HOME/.cargo/env && cargo install typst-cli && cargo run --release
-   ```
-3. Set the publish directory to `dist`
+For detailed instructions on each deployment option, see [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## Customization
 
@@ -270,6 +263,7 @@ The test suite includes:
 - **Integration Tests**: Tests for the API endpoints
 - **Blog Functionality Tests**: Tests for the blog core and API
 - **GitHub API Tests**: Tests for the GitHub integration
+- **Property-Based Tests**: Tests with randomly generated inputs
 
 You can also run specific test groups manually:
 
@@ -286,6 +280,8 @@ cargo run --bin blog_tester
 # Start blog API server for manual testing
 cargo run --bin blog_api_server
 ```
+
+> **For Developers**: See [README-dev.md](README-dev.md) for detailed information about our testing strategy, including property-based testing and idempotency tests.
 
 ### Blog API Server
 
@@ -304,27 +300,23 @@ A robust blog API server built with Rust using Axum framework and SQLite databas
 - SQLite3
 - Docker and Docker Compose (for containerized deployment)
 
-## Deployment
+## Blog API Server Deployment
 
-### Using Docker
+> **Detailed Deployment Guide**: For comprehensive deployment instructions for the blog API server, including Docker configuration, health checks, and zero-downtime deployment, see [DEPLOYMENT.md](DEPLOYMENT.md).
 
-The easiest way to deploy is with Docker:
+### Quick Start
 
-```
+The easiest way to deploy the blog API server is with Docker:
+
+```bash
 ./deploy.sh
 ```
 
-Or manually:
-
-```
-docker-compose up -d
-```
-
-### Manual Deployment
-
-1. Build the release binary: `cargo build --release`
-2. Copy the binary and static assets to your server
-3. Run the binary: `./blog_api_server`
+This script will:
+- Build the Docker image
+- Start the service or perform a rolling update if it's already running
+- Check the health status of the container
+- Provide detailed error messages if deployment fails
 
 ## Client
 
@@ -332,29 +324,15 @@ Access the blog client at `http://localhost:3000/static/blog-client.html`
 
 ## Troubleshooting
 
-If you encounter any issues, use the debug tool at `http://localhost:3000/static/blog-debug.html`
+If you encounter any issues:
+
+1. Use the debug tool at `http://localhost:3000/static/blog-debug.html`
+2. Check the logs with `docker-compose logs blog-api`
+3. Refer to the troubleshooting section in [DEPLOYMENT.md](DEPLOYMENT.md)
 
 ## License
 
 MIT
-This project includes comprehensive tests for all functionality:
-
-```bash
-# Run all tests
-cargo test
-
-# Run tests with clippy to check for code quality issues
-cargo clippy --tests
-
-# Run a specific test
-cargo test <test_name>
-```
-
-The test suite includes:
-
-- **Unit Tests**: Tests for individual functions and methods
-- **Integration Tests**: Tests for the API endpoints
-- **GitHub API Tests**: Tests for the GitHub integration
 
 ## Dependencies
 

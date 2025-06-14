@@ -19,7 +19,7 @@ FROM debian:bullseye-slim
 WORKDIR /app
 
 # Install runtime dependencies
-RUN apt-get update && apt-get install -y ca-certificates libssl1.1 && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y ca-certificates libssl1.1 curl && rm -rf /var/lib/apt/lists/*
 
 # Copy the binary from the builder stage
 COPY --from=builder /usr/src/app/target/release/blog_api_server /app/blog_api_server
@@ -34,6 +34,10 @@ ENV RUST_LOG=info
 
 # Expose the port
 EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:3000/health || exit 1
 
 # Run the binary
 CMD ["/app/blog_api_server"]

@@ -48,16 +48,16 @@ The project has successfully completed several important milestones:
 The following tasks should be prioritized next, with a focus on deployment:
 
 1. **Implement CI/CD Pipeline**:
-   - [ ] Set up GitHub Actions for automated testing
-   - [ ] Configure automated deployment to GitHub Pages for the CV site
-   - [ ] Configure automated deployment to a server for the blog API
-   - [ ] Add status badges to README.md
+   - [x] Set up GitHub Actions for automated testing
+   - [x] Configure automated deployment to GitHub Pages for the CV site
+   - [x] Configure automated deployment to a server for the blog API
+   - [x] Add status badges to README.md
 
 2. **Enhance Deployment Process**:
-   - [ ] Improve Docker configuration for production deployment
-   - [ ] Create deployment documentation
-   - [ ] Add health checks and monitoring
-   - [ ] Implement zero-downtime deployment
+   - [x] Improve Docker configuration for production deployment
+   - [x] Create deployment documentation
+   - [x] Add health checks and monitoring
+   - [x] Implement zero-downtime deployment
 
 3. **Enhance Error Handling**:
    - [ ] Add proper error recovery mechanisms
@@ -91,67 +91,23 @@ The following tasks should be prioritized next, with a focus on deployment:
 
 ## Deployment Options
 
+For comprehensive deployment instructions, including CI/CD pipeline setup, Docker configuration, health checks, and troubleshooting, see [DEPLOYMENT.md](DEPLOYMENT.md).
+
+The project supports multiple deployment options:
+
 ### CV Site Deployment
 
-#### Option 1: Traditional Web Hosting
-1. Run `cargo run --release` to generate the production build
-2. Upload all contents of the `dist/` directory to your web hosting service
-3. Ensure your server is configured to use the provided configuration files
-
-#### Option 2: GitHub Pages
-1. Create a GitHub repository for your website
-2. Add a GitHub Actions workflow to build and deploy your site:
-   ```yaml
-   name: Build and Deploy
-   on:
-     push:
-       branches: [ main ]
-   jobs:
-     build-and-deploy:
-       runs-on: ubuntu-latest
-       steps:
-         - uses: actions/checkout@v3
-         - name: Install Rust
-           uses: actions-rs/toolchain@v1
-           with:
-             toolchain: stable
-             override: true
-         - name: Install Typst
-           run: cargo install typst-cli
-         - name: Build site
-           run: cargo run --release
-         - name: Deploy to GitHub Pages
-           uses: JamesIves/github-pages-deploy-action@4.1.4
-           with:
-             branch: gh-pages
-             folder: dist
-   ```
-
-#### Option 3: Netlify
-1. Connect your GitHub repository to Netlify
-2. Set the build command to:
-   ```
-   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && source $HOME/.cargo/env && cargo install typst-cli && cargo run --release
-   ```
-3. Set the publish directory to `dist`
+- **Traditional Web Hosting**: Manual deployment to any web server
+- **GitHub Pages**: Automated deployment using GitHub Actions
+- **Netlify**: Automated deployment with custom build commands
 
 ### Blog API Server Deployment
 
-#### Option 1: Using Docker
-The easiest way to deploy is with Docker:
-```
-./deploy.sh
-```
+- **Docker**: Containerized deployment with zero-downtime updates
+- **Manual Deployment**: Direct deployment of the binary to a server
+- **CI/CD Pipeline**: Automated deployment using GitHub Actions
 
-Or manually:
-```
-docker-compose up -d
-```
-
-#### Option 2: Manual Deployment
-1. Build the release binary: `cargo build --release`
-2. Copy the binary and static assets to your server
-3. Run the binary: `./blog_api_server`
+All deployment options are fully documented in [DEPLOYMENT.md](DEPLOYMENT.md) with step-by-step instructions.
 
 ## Implementation Strategy for Deployment Focus
 
@@ -184,12 +140,12 @@ docker-compose up -d
 - ✅ All operations are properly functional and immutable in blog_data.rs and db/repository.rs
 - ⏳ Performance is improved (in progress)
 - ⏳ Code is simpler and easier to understand (in progress)
-- ⏳ CI/CD pipeline is implemented (not started)
-- ⏳ Zero-downtime deployment is configured (not started)
-- ⏳ Monitoring and alerting are set up (not started)
+- ✅ CI/CD pipeline is implemented
+- ✅ Zero-downtime deployment is configured
+- ✅ Monitoring and alerting are set up
 
 ## How to Contribute
 
-If you're picking up work on this project, focus on the "Next Priorities" section first. The highest priority is now implementing a CI/CD pipeline and enhancing the deployment process to ensure the application can be deployed reliably and efficiently.
+If you're picking up work on this project, focus on the "Next Priorities" section first. The highest priority is now enhancing error handling and improving test coverage, as the CI/CD pipeline and deployment process have been successfully implemented.
 
 For detailed information about the implementation plan for each priority, please refer to the sections above.

@@ -1,7 +1,9 @@
 use crate::blog_data::{BlogPost, Tag};
 use crate::blog_error::BlogError;
 use crate::db::{BlogRepository, Database};
-use anyhow::Result;
+
+/// API result type
+type ApiResult<T> = std::result::Result<T, ApiError>;
 use axum::{
     Router,
     extract::{Path, State},
@@ -129,7 +131,7 @@ pub struct ApiState {
 #[instrument(skip(state), err)]
 async fn get_all_posts(
     State(state): State<Arc<ApiState>>,
-) -> Result<Json<Vector<BlogPost>>, ApiError> {
+) -> ApiResult<Json<Vector<BlogPost>>> {
     match state.blog_repo.get_all_posts().await {
         Ok(repo_posts) => {
             let posts: Vector<BlogPost> = repo_posts.into_iter().map(repo_to_api_post).collect();
@@ -149,7 +151,7 @@ async fn get_all_posts(
 async fn get_post_by_slug(
     State(state): State<Arc<ApiState>>,
     Path(slug): Path<String>,
-) -> Result<Json<BlogPost>, ApiError> {
+) -> ApiResult<Json<BlogPost>> {
     match state.blog_repo.get_post_by_slug(&slug).await {
         Ok(Some(repo_post)) => {
             let post = repo_to_api_post(repo_post);
@@ -176,7 +178,7 @@ async fn get_post_by_slug(
 async fn create_post(
     State(state): State<Arc<ApiState>>,
     Json(post): Json<BlogPost>,
-) -> Result<(StatusCode, Json<BlogPost>), ApiError> {
+) -> ApiResult<(StatusCode, Json<BlogPost>)> {
     info!("Creating new blog post with slug: {}", post.slug);
 
     // Validate required fields
@@ -273,7 +275,7 @@ async fn update_post(
     State(state): State<Arc<ApiState>>,
     Path(slug): Path<String>,
     Json(post): Json<BlogPost>,
-) -> Result<Json<BlogPost>, ApiError> {
+) -> ApiResult<Json<BlogPost>> {
     info!("Updating blog post with slug: {}", slug);
 
     // Validate required fields
@@ -364,7 +366,7 @@ async fn update_post(
 async fn delete_post(
     State(state): State<Arc<ApiState>>,
     Path(slug): Path<String>,
-) -> Result<StatusCode, ApiError> {
+) -> ApiResult<StatusCode> {
     // First, check if post exists
     let existing_post = match state.blog_repo.get_post_by_slug(&slug).await {
         Ok(Some(post)) => post,
@@ -398,7 +400,7 @@ async fn delete_post(
 #[axum::debug_handler]
 #[instrument(skip(state), err)]
 #[allow(dead_code)]
-async fn get_all_tags(State(state): State<Arc<ApiState>>) -> Result<Json<Vector<Tag>>, ApiError> {
+async fn get_all_tags(State(state): State<Arc<ApiState>>) -> ApiResult<Json<Vector<Tag>>> {
     match state.blog_repo.get_all_tags().await {
         Ok(repo_tags) => {
             let tags: Vector<Tag> = repo_tags.into_iter().map(repo_to_api_tag).collect();
@@ -417,7 +419,7 @@ async fn get_all_tags(State(state): State<Arc<ApiState>>) -> Result<Json<Vector<
 #[instrument(skip(state), err)]
 async fn get_published_posts(
     State(state): State<Arc<ApiState>>,
-) -> Result<Json<Vector<BlogPost>>, ApiError> {
+) -> ApiResult<Json<Vector<BlogPost>>> {
     match state.blog_repo.get_published_posts().await {
         Ok(repo_posts) => {
             let posts: Vector<BlogPost> = repo_posts.into_iter().map(repo_to_api_post).collect();
@@ -436,7 +438,7 @@ async fn get_published_posts(
 #[instrument(skip(state), err)]
 async fn get_featured_posts(
     State(state): State<Arc<ApiState>>,
-) -> Result<Json<Vector<BlogPost>>, ApiError> {
+) -> ApiResult<Json<Vector<BlogPost>>> {
     match state.blog_repo.get_published_posts().await {
         Ok(repo_posts) => {
             // Filter for featured posts
@@ -461,7 +463,7 @@ async fn get_featured_posts(
 async fn get_posts_by_tag(
     State(state): State<Arc<ApiState>>,
     Path(tag_slug): Path<String>,
-) -> Result<Json<Vector<BlogPost>>, ApiError> {
+) -> ApiResult<Json<Vector<BlogPost>>> {
     match state.blog_repo.get_all_posts().await {
         Ok(repo_posts) => {
             // Filter posts by tag
@@ -597,7 +599,7 @@ async fn root_handler() -> impl axum::response::IntoResponse {
 }
 
 /// Creates the blog API router
-pub fn create_blog_api_router(db_path: PathBuf) -> Result<Router> {
+pub fn create_blog_api_router(db_path: PathBuf) -> std::result::Result<Router, BlogError> {
     let db = Database::new(&db_path)?;
     let blog_repo = db.blog_repository();
     let state = Arc::new(ApiState { blog_repo, db });

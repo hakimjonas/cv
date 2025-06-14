@@ -3,7 +3,6 @@ use im::Vector;
 use rusqlite::{Connection, params};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
-use tracing::{debug, error, info, instrument, warn};
 
 /// Represents a blog post tag
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]

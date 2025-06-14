@@ -28,7 +28,6 @@ pub struct BlogPost {
     pub metadata: HashMap<String, String>,
 }
 use anyhow::{Result, anyhow};
-use crate::db::error::DatabaseError;
 use im::{HashMap, Vector};
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;

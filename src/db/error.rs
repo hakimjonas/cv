@@ -17,14 +17,17 @@ pub enum DatabaseError {
 
     /// Transaction error
     #[error("Database transaction error: {0}")]
+    #[allow(dead_code)]
     Transaction(String),
 
     /// Migration error
     #[error("Database migration error: {0}")]
+    #[allow(dead_code)]
     Migration(String),
 
     /// Data error
     #[error("Database data error: {0}")]
+    #[allow(dead_code)]
     Data(String),
 
     /// Locking error

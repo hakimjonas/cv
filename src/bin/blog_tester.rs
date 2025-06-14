@@ -4,7 +4,6 @@ use cv::db::{Database, BlogRepository, error::DatabaseError};
 use cv::logging;
 use im::{HashMap, Vector};
 use std::path::PathBuf;
-use std::sync::Arc;
 use std::time::Duration;
 use tokio::time::sleep;
 use tracing::{debug, error, info, warn, instrument};
@@ -170,7 +169,7 @@ async fn test_create_post(repo: &BlogRepository) -> Result<BlogPost> {
     let repo_post = api_to_repo_post(&test_post);
 
     let post_id = retry_with_backoff(
-        || async { repo.save_post(&repo_post).await.map_err(Into::into) },
+        || async { repo.save_post(&repo_post).await },
         5,
         100,
         "create_post"
@@ -203,7 +202,7 @@ async fn test_get_all_posts(repo: &BlogRepository) -> Result<Vector<BlogPost>> {
     info!("Testing retrieval of all blog posts");
 
     let repo_posts = retry_with_backoff(
-        || async { repo.get_all_posts().await.map_err(Into::into) },
+        || async { repo.get_all_posts().await },
         3,
         100,
         "get_all_posts"
@@ -252,7 +251,7 @@ async fn test_update_post(repo: &BlogRepository, post: &BlogPost) -> Result<Blog
 
     // Update the post
     retry_with_backoff(
-        || async { repo.update_post(&repo_post).await.map_err(Into::into) },
+        || async { repo.update_post(&repo_post).await },
         5,
         100,
         "update_post"
@@ -286,7 +285,7 @@ async fn test_delete_post(repo: &BlogRepository, post: &BlogPost) -> Result<()> 
     info!("Testing blog post deletion for post with ID: {}", post_id);
 
     retry_with_backoff(
-        || async { repo.delete_post(post_id).await.map_err(Into::into) },
+        || async { repo.delete_post(post_id).await },
         5,
         100,
         "delete_post"

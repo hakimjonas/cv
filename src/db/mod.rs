@@ -17,6 +17,41 @@ pub mod migrations;
 pub mod repository;
 
 pub use repository::BlogRepository;
+#[allow(unused_imports)]
+pub use migrations::run_migrations;
+
+/// Run migrations on a database pool
+#[allow(dead_code)]
+pub async fn run_migrations_async(pool: &Pool<SqliteConnectionManager>) -> Result<()> {
+    let conn = pool.get()?;
+    migrations::run_migrations(&conn)
+}
+
+/// Create a connection pool for the database
+#[allow(dead_code)]
+pub fn create_connection_pool<P: AsRef<Path>>(path: P) -> Result<Pool<SqliteConnectionManager>> {
+    let manager = SqliteConnectionManager::file(path);
+    let pool = Pool::builder()
+        .max_size(10)
+        .connection_timeout(std::time::Duration::from_secs(30))
+        .build(manager)?;
+
+    // Configure the connections
+    let conn = pool.get()?;
+    conn.execute_batch(
+        "
+        PRAGMA journal_mode = WAL;
+        PRAGMA synchronous = NORMAL;
+        PRAGMA busy_timeout = 5000;
+        PRAGMA foreign_keys = ON;
+        "
+    )?;
+
+    // Create the migrations table if it doesn't exist
+    migrations::initialize_migrations_table(&conn)?;
+
+    Ok(pool)
+}
 
 /// Configuration for the database connection
 pub struct DatabaseConfig {
@@ -783,6 +818,7 @@ impl Database {
     }
 
     /// Get a repository for blog operations
+    #[allow(dead_code)]
     pub fn blog_repository(&self) -> BlogRepository {
         BlogRepository::new(Arc::clone(&self.pool))
     }

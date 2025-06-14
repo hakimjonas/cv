@@ -5,14 +5,14 @@
  */
 
 // Define the BlogPost and Tag structs directly in this module
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct Tag {
     pub id: Option<i64>,
     pub name: String,
     pub slug: String,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct BlogPost {
     pub id: Option<i64>,
     pub title: String,
@@ -37,10 +37,12 @@ use tokio::task;
 use tracing::{debug, error, info, instrument, warn};
 
 /// Repository for blog operations
+#[allow(dead_code)]
 pub struct BlogRepository {
     pool: Arc<Pool<SqliteConnectionManager>>,
 }
 
+#[allow(dead_code)]
 impl BlogRepository {
     /// Create a new repository with the given connection pool
     pub fn new(pool: Arc<Pool<SqliteConnectionManager>>) -> Self {

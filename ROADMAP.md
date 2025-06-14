@@ -35,13 +35,13 @@ Implement proper logging throughout the codebase using the tracing crate:
 - ✅ Add structured logging to key operations
 - ✅ Ensure errors are properly logged with context
 
-### 2. Implement Property-Based Testing
+### 2. ✅ Implement Property-Based Testing
 
 Add property-based testing for the core data model and operations:
 
-- Create generators for BlogPost, Tag, and other data types
-- Test invariants such as serialization/deserialization roundtrips
-- Test idempotency of operations like saving and updating posts
+- ✅ Create generators for BlogPost, Tag, and other data types
+- ✅ Test invariants such as serialization/deserialization roundtrips
+- ✅ Test idempotency of operations like saving and updating posts
 
 ## Medium-Term Goals
 

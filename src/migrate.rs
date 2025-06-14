@@ -1,6 +1,6 @@
 use anyhow::Result;
 use std::path::Path;
-use tracing::{info, debug, error};
+use tracing::{info, debug};
 
 use crate::cv_data::Cv;
 use crate::db::Database;

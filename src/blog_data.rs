@@ -206,7 +206,7 @@ impl BlogManager {
 
         Ok(Self {
             conn: std::sync::Mutex::new(conn),
-                last_used: std::sync::atomic::AtomicU64::new(0),
+            last_used: std::sync::atomic::AtomicU64::new(0),
         })
     }
 
@@ -311,11 +311,13 @@ impl BlogManager {
         let conn = self.conn.lock().unwrap();
 
         // Check if the blog_posts table exists
-        let table_exists = conn.query_row(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name='blog_posts'",
-            [],
-            |_| Ok(true)
-        ).unwrap_or(false);
+        let table_exists = conn
+            .query_row(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='blog_posts'",
+                [],
+                |_| Ok(true),
+            )
+            .unwrap_or(false);
 
         if !table_exists {
             println!("Warning: blog_posts table doesn't exist yet");
@@ -421,7 +423,11 @@ impl BlogManager {
     }
 
     /// Gets tags for a specific post using an existing connection
-    fn get_tags_for_post_with_conn(&self, conn: &rusqlite::Connection, post_id: i64) -> Result<Vector<Tag>> {
+    fn get_tags_for_post_with_conn(
+        &self,
+        conn: &rusqlite::Connection,
+        post_id: i64,
+    ) -> Result<Vector<Tag>> {
         let mut stmt = conn.prepare(
             "SELECT t.id, t.name, t.slug 
              FROM tags t 
@@ -453,7 +459,11 @@ impl BlogManager {
     }
 
     /// Gets metadata for a specific post using an existing connection
-    fn get_metadata_for_post_with_conn(&self, conn: &rusqlite::Connection, post_id: i64) -> Result<im::HashMap<String, String>> {
+    fn get_metadata_for_post_with_conn(
+        &self,
+        conn: &rusqlite::Connection,
+        post_id: i64,
+    ) -> Result<im::HashMap<String, String>> {
         let mut stmt = conn.prepare(
             "SELECT key, value 
              FROM post_metadata 
@@ -595,13 +605,16 @@ impl BlogManager {
         let last_used = self.last_used.load(std::sync::atomic::Ordering::Relaxed);
 
         // Always update last_used time to prevent multiple concurrent refresh attempts
-        self.last_used.store(now, std::sync::atomic::Ordering::Relaxed);
+        self.last_used
+            .store(now, std::sync::atomic::Ordering::Relaxed);
 
         // If connection hasn't been used in 15 seconds, check it
         // More aggressive to catch stale connections quickly
         if now - last_used > 15 {
             println!("Connection might be stale, checking and refreshing...");
-            let conn = self.conn.lock()
+            let conn = self
+                .conn
+                .lock()
                 .map_err(|e| anyhow::anyhow!("Mutex lock error: {}", e))?;
 
             // Test if connection is still good with a simple query
@@ -609,10 +622,12 @@ impl BlogManager {
                 Ok(_) => {
                     println!("Connection is still good, updating last_used timestamp");
                     // Connection is still good, update last_used
-                    self.last_used.store(now, std::sync::atomic::Ordering::Relaxed);
+                    self.last_used
+                        .store(now, std::sync::atomic::Ordering::Relaxed);
 
                     // Even if the connection is good, reconfigure it to ensure optimal settings
-                    let _ = conn.execute_batch("
+                    let _ = conn.execute_batch(
+                        "
                         PRAGMA journal_mode = WAL;
                         PRAGMA synchronous = NORMAL;
                         PRAGMA busy_timeout = 60000;
@@ -620,12 +635,14 @@ impl BlogManager {
                         PRAGMA cache_size = 20000;
                         PRAGMA locking_mode = NORMAL;
                         PRAGMA mmap_size = 30000000;
-                    ");
-                },
+                    ",
+                    );
+                }
                 Err(e) => {
                     println!("Connection test failed: {}, reconfiguring...", e);
                     // Connection might be stale, try to reconfigure
-                    conn.execute_batch("
+                    conn.execute_batch(
+                        "
                         PRAGMA journal_mode = WAL;
                         PRAGMA synchronous = NORMAL;
                         PRAGMA busy_timeout = 60000;
@@ -633,10 +650,13 @@ impl BlogManager {
                         PRAGMA cache_size = 20000;
                         PRAGMA locking_mode = NORMAL;
                         PRAGMA mmap_size = 30000000;
-                    ").context("Failed to reconfigure stale connection")?;
+                    ",
+                    )
+                    .context("Failed to reconfigure stale connection")?;
 
                     // Update last_used
-                    self.last_used.store(now, std::sync::atomic::Ordering::Relaxed);
+                    self.last_used
+                        .store(now, std::sync::atomic::Ordering::Relaxed);
                     println!("Connection reconfigured successfully");
                 }
             }
@@ -664,13 +684,14 @@ impl BlogManager {
                 .duration_since(std::time::UNIX_EPOCH)
                 .unwrap_or_default()
                 .as_secs(),
-            std::sync::atomic::Ordering::Relaxed
+            std::sync::atomic::Ordering::Relaxed,
         );
 
         println!("Acquired database lock, starting transaction");
 
         // Configure SQLite for better concurrent access with optimized settings
-        conn.execute_batch("
+        conn.execute_batch(
+            "
             PRAGMA journal_mode = WAL;
             PRAGMA synchronous = NORMAL;
             PRAGMA busy_timeout = 60000;
@@ -679,9 +700,12 @@ impl BlogManager {
             PRAGMA locking_mode = NORMAL;
             PRAGMA wal_autocheckpoint = 1000;
             PRAGMA mmap_size = 30000000;
-        ").context("Failed to configure SQLite database for better concurrency")?;
+        ",
+        )
+        .context("Failed to configure SQLite database for better concurrency")?;
 
-        let tx = conn.transaction()
+        let tx = conn
+            .transaction()
             .context("Failed to start database transaction")?;
 
         let post_id = if let Some(id) = post.id {
@@ -704,7 +728,8 @@ impl BlogManager {
                     post.image,
                     id
                 ],
-            ).context("Failed to update existing post")?;
+            )
+            .context("Failed to update existing post")?;
 
             // Delete existing tags and metadata associations
             tx.execute("DELETE FROM post_tags WHERE post_id = ?", params![id])
@@ -731,7 +756,8 @@ impl BlogManager {
                     post.featured,
                     post.image
                 ],
-            ).context("Failed to insert new post")?;
+            )
+            .context("Failed to insert new post")?;
 
             let id = tx.last_insert_rowid();
             println!("Created new post with ID: {}", id);
@@ -754,22 +780,28 @@ impl BlogManager {
                 "INSERT INTO post_tags (post_id, tag_id) VALUES (?, ?)",
                 params![post_id, tag_id],
             ) {
-                Ok(_) => {},
+                Ok(_) => {}
                 Err(e) => {
-                    println!("Warning: Failed to associate tag {} with post: {}", tag.name, e);
+                    println!(
+                        "Warning: Failed to associate tag {} with post: {}",
+                        tag.name, e
+                    );
                     // Continue processing other tags
                 }
             }
         }
 
         // Insert metadata
-        println!("Processing {} metadata entries for post", post.metadata.len());
+        println!(
+            "Processing {} metadata entries for post",
+            post.metadata.len()
+        );
         for (key, value) in post.metadata.iter() {
             match tx.execute(
                 "INSERT INTO post_metadata (post_id, key, value) VALUES (?, ?, ?)",
                 params![post_id, key, value],
             ) {
-                Ok(_) => {},
+                Ok(_) => {}
                 Err(e) => {
                     println!("Warning: Failed to add metadata '{}' to post: {}", key, e);
                     // Continue processing other metadata
@@ -785,7 +817,7 @@ impl BlogManager {
             Ok(_) => {
                 println!("Transaction committed successfully");
                 Ok(post_id)
-            },
+            }
             Err(e) => {
                 // If it's not a locking error, just return the error
                 if !e.to_string().contains("locked") {
@@ -814,7 +846,8 @@ impl BlogManager {
         tx.execute("DELETE FROM blog_posts WHERE id = ?", params![post_id])?;
 
         println!("Committing transaction to database");
-        tx.commit().context("Failed to commit transaction - check filesystem permissions")?;
+        tx.commit()
+            .context("Failed to commit transaction - check filesystem permissions")?;
         println!("Transaction committed successfully");
         Ok(())
     }

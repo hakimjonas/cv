@@ -1,23 +1,55 @@
-#[allow(dead_code)]
 use crate::blog_data::{BlogManager, BlogPost, Tag};
+use crate::db::Database;
 use anyhow::Result;
 use axum::{
+    Router,
     extract::{Path, State},
     http::{Method, StatusCode},
-    response::Json,
+    response::{IntoResponse, Json, Response},
     routing::{delete, get, post, put},
-    Router,
 };
 use im::Vector;
 use std::{path::PathBuf, sync::Arc};
+use thiserror::Error;
 use tower_http::{
     cors::{Any, CorsLayer},
     services::ServeDir,
-        timeout::TimeoutLayer,
+    timeout::TimeoutLayer,
 };
 
+/// API error types
+#[derive(Debug, Error)]
+pub enum ApiError {
+    #[error("Validation error: {0}")]
+    ValidationError(String),
+
+    #[error("Database error: {0}")]
+    DatabaseError(String),
+
+    #[error("Not found: {0}")]
+    NotFound(String),
+
+    #[error("Internal server error: {0}")]
+    InternalError(String),
+}
+
+impl IntoResponse for ApiError {
+    fn into_response(self) -> Response {
+        let (status, error_message) = match self {
+            ApiError::ValidationError(msg) => (StatusCode::BAD_REQUEST, msg),
+            ApiError::DatabaseError(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg),
+            ApiError::NotFound(msg) => (StatusCode::NOT_FOUND, msg),
+            ApiError::InternalError(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg),
+        };
+
+        (status, error_message).into_response()
+    }
+}
+
+/// API state containing the database connection and blog manager
 pub struct ApiState {
     pub blog_manager: Arc<BlogManager>,
+    pub db: Database,
 }
 
 /// Gets all blog posts
@@ -78,11 +110,13 @@ async fn create_post(
         Ok(id) => {
             println!("✅ Post created/updated successfully with ID: {}", id);
             id
-        },
+        }
         Err(e) => {
             // Special handling for SQLite locking errors which might actually indicate success
             if e.to_string().contains("locked") || e.to_string().contains("busy") {
-                println!("⚠️ Warning: Database lock detected during post creation, but operation may have succeeded");
+                println!(
+                    "⚠️ Warning: Database lock detected during post creation, but operation may have succeeded"
+                );
                 // Try to see if the post was actually created despite the error
                 if let Ok(Some(created_post)) = state.blog_manager.get_post_by_slug(&post.slug) {
                     println!("✅ Post was successfully created despite transaction lock error");
@@ -104,16 +138,19 @@ async fn create_post(
         Ok(Some(post)) => {
             println!("✅ Successfully retrieved created post with ID {}", post_id);
             post
-        },
+        }
         Ok(None) => {
-            println!("⚠️  Warning: Post with ID {} was created but not found when retrieving it", post_id);
+            println!(
+                "⚠️  Warning: Post with ID {} was created but not found when retrieving it",
+                post_id
+            );
             println!("Database may have consistency issues - using constructed post instead");
 
             BlogPost {
                 id: Some(post_id),
                 ..post
             }
-        },
+        }
         Err(e) => {
             println!("⚠️  Warning: Error retrieving created post: {:?}", e);
             println!("Will return constructed post instead of retrieved one");
@@ -147,19 +184,34 @@ async fn update_post(
     println!("Received update post request for slug {}: {:?}", slug, post);
 
     // Validate required fields
-    if post.title.is_empty() || post.slug.is_empty() || post.content.is_empty() || 
-       post.date.is_empty() || post.author.is_empty() {
-        return Err((StatusCode::UNPROCESSABLE_ENTITY, 
-                   "Missing required fields: title, slug, content, date, author must be non-empty".to_string()));
+    if post.title.is_empty()
+        || post.slug.is_empty()
+        || post.content.is_empty()
+        || post.date.is_empty()
+        || post.author.is_empty()
+    {
+        return Err((
+            StatusCode::UNPROCESSABLE_ENTITY,
+            "Missing required fields: title, slug, content, date, author must be non-empty"
+                .to_string(),
+        ));
     }
 
     // First, check if post exists
     let existing_post = match state.blog_manager.get_post_by_slug(&slug) {
         Ok(Some(post)) => post,
-        Ok(None) => return Err((StatusCode::NOT_FOUND, format!("Post with slug '{}' not found", slug))),
+        Ok(None) => {
+            return Err((
+                StatusCode::NOT_FOUND,
+                format!("Post with slug '{}' not found", slug),
+            ));
+        }
         Err(e) => {
             println!("Error getting post with slug {}: {:?}", slug, e);
-            return Err((StatusCode::INTERNAL_SERVER_ERROR, format!("Failed to retrieve post: {}", e)));
+            return Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("Failed to retrieve post: {}", e),
+            ));
         }
     };
 
@@ -171,10 +223,13 @@ async fn update_post(
 
     // Update the post
     match state.blog_manager.create_or_update_post(&post_to_update) {
-        Ok(_) => {},
+        Ok(_) => {}
         Err(e) => {
             println!("Error updating post: {:?}", e);
-            return Err((StatusCode::INTERNAL_SERVER_ERROR, format!("Failed to update post: {}", e)));
+            return Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("Failed to update post: {}", e),
+            ));
         }
     };
 
@@ -183,11 +238,17 @@ async fn update_post(
         Ok(Some(updated_post)) => {
             println!("Successfully updated post with ID: {:?}", updated_post.id);
             Ok(Json(updated_post))
-        },
-        Ok(None) => Err((StatusCode::INTERNAL_SERVER_ERROR, "Post was updated but could not be retrieved".to_string())),
+        }
+        Ok(None) => Err((
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "Post was updated but could not be retrieved".to_string(),
+        )),
         Err(e) => {
             println!("Error retrieving updated post: {:?}", e);
-            Err((StatusCode::INTERNAL_SERVER_ERROR, format!("Failed to retrieve updated post: {}", e)))
+            Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("Failed to retrieve updated post: {}", e),
+            ))
         }
     }
 }
@@ -376,7 +437,8 @@ async fn root_handler() -> impl axum::response::IntoResponse {
 /// Creates the blog API router
 pub fn create_blog_api_router(db_path: PathBuf) -> Result<Router> {
     let blog_manager = Arc::new(BlogManager::new(&db_path)?);
-    let state = Arc::new(ApiState { blog_manager });
+    let db = Database::new(&db_path)?;
+    let state = Arc::new(ApiState { blog_manager, db });
 
     // Create a static file service for the static directory
     let static_service = ServeDir::new("static");

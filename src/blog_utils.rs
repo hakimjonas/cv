@@ -1,5 +1,5 @@
-use anyhow::{Context, Result};
 use crate::blog_data::{BlogManager, BlogPost, Tag};
+use anyhow::{Context, Result};
 use im::vector;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -22,18 +22,20 @@ pub fn create_test_database() -> Result<PathBuf> {
     if db_path.exists() {
         // Try to open the database exclusively to check if it's locked
         match rusqlite::Connection::open_with_flags(
-            &db_path, 
-            rusqlite::OpenFlags::SQLITE_OPEN_READ_WRITE | 
-            rusqlite::OpenFlags::SQLITE_OPEN_CREATE | 
-            rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX
+            &db_path,
+            rusqlite::OpenFlags::SQLITE_OPEN_READ_WRITE
+                | rusqlite::OpenFlags::SQLITE_OPEN_CREATE
+                | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
         ) {
             Ok(_) => {
                 // Database isn't locked, we can use it
                 println!("✅ Existing database is not locked");
-            },
+            }
             Err(e) => {
                 if e.to_string().contains("locked") {
-                    println!("⚠️ Existing database appears to be locked, removing it to start fresh");
+                    println!(
+                        "⚠️ Existing database appears to be locked, removing it to start fresh"
+                    );
                     // Try to remove the database file and its WAL files
                     let _ = std::fs::remove_file(&db_path);
                     let _ = std::fs::remove_file(db_path.with_extension("db-shm"));
@@ -52,7 +54,7 @@ pub fn create_test_database() -> Result<PathBuf> {
             println!("✅ Directory is writable");
             // Clean up test file
             let _ = std::fs::remove_file(test_file_path);
-        },
+        }
         Err(e) => {
             println!("❌ Directory is not writable: {}", e);
             return Err(anyhow::anyhow!("Test directory is not writable: {}", e));
@@ -104,12 +106,15 @@ pub fn run_blog_core_tests(db_path: &Path) -> Result<()> {
     // Verify we can open the database in read-write mode before proceeding
     match rusqlite::Connection::open_with_flags(
         db_path,
-        rusqlite::OpenFlags::SQLITE_OPEN_READ_WRITE | rusqlite::OpenFlags::SQLITE_OPEN_CREATE
+        rusqlite::OpenFlags::SQLITE_OPEN_READ_WRITE | rusqlite::OpenFlags::SQLITE_OPEN_CREATE,
     ) {
         Ok(conn) => {
             println!("✅ Successfully opened database connection in read-write mode");
             // Test if we can write to the database
-            match conn.execute("CREATE TABLE IF NOT EXISTS write_test (id INTEGER PRIMARY KEY)", []) {
+            match conn.execute(
+                "CREATE TABLE IF NOT EXISTS write_test (id INTEGER PRIMARY KEY)",
+                [],
+            ) {
                 Ok(_) => println!("✅ Successfully created test table - database is writable"),
                 Err(e) => {
                     println!("❌ Failed to create test table: {}", e);
@@ -120,10 +125,13 @@ pub fn run_blog_core_tests(db_path: &Path) -> Result<()> {
             let _ = conn.execute("DROP TABLE IF EXISTS write_test", []);
             // Close connection explicitly
             drop(conn);
-        },
+        }
         Err(e) => {
             println!("❌ Failed to open database in read-write mode: {}", e);
-            return Err(anyhow::anyhow!("Cannot open database in read-write mode: {}", e));
+            return Err(anyhow::anyhow!(
+                "Cannot open database in read-write mode: {}",
+                e
+            ));
         }
     }
 
@@ -138,7 +146,9 @@ pub fn run_blog_core_tests(db_path: &Path) -> Result<()> {
     // Test creating a post
     let test_post = create_test_blog_post();
     println!("Creating test post...");
-    let post_id = blog_manager.create_or_update_post(&test_post).context("Failed to create test post")?;
+    let post_id = blog_manager
+        .create_or_update_post(&test_post)
+        .context("Failed to create test post")?;
     println!("Created test post with ID: {}", post_id);
 
     // Add a longer delay before retrieving posts
@@ -147,7 +157,9 @@ pub fn run_blog_core_tests(db_path: &Path) -> Result<()> {
 
     // Test retrieving all posts
     println!("Retrieving all posts...");
-    let posts = blog_manager.get_all_posts().context("Failed to get posts")?;
+    let posts = blog_manager
+        .get_all_posts()
+        .context("Failed to get posts")?;
     println!("Retrieved {} posts", posts.len());
     assert!(!posts.is_empty(), "Posts list should not be empty");
 
@@ -160,7 +172,14 @@ pub fn run_blog_core_tests(db_path: &Path) -> Result<()> {
     let retrieved_post = blog_manager
         .get_post_by_slug(&test_post.slug)
         .context("Failed to get post by slug")?;
-    println!("Retrieved post by slug: {}", if retrieved_post.is_some() { "found" } else { "not found" });
+    println!(
+        "Retrieved post by slug: {}",
+        if retrieved_post.is_some() {
+            "found"
+        } else {
+            "not found"
+        }
+    );
     assert!(retrieved_post.is_some(), "Retrieved post should exist");
 
     // Add a longer delay before updating the post
@@ -191,10 +210,23 @@ pub fn run_blog_core_tests(db_path: &Path) -> Result<()> {
         .get_post_by_slug(&test_post.slug)
         .context("Failed to get updated post by slug")?;
 
-    println!("Retrieved updated post: {}", if retrieved_updated_post.is_some() { "found" } else { "not found" });
-    assert!(retrieved_updated_post.is_some(), "Updated post should exist");
+    println!(
+        "Retrieved updated post: {}",
+        if retrieved_updated_post.is_some() {
+            "found"
+        } else {
+            "not found"
+        }
+    );
+    assert!(
+        retrieved_updated_post.is_some(),
+        "Updated post should exist"
+    );
     let retrieved_updated_post = retrieved_updated_post.unwrap();
-    assert_eq!(retrieved_updated_post.title, "Updated Test Post", "Post title should be updated");
+    assert_eq!(
+        retrieved_updated_post.title, "Updated Test Post",
+        "Post title should be updated"
+    );
 
     // Add a longer delay before deleting the post
     println!("Waiting before deleting post...");

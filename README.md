@@ -10,6 +10,8 @@ This project generates a personal website with a dynamically generated CV in bot
 - **Customizable**: Easy to customize the design and content
 - **Functional Programming**: Uses immutable data structures and functional programming principles
 
+> **Project Roadmap**: See [ROADMAP.md](ROADMAP.md) for the current project status, ongoing refactoring efforts, and future development plans.
+
 ## Directory Structure
 
 ```
@@ -241,26 +243,23 @@ This project includes a blog functionality that allows you to create and manage 
 - **Tagging System**: Support for categorizing posts with tags
 - **Markdown Support**: Write blog posts in Markdown format
 
-See [README-blog.md](README-blog.md) for detailed information about the blog functionality.
-
 ### Blog API Endpoints
 
 - `GET /api/blog` - Get all blog posts
-- `GET /api/blog/:slug` - Get a specific blog post
+- `GET /api/blog/{slug}` - Get a specific blog post
 - `POST /api/blog` - Create a new blog post
-- `PUT /api/blog/:slug` - Update a blog post
-- `DELETE /api/blog/:slug` - Delete a blog post
+- `PUT /api/blog/{slug}` - Update a blog post
+- `DELETE /api/blog/{slug}` - Delete a blog post
 - `GET /api/blog/tags` - Get all tags
-- `GET /api/blog/tags/:slug` - Get all posts with a specific tag
+- `GET /api/blog/published` - Get all published posts
+- `GET /api/blog/featured` - Get all featured posts
+- `GET /api/blog/tag/{tag_slug}` - Get all posts with a specific tag
 
 ## Testing
 
 The project includes comprehensive tests for all functionality. Run them with our consolidated test script:
 
 ```bash
-# Make the script executable if needed
-chmod +x test.sh
-
 # Run all tests
 ./test.sh
 ```
@@ -305,18 +304,6 @@ A robust blog API server built with Rust using Axum framework and SQLite databas
 - SQLite3
 - Docker and Docker Compose (for containerized deployment)
 
-#### API Endpoints
-
-- `GET /api/blog` - Get all blog posts
-- `POST /api/blog` - Create a new blog post
-- `GET /api/blog/{slug}` - Get a blog post by slug
-- `PUT /api/blog/{slug}` - Update a blog post
-- `DELETE /api/blog/{slug}` - Delete a blog post
-- `GET /api/blog/tags` - Get all tags
-- `GET /api/blog/published` - Get all published posts
-- `GET /api/blog/featured` - Get all featured posts
-- `GET /api/blog/tag/{tag_slug}` - Get posts by tag
-
 ## Deployment
 
 ### Using Docker
@@ -338,18 +325,6 @@ docker-compose up -d
 1. Build the release binary: `cargo build --release`
 2. Copy the binary and static assets to your server
 3. Run the binary: `./blog_api_server`
-
-## API Endpoints
-
-- `GET /api/blog` - Get all blog posts
-- `POST /api/blog` - Create a new blog post
-- `GET /api/blog/{slug}` - Get a blog post by slug
-- `PUT /api/blog/{slug}` - Update a blog post
-- `DELETE /api/blog/{slug}` - Delete a blog post
-- `GET /api/blog/tags` - Get all tags
-- `GET /api/blog/published` - Get all published posts
-- `GET /api/blog/featured` - Get all featured posts
-- `GET /api/blog/tag/{tag_slug}` - Get posts by tag
 
 ## Client
 

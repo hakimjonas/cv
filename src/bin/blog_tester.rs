@@ -1,6 +1,7 @@
 use anyhow::{Context, Result};
 use cv::blog_data::{BlogPost, Tag};
 use cv::db::{Database, BlogRepository, error::DatabaseError};
+use cv::logging;
 use im::{HashMap, Vector};
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -306,14 +307,19 @@ async fn test_delete_post(repo: &BlogRepository, post: &BlogPost) -> Result<()> 
     }
 }
 
-// Initialize basic logging
+// Initialize logging with tracing
 fn init_logging() {
-    // In a real implementation, we would use tracing_subscriber
-    // but for simplicity we'll just set up a basic println-based approach
-    println!("Logging initialized (basic println mode)");
+    // Set up a logging configuration for the blog tester
+    let config = logging::LoggingConfig {
+        app_name: "blog_tester".to_string(),
+        level: tracing::Level::DEBUG,
+        log_spans: true,
+        ..Default::default()
+    };
 
-    // Note: This doesn't actually set up tracing, but we'll keep using the tracing macros
-    // which will be no-ops in this case, and add println statements for important info
+    // Initialize logging with the configuration
+    let _guard = logging::init_logging(config);
+    info!("Logging initialized with tracing");
 }
 
 #[tokio::main]
@@ -323,31 +329,25 @@ async fn main() -> Result<()> {
 
     info!("Blog API Tester");
     info!("==============");
-    println!("Blog API Tester");
-    println!("==============");
 
     // Get the database path
     let db_path = PathBuf::from("blog.db");
     info!("Using database at: {:?}", db_path);
-    println!("Using database at: {:?}", db_path);
 
     // Create the database connection
     let db = Database::new(&db_path).context("Failed to create database connection")?;
     let blog_repo = db.blog_repository();
 
     info!("Successfully connected to database");
-    println!("Successfully connected to database");
 
     // Run the tests
     let created_post = match test_create_post(&blog_repo).await {
         Ok(post) => {
             info!("✅ Post creation test passed");
-            println!("✅ Post creation test passed");
             post
         },
         Err(e) => {
             error!("❌ Post creation test failed: {}", e);
-            println!("❌ Post creation test failed: {}", e);
             return Err(e);
         }
     };
@@ -355,11 +355,9 @@ async fn main() -> Result<()> {
     match test_get_all_posts(&blog_repo).await {
         Ok(posts) => {
             info!("✅ Get all posts test passed, found {} posts", posts.len());
-            println!("✅ Get all posts test passed, found {} posts", posts.len());
         },
         Err(e) => {
             error!("❌ Get all posts test failed: {}", e);
-            println!("❌ Get all posts test failed: {}", e);
             return Err(e);
         }
     }
@@ -367,11 +365,9 @@ async fn main() -> Result<()> {
     match test_get_post_by_slug(&blog_repo, &created_post.slug).await {
         Ok(_) => {
             info!("✅ Get post by slug test passed");
-            println!("✅ Get post by slug test passed");
         },
         Err(e) => {
             error!("❌ Get post by slug test failed: {}", e);
-            println!("❌ Get post by slug test failed: {}", e);
             return Err(e);
         }
     }
@@ -379,12 +375,10 @@ async fn main() -> Result<()> {
     let updated_post = match test_update_post(&blog_repo, &created_post).await {
         Ok(post) => {
             info!("✅ Post update test passed");
-            println!("✅ Post update test passed");
             post
         },
         Err(e) => {
             error!("❌ Post update test failed: {}", e);
-            println!("❌ Post update test failed: {}", e);
             return Err(e);
         }
     };
@@ -392,17 +386,14 @@ async fn main() -> Result<()> {
     match test_delete_post(&blog_repo, &updated_post).await {
         Ok(_) => {
             info!("✅ Post deletion test passed");
-            println!("✅ Post deletion test passed");
         },
         Err(e) => {
             error!("❌ Post deletion test failed: {}", e);
-            println!("❌ Post deletion test failed: {}", e);
             return Err(e);
         }
     }
 
     info!("🎉 All tests passed successfully!");
-    println!("🎉 All tests passed successfully!");
 
     Ok(())
 }

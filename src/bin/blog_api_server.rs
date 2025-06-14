@@ -1,17 +1,34 @@
 use anyhow::{Context, Result};
 use cv::blog_api::create_blog_api_router;
 use cv::blog_utils::create_test_database;
+use cv::logging;
 use std::net::SocketAddr;
 use std::sync::Once;
 use tokio::net::TcpListener;
+use tracing::{info, warn, error};
 
 // Initialize once to ensure we only set up global state once
 static INIT: Once = Once::new();
 
+// Initialize logging with tracing
+fn init_logging() {
+    // Set up a logging configuration for the blog API server
+    let config = logging::LoggingConfig {
+        app_name: "blog_api_server".to_string(),
+        level: tracing::Level::INFO,
+        log_spans: true,
+        ..Default::default()
+    };
+
+    // Initialize logging with the configuration
+    let _guard = logging::init_logging(config);
+    info!("Logging initialized with tracing");
+}
+
 // Configure SQLite for better concurrency
 fn configure_sqlite() {
     INIT.call_once(|| {
-        println!("Initializing SQLite global configuration...");
+        info!("Initializing SQLite global configuration...");
         // Set global SQLite configuration for better concurrent access
         if let Err(e) = rusqlite::Connection::open_in_memory().and_then(|conn| {
             conn.execute_batch(
@@ -28,20 +45,23 @@ fn configure_sqlite() {
             ",
             )
         }) {
-            println!("Warning: Failed to set global SQLite configuration: {}", e);
+            warn!("Failed to set global SQLite configuration: {}", e);
         }
-        println!("Configuring SQLite for better concurrency");
+        info!("Configuring SQLite for better concurrency");
     });
 }
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    // Initialize logging
+    init_logging();
+
     // Configure SQLite for better concurrency
     configure_sqlite();
 
     // Create a test database
     let db_path = create_test_database()?;
-    println!("Using database at: {:?}\n", db_path);
+    info!("Using database at: {:?}", db_path);
 
     // Create the API router
     let app = create_blog_api_router(db_path)?;
@@ -51,21 +71,22 @@ async fn main() -> Result<()> {
     let max_port = 3010; // Try up to port 3010
     let mut listener = None;
 
-    println!("Attempting to start server on ports {}-{}", port, max_port);
+    info!("Attempting to start server on ports {}-{}", port, max_port);
 
     while port <= max_port {
         let addr = SocketAddr::from(([127, 0, 0, 1], port));
         match TcpListener::bind(addr).await {
             Ok(l) => {
-                println!("Blog API server running at http://{}", addr);
+                info!("Blog API server running at http://{}", addr);
                 listener = Some((l, addr));
                 break;
             }
             Err(e) => {
                 if e.kind() == std::io::ErrorKind::AddrInUse {
-                    println!("Port {} is already in use, trying next port...", port);
+                    info!("Port {} is already in use, trying next port...", port);
                     port += 1;
                 } else {
+                    error!("Failed to bind to port {}: {}", port, e);
                     return Err(e.into());
                 }
             }
@@ -74,14 +95,17 @@ async fn main() -> Result<()> {
 
     // If we didn't find an available port
     if listener.is_none() {
-        return Err(anyhow::anyhow!(
+        let err_msg = format!(
             "Could not find an available port between {} and {}",
             3000,
             max_port
-        ));
+        );
+        error!("{}", err_msg);
+        return Err(anyhow::anyhow!(err_msg));
     }
 
-    let (listener, _addr) = listener.unwrap();
+    let (listener, addr) = listener.unwrap();
+    info!("Starting server on http://{}", addr);
 
     axum::serve(listener, app).await.context("Server error")?;
 

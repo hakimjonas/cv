@@ -17,6 +17,9 @@ pub mod blog_data;
 pub mod blog_utils;
 pub mod check_db_permissions;
 
+// Utility modules
+pub mod logging;
+
 // Re-export dependencies that are commonly used in the codebase
 pub use anyhow;
 pub use rusqlite;

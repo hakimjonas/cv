@@ -16,6 +16,8 @@ mod typst_generator;
 use anyhow::{Context, Result};
 use im::Vector;
 use std::env;
+use tracing::{info, warn, error, debug};
+use cv::logging;
 
 // Extension trait to enable method chaining with pipe
 trait Pipe: Sized {
@@ -30,11 +32,26 @@ trait Pipe: Sized {
 // Implement Pipe for Config to enable method chaining
 impl Pipe for config::Config {}
 
+/// Initialize logging with tracing
+fn init_logging() {
+    // Set up a logging configuration for the CV application
+    let config = logging::LoggingConfig {
+        app_name: "cv".to_string(),
+        level: tracing::Level::INFO,
+        log_spans: true,
+        ..Default::default()
+    };
+
+    // Initialize logging with the configuration
+    let _guard = logging::init_logging(config);
+    info!("Logging initialized with tracing");
+}
+
 /// Prints a message about missing GitHub token and how to set it
 fn print_token_missing_message() {
-    println!("No GitHub API token found. API requests will be subject to lower rate limits.");
-    println!("To avoid rate limiting, set the token with: cv --set-token <your-token>");
-    println!("Or set the GITHUB_TOKEN environment variable.");
+    warn!("No GitHub API token found. API requests will be subject to lower rate limits.");
+    info!("To avoid rate limiting, set the token with: cv --set-token <your-token>");
+    info!("Or set the GITHUB_TOKEN environment variable.");
 }
 
 /// Attempts to get a GitHub token from environment variables
@@ -44,7 +61,7 @@ fn print_token_missing_message() {
 /// An Option containing the token if found
 fn get_token_from_env() -> Option<String> {
     env::var("GITHUB_TOKEN").ok().inspect(|_token| {
-        println!("Using GitHub API token from environment variable for authentication");
+        info!("Using GitHub API token from environment variable for authentication");
     })
 }
 
@@ -56,7 +73,7 @@ fn get_token_from_env() -> Option<String> {
 fn get_token_from_secure_storage() -> Result<Option<String>> {
     credentials::get_github_token().map(|token_opt| {
         token_opt.inspect(|_token| {
-            println!("Using GitHub API token from secure storage for authentication");
+            info!("Using GitHub API token from secure storage for authentication");
         })
     })
 }
@@ -76,11 +93,11 @@ fn get_github_token(config: config::Config) -> config::Config {
             // We're running in GitHub Actions, check for GITHUB_TOKEN
             match env::var("GITHUB_TOKEN") {
                 Ok(token) => {
-                    println!("Using GitHub API token from GitHub Actions for authentication");
+                    info!("Using GitHub API token from GitHub Actions for authentication");
                     config.with_option(config::GITHUB_TOKEN_KEY, &token)
                 }
                 Err(_) => {
-                    println!("No GitHub API token found in GitHub Actions environment.");
+                    warn!("No GitHub API token found in GitHub Actions environment.");
                     config
                 }
             }
@@ -100,10 +117,7 @@ fn get_github_token(config: config::Config) -> config::Config {
                     }
                 }
                 Err(e) => {
-                    println!(
-                        "Warning: Failed to read GitHub token from secure storage: {}",
-                        e
-                    );
+                    warn!("Failed to read GitHub token from secure storage: {}", e);
                     // Fall back to environment variable
                     match get_token_from_env() {
                         Some(token) => config.with_option(config::GITHUB_TOKEN_KEY, &token),
@@ -128,20 +142,23 @@ fn get_github_token(config: config::Config) -> config::Config {
 /// - `--remove-token`: Remove the GitHub API token from git config
 /// - `--cache-path <path>`: Set a custom path for the GitHub cache file
 fn main() -> Result<()> {
+    // Initialize logging
+    init_logging();
+
     // Parse command-line arguments
     let args: Vector<String> = env::args().collect();
 
     // Check for --set-token argument
     if args.len() >= 3 && args[1] == "--set-token" {
         let token = &args[2];
-        println!("Setting GitHub API token in secure storage...");
+        info!("Setting GitHub API token in secure storage...");
         return match credentials::store_github_token(token) {
             Ok(_) => {
-                println!("GitHub API token set successfully.");
+                info!("GitHub API token set successfully.");
                 Ok(())
             }
             Err(e) => {
-                println!("Error setting GitHub API token: {}", e);
+                error!("Error setting GitHub API token: {}", e);
                 Err(e)
             }
         };
@@ -149,14 +166,14 @@ fn main() -> Result<()> {
 
     // Check for --remove-token argument
     if args.len() >= 2 && args[1] == "--remove-token" {
-        println!("Removing GitHub API token from secure storage...");
+        info!("Removing GitHub API token from secure storage...");
         return match credentials::remove_github_token() {
             Ok(_) => {
-                println!("GitHub API token removed successfully.");
+                info!("GitHub API token removed successfully.");
                 Ok(())
             }
             Err(e) => {
-                println!("Error removing GitHub API token: {}", e);
+                error!("Error removing GitHub API token: {}", e);
                 Err(e)
             }
         };
@@ -165,20 +182,20 @@ fn main() -> Result<()> {
     // Check for --migrate-to-db argument
     if args.len() >= 2 && args[1] == "--migrate-to-db" {
         let config = config::Config::default();
-        println!("Migrating CV data from JSON to SQLite database...");
+        info!("Migrating CV data from JSON to SQLite database...");
         return match migrate::migrate_json_to_sqlite(
             &config.data_path_str()?,
             &config.db_path_str()?,
         ) {
             Ok(_) => {
-                println!(
+                info!(
                     "CV data migrated successfully to database: {}",
                     config.db_path.display()
                 );
                 Ok(())
             }
             Err(e) => {
-                println!("Error migrating CV data to database: {}", e);
+                error!("Error migrating CV data to database: {}", e);
                 Err(e)
             }
         };
@@ -213,14 +230,14 @@ fn main() -> Result<()> {
 
     // Load CV data
     let mut cv = if use_db {
-        println!(
+        info!(
             "Loading CV data from database: {}",
             config.db_path.display()
         );
         migrate::load_cv_from_sqlite(&config.db_path_str()?)
             .context("Failed to load CV data from database")?
     } else {
-        println!("Loading CV data from JSON: {}", config.data_path.display());
+        info!("Loading CV data from JSON: {}", config.data_path.display());
         cv_data::Cv::from_json(&config.data_path_str()?)
             .context("Failed to load CV data from JSON")?
     };
@@ -229,13 +246,13 @@ fn main() -> Result<()> {
     let config_with_token = get_github_token(config);
 
     // Fetch GitHub projects from sources defined in CV data
-    println!("Fetching GitHub projects from sources defined in CV data");
+    info!("Fetching GitHub projects from sources defined in CV data");
     match github::fetch_projects_from_sources_sync(
         &cv.github_sources,
         config_with_token.github_token(),
     ) {
         Ok(github_projects) => {
-            println!("Found {} GitHub projects", github_projects.len());
+            info!("Found {} GitHub projects", github_projects.len());
 
             // Keep any existing projects that are not from GitHub (identified by not having a repository URL)
             let local_projects = cv
@@ -252,16 +269,16 @@ fn main() -> Result<()> {
                 .cloned()
                 .collect();
 
-            println!("Updated CV with {} total projects", cv.projects.len());
+            info!("Updated CV with {} total projects", cv.projects.len());
         }
         Err(e) => {
-            println!("Warning: Failed to fetch GitHub projects: {}", e);
-            println!("Continuing with existing projects data");
+            warn!("Failed to fetch GitHub projects: {}", e);
+            info!("Continuing with existing projects data");
         }
     }
 
     // Load language icons and associate them with projects
-    println!("Loading language icons");
+    info!("Loading language icons");
     let icons_path = config_with_token
         .data_path
         .parent()
@@ -269,7 +286,7 @@ fn main() -> Result<()> {
         .join("language_icons.json");
     match cv::language_icons::LanguageIcons::from_json(icons_path.to_str().unwrap()) {
         Ok(icons) => {
-            println!("Found {} language icons", icons.0.len());
+            info!("Found {} language icons", icons.0.len());
 
             // Associate language icons with projects
             for project in cv.projects.iter_mut() {
@@ -288,32 +305,32 @@ fn main() -> Result<()> {
                 {
                     project.language = Some(lang.clone());
                     project.language_icon = Some(icons.get_icon(&lang).to_string());
-                    println!("Detected language for project {}: {}", project_name, lang);
+                    debug!("Detected language for project {}: {}", project_name, lang);
                 }
             }
         }
         Err(e) => {
-            println!("Warning: Failed to load language icons: {}", e);
-            println!("Continuing without language icons");
+            warn!("Failed to load language icons: {}", e);
+            info!("Continuing without language icons");
         }
     }
 
     // Filter CV data based on public_data configuration
-    println!("Filtering CV data based on public_data configuration");
+    info!("Filtering CV data based on public_data configuration");
     let public_data_fields = config_with_token.public_data();
-    println!("Public data fields: {:?}", public_data_fields);
+    debug!("Public data fields: {:?}", public_data_fields);
 
     // Note: In a real implementation, we would create a filtered copy of the CV data
     // based on the public_data configuration. For now, we'll just log the fields
     // that would be included.
 
     // Generate HTML CV and index
-    println!("Generating HTML files");
+    info!("Generating HTML files");
     html_generator::generate_html(&cv, &config_with_token.html_output_str()?)
         .context("Failed to generate HTML files")?;
 
     // Copy static assets (excluding index.html which we generate)
-    println!("Copying static assets");
+    info!("Copying static assets");
     html_generator::copy_static_assets_except(
         &config_with_token.static_dir_str()?,
         &config_with_token.output_dir_str()?,
@@ -322,7 +339,7 @@ fn main() -> Result<()> {
     .context("Failed to copy static assets")?;
 
     // Generate PDF CV
-    println!("Generating PDF CV");
+    info!("Generating PDF CV");
     typst_generator::generate_pdf(
         &cv,
         &config_with_token.typst_temp_str()?,
@@ -331,10 +348,10 @@ fn main() -> Result<()> {
     .context("Failed to generate PDF CV")?;
 
     // Print summary
-    println!("Done! Output files:");
-    println!("  - HTML CV: {}", config_with_token.html_output.display());
-    println!("  - PDF CV: {}", config_with_token.pdf_output.display());
-    println!(
+    info!("Done! Output files:");
+    info!("  - HTML CV: {}", config_with_token.html_output.display());
+    info!("  - PDF CV: {}", config_with_token.pdf_output.display());
+    info!(
         "  - Static assets: {}",
         config_with_token.output_dir.display()
     );

@@ -1,12 +1,12 @@
 use anyhow::{Context, Result};
 use cv::blog_data::{BlogPost, Tag};
-use cv::db::{Database, BlogRepository, error::DatabaseError};
+use cv::db::{BlogRepository, Database, error::DatabaseError};
 use cv::logging;
 use im::{HashMap, Vector};
 use std::path::PathBuf;
 use std::time::Duration;
 use tokio::time::sleep;
-use tracing::{debug, error, info, warn, instrument};
+use tracing::{debug, error, info, instrument, warn};
 
 // Function to create a test blog post
 fn create_test_post() -> BlogPost {
@@ -57,7 +57,11 @@ fn api_to_repo_post(api_post: &BlogPost) -> cv::db::repository::BlogPost {
         featured: api_post.featured,
         image: api_post.image.clone(),
         tags: api_post.tags.iter().map(api_to_repo_tag).collect(),
-        metadata: api_post.metadata.iter().map(|(k, v)| (k.clone(), v.clone())).collect(),
+        metadata: api_post
+            .metadata
+            .iter()
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect(),
     }
 }
 
@@ -115,7 +119,10 @@ where
         match operation().await {
             Ok(result) => {
                 if retry_count > 0 {
-                    info!("Operation '{}' succeeded after {} retries", operation_name, retry_count);
+                    info!(
+                        "Operation '{}' succeeded after {} retries",
+                        operation_name, retry_count
+                    );
                 } else {
                     debug!("Operation '{}' succeeded on first attempt", operation_name);
                 }
@@ -126,7 +133,10 @@ where
 
                 // Check if we've reached the maximum number of retries
                 if retry_count >= max_retries {
-                    error!("Operation '{}' failed after {} retries: {}", operation_name, max_retries, e);
+                    error!(
+                        "Operation '{}' failed after {} retries: {}",
+                        operation_name, max_retries, e
+                    );
                     return Err(e);
                 }
 
@@ -172,23 +182,25 @@ async fn test_create_post(repo: &BlogRepository) -> Result<BlogPost> {
         || async { repo.save_post(&repo_post).await },
         5,
         100,
-        "create_post"
-    ).await?;
+        "create_post",
+    )
+    .await?;
 
     info!("Successfully created post with ID: {}", post_id);
 
     // Retrieve the created post
     let created_post = retry_with_backoff(
-        || async { 
+        || async {
             match repo.get_post_by_id(post_id).await? {
                 Some(post) => Ok(post),
-                None => Err(anyhow::anyhow!("Post with ID {} not found", post_id))
+                None => Err(anyhow::anyhow!("Post with ID {} not found", post_id)),
             }
         },
         3,
         100,
-        "get_created_post"
-    ).await?;
+        "get_created_post",
+    )
+    .await?;
 
     let api_post = repo_to_api_post(created_post);
     info!("Retrieved created post: {}", api_post.title);
@@ -205,8 +217,9 @@ async fn test_get_all_posts(repo: &BlogRepository) -> Result<Vector<BlogPost>> {
         || async { repo.get_all_posts().await },
         3,
         100,
-        "get_all_posts"
-    ).await?;
+        "get_all_posts",
+    )
+    .await?;
 
     let posts: Vector<BlogPost> = repo_posts.into_iter().map(repo_to_api_post).collect();
     info!("Retrieved {} blog posts", posts.len());
@@ -220,16 +233,17 @@ async fn test_get_post_by_slug(repo: &BlogRepository, slug: &str) -> Result<Blog
     info!("Testing retrieval of blog post by slug: {}", slug);
 
     let repo_post = retry_with_backoff(
-        || async { 
+        || async {
             match repo.get_post_by_slug(slug).await? {
                 Some(post) => Ok(post),
-                None => Err(anyhow::anyhow!("Post with slug '{}' not found", slug))
+                None => Err(anyhow::anyhow!("Post with slug '{}' not found", slug)),
             }
         },
         3,
         100,
-        "get_post_by_slug"
-    ).await?;
+        "get_post_by_slug",
+    )
+    .await?;
 
     let post = repo_to_api_post(repo_post);
     info!("Retrieved blog post: {}", post.title);
@@ -254,23 +268,28 @@ async fn test_update_post(repo: &BlogRepository, post: &BlogPost) -> Result<Blog
         || async { repo.update_post(&repo_post).await },
         5,
         100,
-        "update_post"
-    ).await?;
+        "update_post",
+    )
+    .await?;
 
     info!("Successfully updated post");
 
     // Retrieve the updated post
     let updated_repo_post = retry_with_backoff(
-        || async { 
+        || async {
             match repo.get_post_by_slug(&updated_post.slug).await? {
                 Some(post) => Ok(post),
-                None => Err(anyhow::anyhow!("Updated post with slug '{}' not found", updated_post.slug))
+                None => Err(anyhow::anyhow!(
+                    "Updated post with slug '{}' not found",
+                    updated_post.slug
+                )),
             }
         },
         3,
         100,
-        "get_updated_post"
-    ).await?;
+        "get_updated_post",
+    )
+    .await?;
 
     let api_updated_post = repo_to_api_post(updated_repo_post);
     info!("Retrieved updated post: {}", api_updated_post.title);
@@ -288,8 +307,9 @@ async fn test_delete_post(repo: &BlogRepository, post: &BlogPost) -> Result<()> 
         || async { repo.delete_post(post_id).await },
         5,
         100,
-        "delete_post"
-    ).await?;
+        "delete_post",
+    )
+    .await?;
 
     info!("Successfully deleted post");
 
@@ -298,7 +318,7 @@ async fn test_delete_post(repo: &BlogRepository, post: &BlogPost) -> Result<()> 
         Some(_) => {
             warn!("Post with ID {} still exists after deletion", post_id);
             Err(anyhow::anyhow!("Post still exists after deletion"))
-        },
+        }
         None => {
             info!("Verified post with ID {} no longer exists", post_id);
             Ok(())
@@ -344,7 +364,7 @@ async fn main() -> Result<()> {
         Ok(post) => {
             info!("✅ Post creation test passed");
             post
-        },
+        }
         Err(e) => {
             error!("❌ Post creation test failed: {}", e);
             return Err(e);
@@ -354,7 +374,7 @@ async fn main() -> Result<()> {
     match test_get_all_posts(&blog_repo).await {
         Ok(posts) => {
             info!("✅ Get all posts test passed, found {} posts", posts.len());
-        },
+        }
         Err(e) => {
             error!("❌ Get all posts test failed: {}", e);
             return Err(e);
@@ -364,7 +384,7 @@ async fn main() -> Result<()> {
     match test_get_post_by_slug(&blog_repo, &created_post.slug).await {
         Ok(_) => {
             info!("✅ Get post by slug test passed");
-        },
+        }
         Err(e) => {
             error!("❌ Get post by slug test failed: {}", e);
             return Err(e);
@@ -375,7 +395,7 @@ async fn main() -> Result<()> {
         Ok(post) => {
             info!("✅ Post update test passed");
             post
-        },
+        }
         Err(e) => {
             error!("❌ Post update test failed: {}", e);
             return Err(e);
@@ -385,7 +405,7 @@ async fn main() -> Result<()> {
     match test_delete_post(&blog_repo, &updated_post).await {
         Ok(_) => {
             info!("✅ Post deletion test passed");
-        },
+        }
         Err(e) => {
             error!("❌ Post deletion test failed: {}", e);
             return Err(e);

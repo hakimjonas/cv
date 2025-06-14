@@ -14,10 +14,10 @@ mod runtime;
 mod typst_generator;
 
 use anyhow::{Context, Result};
+use cv::logging;
 use im::Vector;
 use std::env;
-use tracing::{info, warn, error, debug};
-use cv::logging;
+use tracing::{debug, error, info, warn};
 
 // Extension trait to enable method chaining with pipe
 trait Pipe: Sized {

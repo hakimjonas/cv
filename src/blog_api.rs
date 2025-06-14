@@ -1,5 +1,5 @@
 use crate::blog_data::{BlogPost, Tag};
-use crate::db::{Database, BlogRepository};
+use crate::db::{BlogRepository, Database};
 use anyhow::Result;
 use axum::{
     Router,
@@ -50,7 +50,11 @@ fn api_to_repo_post(api_post: &BlogPost) -> crate::db::repository::BlogPost {
         featured: api_post.featured,
         image: api_post.image.clone(),
         tags: api_post.tags.iter().map(api_to_repo_tag).collect(),
-        metadata: api_post.metadata.iter().map(|(k, v)| (k.clone(), v.clone())).collect(),
+        metadata: api_post
+            .metadata
+            .iter()
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect(),
     }
 }
 
@@ -141,7 +145,10 @@ async fn get_post_by_slug(
         }
         Ok(None) => {
             warn!("Blog post with slug '{}' not found", slug);
-            Err(ApiError::NotFound(format!("Blog post with slug '{}' not found", slug)))
+            Err(ApiError::NotFound(format!(
+                "Blog post with slug '{}' not found",
+                slug
+            )))
         }
         Err(e) => {
             error!("Failed to get post by slug '{}': {}", slug, e);
@@ -191,7 +198,10 @@ async fn create_post(
                     Ok((StatusCode::CREATED, Json(created_post)))
                 }
                 Ok(None) => {
-                    warn!("Post with ID {} was created but not found when retrieving it", post_id);
+                    warn!(
+                        "Post with ID {} was created but not found when retrieving it",
+                        post_id
+                    );
                     // Return a constructed post instead
                     let constructed_post = BlogPost {
                         id: Some(post_id),
@@ -213,7 +223,9 @@ async fn create_post(
         Err(e) => {
             // Special handling for SQLite locking errors which might actually indicate success
             if e.to_string().contains("locked") || e.to_string().contains("busy") {
-                warn!("Database lock detected during post creation, but operation may have succeeded");
+                warn!(
+                    "Database lock detected during post creation, but operation may have succeeded"
+                );
 
                 // Try to see if the post was actually created despite the error
                 match state.blog_repo.get_post_by_slug(&post.slug).await {
@@ -224,13 +236,19 @@ async fn create_post(
                     }
                     _ => {
                         error!("Failed to create post due to database lock: {}", e);
-                        return Err(ApiError::DatabaseError(format!("Failed to create post: {}", e)));
+                        return Err(ApiError::DatabaseError(format!(
+                            "Failed to create post: {}",
+                            e
+                        )));
                     }
                 }
             }
 
             error!("Failed to create post: {}", e);
-            Err(ApiError::DatabaseError(format!("Failed to create post: {}", e)))
+            Err(ApiError::DatabaseError(format!(
+                "Failed to create post: {}",
+                e
+            )))
         }
     }
 }
@@ -267,11 +285,17 @@ async fn update_post(
         }
         Ok(None) => {
             warn!("Post with slug '{}' not found for update", slug);
-            return Err(ApiError::NotFound(format!("Post with slug '{}' not found", slug)));
+            return Err(ApiError::NotFound(format!(
+                "Post with slug '{}' not found",
+                slug
+            )));
         }
         Err(e) => {
             error!("Error getting post with slug {}: {}", slug, e);
-            return Err(ApiError::DatabaseError(format!("Failed to retrieve post: {}", e)));
+            return Err(ApiError::DatabaseError(format!(
+                "Failed to retrieve post: {}",
+                e
+            )));
         }
     };
 
@@ -291,7 +315,10 @@ async fn update_post(
         }
         Err(e) => {
             error!("Error updating post: {}", e);
-            return Err(ApiError::DatabaseError(format!("Failed to update post: {}", e)));
+            return Err(ApiError::DatabaseError(format!(
+                "Failed to update post: {}",
+                e
+            )));
         }
     };
 
@@ -304,11 +331,16 @@ async fn update_post(
         }
         Ok(None) => {
             error!("Post was updated but could not be retrieved");
-            Err(ApiError::InternalError("Post was updated but could not be retrieved".to_string()))
+            Err(ApiError::InternalError(
+                "Post was updated but could not be retrieved".to_string(),
+            ))
         }
         Err(e) => {
             error!("Error retrieving updated post: {}", e);
-            Err(ApiError::DatabaseError(format!("Failed to retrieve updated post: {}", e)))
+            Err(ApiError::DatabaseError(format!(
+                "Failed to retrieve updated post: {}",
+                e
+            )))
         }
     }
 }
@@ -325,7 +357,10 @@ async fn delete_post(
         Ok(Some(post)) => post,
         Ok(None) => {
             warn!("Blog post with slug '{}' not found for deletion", slug);
-            return Err(ApiError::NotFound(format!("Blog post with slug '{}' not found", slug)));
+            return Err(ApiError::NotFound(format!(
+                "Blog post with slug '{}' not found",
+                slug
+            )));
         }
         Err(e) => {
             error!("Failed to get post by slug '{}' for deletion: {}", slug, e);
@@ -423,7 +458,11 @@ async fn get_posts_by_tag(
                 .filter(|post| post.tags.iter().any(|tag| tag.slug == tag_slug))
                 .collect();
 
-            debug!("Retrieved {} posts with tag '{}'", posts_with_tag.len(), tag_slug);
+            debug!(
+                "Retrieved {} posts with tag '{}'",
+                posts_with_tag.len(),
+                tag_slug
+            );
             Ok(Json(posts_with_tag))
         }
         Err(e) => {

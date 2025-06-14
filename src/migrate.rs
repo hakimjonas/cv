@@ -1,6 +1,6 @@
 use anyhow::Result;
 use std::path::Path;
-use tracing::{info, debug};
+use tracing::{debug, info};
 
 use crate::cv_data::Cv;
 use crate::db::Database;
@@ -25,7 +25,10 @@ pub fn migrate_json_to_sqlite<P: AsRef<Path>, Q: AsRef<Path>>(
         json_path.as_ref().display()
     );
     let cv = Cv::from_json(json_path.as_ref().to_str().unwrap())?;
-    debug!("Successfully loaded CV data with {} projects", cv.projects.len());
+    debug!(
+        "Successfully loaded CV data with {} projects",
+        cv.projects.len()
+    );
 
     // Create database and schema
     info!("Creating database: {}", db_path.as_ref().display());

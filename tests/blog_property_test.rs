@@ -3,7 +3,7 @@ use im::{HashMap, Vector};
 use proptest::prelude::*;
 use proptest::strategy::{BoxedStrategy, Strategy};
 use proptest::test_runner::TestRunner;
-use serde_json::{to_string, from_str};
+use serde_json::{from_str, to_string};
 use std::cell::RefCell;
 use std::sync::Arc;
 use tempfile::TempDir;
@@ -76,18 +76,9 @@ fn blog_post_strategy() -> BoxedStrategy<BlogPost> {
         any::<bool>(),
         any::<bool>(),
     )
-        .prop_map(|(title, content, excerpt, author, date, image, tags, metadata, published, featured)| {
-            // Generate a slug from the title
-            let slug = title
-                .to_lowercase()
-                .chars()
-                .map(|c| if c.is_alphanumeric() { c } else { '-' })
-                .collect::<String>();
-
-            BlogPost {
-                id: None,
+        .prop_map(
+            |(
                 title,
-                slug,
                 content,
                 excerpt,
                 author,
@@ -97,8 +88,30 @@ fn blog_post_strategy() -> BoxedStrategy<BlogPost> {
                 metadata,
                 published,
                 featured,
-            }
-        })
+            )| {
+                // Generate a slug from the title
+                let slug = title
+                    .to_lowercase()
+                    .chars()
+                    .map(|c| if c.is_alphanumeric() { c } else { '-' })
+                    .collect::<String>();
+
+                BlogPost {
+                    id: None,
+                    title,
+                    slug,
+                    content,
+                    excerpt,
+                    author,
+                    date,
+                    image,
+                    tags,
+                    metadata,
+                    published,
+                    featured,
+                }
+            },
+        )
         .boxed()
 }
 
@@ -166,10 +179,12 @@ async fn save_and_retrieve_post_preserves_data() {
 
     // Generate a random blog post
     let post_cell = RefCell::new(None);
-    runner.run(&blog_post_strategy(), |p| {
-        post_cell.replace(Some(p.clone()));
-        Ok(())
-    }).unwrap();
+    runner
+        .run(&blog_post_strategy(), |p| {
+            post_cell.replace(Some(p.clone()));
+            Ok(())
+        })
+        .unwrap();
     let post = post_cell.into_inner().unwrap();
 
     // Set up a test database
@@ -195,7 +210,12 @@ async fn save_and_retrieve_post_preserves_data() {
     // Check tags (order might be different)
     assert_eq!(post.tags.len(), retrieved_post.tags.len());
     for tag in post.tags.iter() {
-        assert!(retrieved_post.tags.iter().any(|t| t.name == tag.name && t.slug == tag.slug));
+        assert!(
+            retrieved_post
+                .tags
+                .iter()
+                .any(|t| t.name == tag.name && t.slug == tag.slug)
+        );
     }
 
     // Check metadata
@@ -212,10 +232,12 @@ async fn update_post_is_idempotent() {
 
     // Generate a random blog post
     let post_cell = RefCell::new(None);
-    runner.run(&blog_post_strategy(), |p| {
-        post_cell.replace(Some(p.clone()));
-        Ok(())
-    }).unwrap();
+    runner
+        .run(&blog_post_strategy(), |p| {
+            post_cell.replace(Some(p.clone()));
+            Ok(())
+        })
+        .unwrap();
     let post = post_cell.into_inner().unwrap();
 
     // Set up a test database
@@ -253,7 +275,12 @@ async fn update_post_is_idempotent() {
     // Check tags
     assert_eq!(first_update.tags.len(), second_update.tags.len());
     for tag in first_update.tags.iter() {
-        assert!(second_update.tags.iter().any(|t| t.name == tag.name && t.slug == tag.slug));
+        assert!(
+            second_update
+                .tags
+                .iter()
+                .any(|t| t.name == tag.name && t.slug == tag.slug)
+        );
     }
 
     // Check metadata
@@ -270,10 +297,12 @@ async fn delete_post_makes_it_unretrievable() {
 
     // Generate a random blog post
     let post_cell = RefCell::new(None);
-    runner.run(&blog_post_strategy(), |p| {
-        post_cell.replace(Some(p.clone()));
-        Ok(())
-    }).unwrap();
+    runner
+        .run(&blog_post_strategy(), |p| {
+            post_cell.replace(Some(p.clone()));
+            Ok(())
+        })
+        .unwrap();
     let post = post_cell.into_inner().unwrap();
 
     // Set up a test database

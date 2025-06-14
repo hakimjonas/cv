@@ -16,9 +16,9 @@ pub mod error;
 pub mod migrations;
 pub mod repository;
 
-pub use repository::BlogRepository;
 #[allow(unused_imports)]
 pub use migrations::run_migrations;
+pub use repository::BlogRepository;
 
 /// Run migrations on a database pool
 #[allow(dead_code)]
@@ -44,7 +44,7 @@ pub fn create_connection_pool<P: AsRef<Path>>(path: P) -> Result<Pool<SqliteConn
         PRAGMA synchronous = NORMAL;
         PRAGMA busy_timeout = 5000;
         PRAGMA foreign_keys = ON;
-        "
+        ",
     )?;
 
     // Create the migrations table if it doesn't exist

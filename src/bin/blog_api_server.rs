@@ -5,7 +5,7 @@ use cv::logging;
 use std::net::SocketAddr;
 use std::sync::Once;
 use tokio::net::TcpListener;
-use tracing::{info, warn, error};
+use tracing::{error, info, warn};
 
 // Initialize once to ensure we only set up global state once
 static INIT: Once = Once::new();
@@ -97,8 +97,7 @@ async fn main() -> Result<()> {
     if listener.is_none() {
         let err_msg = format!(
             "Could not find an available port between {} and {}",
-            3000,
-            max_port
+            3000, max_port
         );
         error!("{}", err_msg);
         return Err(anyhow::anyhow!(err_msg));

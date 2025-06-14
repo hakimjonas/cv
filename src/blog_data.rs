@@ -1,8 +1,9 @@
-use anyhow::{Context, Result};
+use crate::blog_error::{BlogError, Result};
 use im::Vector;
 use rusqlite::{Connection, params};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
+use tracing::{debug, error, info, instrument, warn};
 
 /// Represents a blog post tag
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
@@ -199,7 +200,7 @@ impl BlogManager {
     /// Creates a new BlogManager with the given SQLite database path
     pub fn new(db_path: &Path) -> Result<Self> {
         let conn = Connection::open(db_path)
-            .with_context(|| format!("Failed to open database at {:?}", db_path))?;
+            .map_err(|e| BlogError::Database(e.into()))?;
 
         // Create tables if they don't exist
         Self::initialize_db(&conn)?;
@@ -369,7 +370,7 @@ impl BlogManager {
             Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
             Err(e) => {
                 println!("Error retrieving post with ID {}: {:?}", post_id, e);
-                Err(anyhow::anyhow!("Failed to retrieve post: {}", e))
+                Err(BlogError::Database(e.into()))
             }
         }
     }
@@ -490,7 +491,7 @@ impl BlogManager {
         let conn = self
             .conn
             .lock()
-            .map_err(|e| anyhow::anyhow!("Mutex lock error: {}", e))?;
+            .map_err(|e| BlogError::MutexLock(format!("Mutex lock error: {}", e)))?;
         let mut stmt = conn.prepare("SELECT id, name, slug FROM tags ORDER BY name")?;
 
         let tag_iter = stmt.query_map([], |row| {
@@ -528,7 +529,7 @@ impl BlogManager {
         let existing_tag_result = self
             .conn
             .lock()
-            .map_err(|e| anyhow::anyhow!("Mutex lock error: {}", e))?
+            .map_err(|e| BlogError::MutexLock(format!("Mutex lock error: {}", e)))?
             .query_row(
                 "SELECT id FROM tags WHERE name = ? OR slug = ?",
                 params![tag.name, tag.slug],
@@ -541,7 +542,7 @@ impl BlogManager {
                 // Insert new tag
                 self.conn
                     .lock()
-                    .map_err(|e| anyhow::anyhow!("Mutex lock error: {}", e))?
+                    .map_err(|e| BlogError::MutexLock(format!("Mutex lock error: {}", e)))?
                     .execute(
                         "INSERT INTO tags (name, slug) VALUES (?, ?)",
                         params![tag.name, tag.slug],
@@ -550,7 +551,7 @@ impl BlogManager {
                 Ok(self
                     .conn
                     .lock()
-                    .map_err(|e| anyhow::anyhow!("Mutex lock error: {}", e))?
+                    .map_err(|e| BlogError::MutexLock(format!("Mutex lock error: {}", e)))?
                     .last_insert_rowid())
             }
             Err(e) => Err(e.into()),
@@ -615,7 +616,7 @@ impl BlogManager {
             let conn = self
                 .conn
                 .lock()
-                .map_err(|e| anyhow::anyhow!("Mutex lock error: {}", e))?;
+                .map_err(|e| BlogError::MutexLock(format!("Mutex lock error: {}", e)))?;
 
             // Test if connection is still good with a simple query
             match conn.query_row("SELECT 1", [], |_| Ok(())) {
@@ -652,7 +653,7 @@ impl BlogManager {
                         PRAGMA mmap_size = 30000000;
                     ",
                     )
-                    .context("Failed to reconfigure stale connection")?;
+                    .map_err(|e| BlogError::Database(e.into()))?;
 
                     // Update last_used
                     self.last_used
@@ -676,7 +677,7 @@ impl BlogManager {
         let mut conn = self
             .conn
             .lock()
-            .map_err(|e| anyhow::anyhow!("Mutex lock error: {}", e))?;
+            .map_err(|e| BlogError::MutexLock(format!("Mutex lock error: {}", e)))?;
 
         // Update last_used timestamp
         self.last_used.store(
@@ -702,11 +703,11 @@ impl BlogManager {
             PRAGMA mmap_size = 30000000;
         ",
         )
-        .context("Failed to configure SQLite database for better concurrency")?;
+        .map_err(|e| BlogError::Database(e.into()))?;
 
         let tx = conn
             .transaction()
-            .context("Failed to start database transaction")?;
+            .map_err(|e| BlogError::Database(e.into()))?;
 
         let post_id = if let Some(id) = post.id {
             println!("Updating existing post with ID: {}", id);
@@ -729,13 +730,13 @@ impl BlogManager {
                     id
                 ],
             )
-            .context("Failed to update existing post")?;
+            .map_err(|e| BlogError::Database(e.into()))?;
 
             // Delete existing tags and metadata associations
             tx.execute("DELETE FROM post_tags WHERE post_id = ?", params![id])
-                .context("Failed to delete existing post tags")?;
+                .map_err(|e| BlogError::Database(e.into()))?;
             tx.execute("DELETE FROM post_metadata WHERE post_id = ?", params![id])
-                .context("Failed to delete existing post metadata")?;
+                .map_err(|e| BlogError::Database(e.into()))?;
 
             id
         } else {
@@ -757,7 +758,7 @@ impl BlogManager {
                     post.image
                 ],
             )
-            .context("Failed to insert new post")?;
+            .map_err(|e| BlogError::Database(e.into()))?;
 
             let id = tx.last_insert_rowid();
             println!("Created new post with ID: {}", id);
@@ -821,7 +822,7 @@ impl BlogManager {
             Err(e) => {
                 // If it's not a locking error, just return the error
                 if !e.to_string().contains("locked") {
-                    return Err(anyhow::anyhow!("Failed to commit transaction: {}", e));
+                    return Err(BlogError::Internal(format!("Failed to commit transaction: {}", e)));
                 }
 
                 // If it is a locking error, we can't retry with the same transaction
@@ -840,14 +841,14 @@ impl BlogManager {
         let mut conn = self
             .conn
             .lock()
-            .map_err(|e| anyhow::anyhow!("Mutex lock error: {}", e))?;
+            .map_err(|e| BlogError::MutexLock(format!("Mutex lock error: {}", e)))?;
         let tx = conn.transaction()?;
 
         tx.execute("DELETE FROM blog_posts WHERE id = ?", params![post_id])?;
 
         println!("Committing transaction to database");
         tx.commit()
-            .context("Failed to commit transaction - check filesystem permissions")?;
+            .map_err(|e| BlogError::Database(e.into()))?;
         println!("Transaction committed successfully");
         Ok(())
     }

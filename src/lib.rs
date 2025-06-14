@@ -14,6 +14,7 @@ pub mod db;
 // Blog-related modules
 pub mod blog_api;
 pub mod blog_data;
+pub mod blog_error;
 pub mod blog_utils;
 pub mod check_db_permissions;
 

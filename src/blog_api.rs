@@ -1,4 +1,5 @@
 use crate::blog_data::{BlogPost, Tag};
+use crate::blog_error::BlogError;
 use crate::db::{BlogRepository, Database};
 use anyhow::Result;
 use axum::{
@@ -102,6 +103,18 @@ impl IntoResponse for ApiError {
         };
 
         (status, error_message).into_response()
+    }
+}
+
+impl From<BlogError> for ApiError {
+    fn from(error: BlogError) -> Self {
+        match error {
+            BlogError::NotFound(msg) => ApiError::NotFound(msg),
+            BlogError::Validation(msg) => ApiError::ValidationError(msg),
+            BlogError::Database(e) => ApiError::DatabaseError(format!("Database error: {}", e)),
+            BlogError::MutexLock(msg) => ApiError::DatabaseError(format!("Database lock error: {}", msg)),
+            _ => ApiError::InternalError(format!("Internal error: {}", error)),
+        }
     }
 }
 

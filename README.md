@@ -232,6 +232,155 @@ This project can fetch your GitHub repositories and include them in your CV. To 
 
    The application will automatically detect when it's running in GitHub Actions and use the token from the environment.
 
+## Blog Functionality
+
+This project includes a blog functionality that allows you to create and manage blog posts. The blog features:
+
+- **SQLite Database**: Blog posts are stored in a SQLite database
+- **RESTful API**: A complete API for creating, reading, updating, and deleting blog posts
+- **Tagging System**: Support for categorizing posts with tags
+- **Markdown Support**: Write blog posts in Markdown format
+
+See [README-blog.md](README-blog.md) for detailed information about the blog functionality.
+
+### Blog API Endpoints
+
+- `GET /api/blog` - Get all blog posts
+- `GET /api/blog/:slug` - Get a specific blog post
+- `POST /api/blog` - Create a new blog post
+- `PUT /api/blog/:slug` - Update a blog post
+- `DELETE /api/blog/:slug` - Delete a blog post
+- `GET /api/blog/tags` - Get all tags
+- `GET /api/blog/tags/:slug` - Get all posts with a specific tag
+
+## Testing
+
+The project includes comprehensive tests for all functionality. Run them with our consolidated test script:
+
+```bash
+# Make the script executable if needed
+chmod +x test.sh
+
+# Run all tests
+./test.sh
+```
+
+The test suite includes:
+
+- **Unit Tests**: Tests for individual functions and methods
+- **Integration Tests**: Tests for the API endpoints
+- **Blog Functionality Tests**: Tests for the blog core and API
+- **GitHub API Tests**: Tests for the GitHub integration
+
+You can also run specific test groups manually:
+
+```bash
+# Run all tests with Rust's test framework
+cargo test
+
+# Run with clippy to check for code quality issues
+cargo clippy --tests
+
+# Test blog core functionality
+cargo run --bin blog_tester
+
+# Start blog API server for manual testing
+cargo run --bin blog_api_server
+```
+
+### Blog API Server
+
+A robust blog API server built with Rust using Axum framework and SQLite database.
+
+#### Features
+
+- RESTful API for blog management
+- SQLite database for data persistence
+- Support for blog posts, tags, and metadata
+- Docker support for easy deployment
+
+#### Prerequisites
+
+- Rust 1.87.0 or higher
+- SQLite3
+- Docker and Docker Compose (for containerized deployment)
+
+#### API Endpoints
+
+- `GET /api/blog` - Get all blog posts
+- `POST /api/blog` - Create a new blog post
+- `GET /api/blog/{slug}` - Get a blog post by slug
+- `PUT /api/blog/{slug}` - Update a blog post
+- `DELETE /api/blog/{slug}` - Delete a blog post
+- `GET /api/blog/tags` - Get all tags
+- `GET /api/blog/published` - Get all published posts
+- `GET /api/blog/featured` - Get all featured posts
+- `GET /api/blog/tag/{tag_slug}` - Get posts by tag
+
+## Deployment
+
+### Using Docker
+
+The easiest way to deploy is with Docker:
+
+```
+./deploy.sh
+```
+
+Or manually:
+
+```
+docker-compose up -d
+```
+
+### Manual Deployment
+
+1. Build the release binary: `cargo build --release`
+2. Copy the binary and static assets to your server
+3. Run the binary: `./blog_api_server`
+
+## API Endpoints
+
+- `GET /api/blog` - Get all blog posts
+- `POST /api/blog` - Create a new blog post
+- `GET /api/blog/{slug}` - Get a blog post by slug
+- `PUT /api/blog/{slug}` - Update a blog post
+- `DELETE /api/blog/{slug}` - Delete a blog post
+- `GET /api/blog/tags` - Get all tags
+- `GET /api/blog/published` - Get all published posts
+- `GET /api/blog/featured` - Get all featured posts
+- `GET /api/blog/tag/{tag_slug}` - Get posts by tag
+
+## Client
+
+Access the blog client at `http://localhost:3000/static/blog-client.html`
+
+## Troubleshooting
+
+If you encounter any issues, use the debug tool at `http://localhost:3000/static/blog-debug.html`
+
+## License
+
+MIT
+This project includes comprehensive tests for all functionality:
+
+```bash
+# Run all tests
+cargo test
+
+# Run tests with clippy to check for code quality issues
+cargo clippy --tests
+
+# Run a specific test
+cargo test <test_name>
+```
+
+The test suite includes:
+
+- **Unit Tests**: Tests for individual functions and methods
+- **Integration Tests**: Tests for the API endpoints
+- **GitHub API Tests**: Tests for the GitHub integration
+
 ## Dependencies
 
 - [serde](https://serde.rs/): For JSON serialization/deserialization
@@ -244,6 +393,8 @@ This project can fetch your GitHub repositories and include them in your CV. To 
 - [flate2](https://github.com/rust-lang/flate2-rs): For Gzip compression
 - [minify-html](https://github.com/wilsonzlin/minify-html): For HTML minification
 - [regex](https://github.com/rust-lang/regex): For CSS minification
+- [axum](https://github.com/tokio-rs/axum): For the web server and API
+- [rusqlite](https://github.com/rusqlite/rusqlite): For SQLite database interactions
 - [typst-cli](https://github.com/typst/typst): For PDF generation (external dependency)
 
 ## License

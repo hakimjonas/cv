@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  blog-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - blog-data:/app/data
+    restart: unless-stopped
+    environment:
+      - RUST_LOG=info
+
+volumes:
+  blog-data:

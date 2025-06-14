@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog Admin - {{ personal_info.name }}</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/admin.css">
+</head>
+<body>
+  <header class="admin-header">
+    <div class="container">
+      <a href="/" class="logo">{{ personal_info.name }}</a>
+      <div class="admin-title">Blog Admin</div>
+      <nav class="admin-nav">
+        <ul>
+          <li><a href="/blog/admin" class="active">Dashboard</a></li>
+          <li><a href="/blog/admin/posts">Posts</a></li>
+          <li><a href="/blog/admin/tags">Tags</a></li>
+          <li><a href="/blog" target="_blank">View Blog</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <div class="admin-container">
+    <div class="admin-sidebar">
+      <div class="sidebar-section">
+        <h3>Quick Actions</h3>
+        <ul>
+          <li><a href="/blog/admin/posts/new" class="btn btn-primary">New Post</a></li>
+          <li><a href="/blog/admin/tags/new" class="btn">New Tag</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>Statistics</h3>
+        <ul class="stats-list">
+          <li><span class="stat-label">Total Posts:</span> <span class="stat-value">{{ stats.total_posts }}</span></li>
+          <li><span class="stat-label">Published:</span> <span class="stat-value">{{ stats.published_posts }}</span></li>
+          <li><span class="stat-label">Drafts:</span> <span class="stat-value">{{ stats.draft_posts }}</span></li>
+          <li><span class="stat-label">Tags:</span> <span class="stat-value">{{ stats.total_tags }}</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="admin-content">
+      <h1>Blog Dashboard</h1>
+
+      <div class="dashboard-grid">
+        <div class="dashboard-card">
+          <h2>Recent Posts</h2>
+          {% if recent_posts.is_empty() %}
+          <p>No posts yet.</p>
+          {% else %}
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for post in recent_posts %}
+              <tr>
+                <td>{{ post.title }}</td>
+                <td>{{ post.date }}</td>
+                <td>
+                  <span class="status-badge {% if post.published %}status-published{% else %}status-draft{% endif %}">
+                    {% if post.published %}Published{% else %}Draft{% endif %}
+                  </span>
+                </td>
+                <td>
+                  <a href="/blog/admin/posts/edit/{{ post.id }}" class="action-link">Edit</a>
+                  <a href="/blog/{{ post.slug }}" target="_blank" class="action-link">View</a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% endif %}
+
+          <div class="card-actions">
+            <a href="/blog/admin/posts" class="btn">View All Posts</a>
+          </div>
+        </div>
+
+        <div class="dashboard-card">
+          <h2>Popular Tags</h2>
+          {% if popular_tags.is_empty() %}
+          <p>No tags yet.</p>
+          {% else %}
+          <div class="tags-cloud">
+            {% for tag in popular_tags %}
+            <a href="/blog/tag/{{ tag.slug }}" class="tag">{{ tag.name }}</a>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <div class="card-actions">
+            <a href="/blog/admin/tags" class="btn">Manage Tags</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/admin.js"></script>
+</body>
+</html>

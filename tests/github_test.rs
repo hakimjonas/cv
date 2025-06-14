@@ -168,7 +168,7 @@ fn test_fetch_all_github_projects_sync() {
     let has_user_projects = projects.iter().any(|p| {
         p.owner_username
             .as_ref()
-            .map_or(false, |username| username == "hakimjonas")
+            .is_some_and(|username| *username == "hakimjonas")
     });
 
     assert!(has_user_projects, "No projects from user hakimjonas found");
@@ -178,7 +178,7 @@ fn test_fetch_all_github_projects_sync() {
     let has_org_projects = projects.iter().any(|p| {
         p.owner_username
             .as_ref()
-            .map_or(false, |username| username == "fungal-lang")
+            .is_some_and(|username| *username == "fungal-lang")
     });
 
     if !has_org_projects {
@@ -295,14 +295,14 @@ fn test_fetch_projects_from_sources_sync() {
     let has_user_projects = projects.iter().any(|p| {
         p.owner_username
             .as_ref()
-            .map_or(false, |username| username == "hakimjonas")
+            .is_some_and(|username| username == "hakimjonas")
     });
 
     // Check if we have projects from the organization
     let has_org_projects = projects.iter().any(|p| {
         p.owner_username
             .as_ref()
-            .map_or(false, |username| username == "fungal-lang")
+            .is_some_and(|username| username == "fungal-lang")
     });
 
     // Assert that we have user projects

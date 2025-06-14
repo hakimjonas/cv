@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ post_title }} - Blog Admin</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/admin.css">
+  <link rel="stylesheet" href="/codemirror.css">
+</head>
+<body>
+  <header class="admin-header">
+    <div class="container">
+      <a href="/" class="logo">{{ personal_info.name }}</a>
+      <div class="admin-title">Blog Admin</div>
+      <nav class="admin-nav">
+        <ul>
+          <li><a href="/blog/admin">Dashboard</a></li>
+          <li><a href="/blog/admin/posts" class="active">Posts</a></li>
+          <li><a href="/blog/admin/tags">Tags</a></li>
+          <li><a href="/blog" target="_blank">View Blog</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <div class="admin-container">
+    <div class="admin-sidebar">
+      <div class="sidebar-section">
+        <h3>Post Settings</h3>
+        <div class="form-group">
+          <label for="published">Status</label>
+          <div class="toggle-switch">
+            <input type="checkbox" id="published" name="published" {% if is_edit and post.published %}checked{% endif %}>
+            <label for="published"></label>
+            <span class="toggle-label">{% if is_edit and post.published %}Published{% else %}Draft{% endif %}</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="featured">Featured</label>
+          <div class="toggle-switch">
+            <input type="checkbox" id="featured" name="featured" {% if is_edit and post.featured %}checked{% endif %}>
+            <label for="featured"></label>
+            <span class="toggle-label">{% if is_edit and post.featured %}Yes{% else %}No{% endif %}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>Tags</h3>
+        <div class="tags-selector">
+          {% for tag in all_tags %}
+          <div class="tag-checkbox">
+            <input type="checkbox" id="tag-{{ tag.id }}" name="tags[]" value="{{ tag.id }}" 
+                  {% if is_edit and post.tags.iter().any(|t| t.id == tag.id) %}checked{% endif %}>
+            <label for="tag-{{ tag.id }}">{{ tag.name }}</label>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="new-tag-form">
+          <h4>Add New Tag</h4>
+          <div class="form-group">
+            <input type="text" id="new-tag-name" placeholder="Tag name">
+          </div>
+          <button id="add-new-tag" class="btn">Add Tag</button>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>Metadata</h3>
+        <div id="metadata-container">
+          {% if is_edit %}
+          {% for key, value in post.metadata %}
+          <div class="metadata-item">
+            <div class="form-group">
+              <input type="text" name="metadata-key[]" value="{{ key }}" placeholder="Key">
+            </div>
+            <div class="form-group">
+              <input type="text" name="metadata-value[]" value="{{ value }}" placeholder="Value">
+            </div>
+            <button type="button" class="btn btn-icon remove-metadata">×</button>
+          </div>
+          {% endfor %}
+          {% endif %}
+        </div>
+        <button id="add-metadata" class="btn">Add Metadata</button>
+      </div>
+    </div>
+
+    <div class="admin-content">
+      <div class="content-header">
+        <h1>{% if is_edit %}Edit Post{% else %}New Post{% endif %}</h1>
+        <div class="header-actions">
+          <button id="save-draft" class="btn">Save Draft</button>
+          <button id="preview-post" class="btn">Preview</button>
+          <button id="publish-post" class="btn btn-primary">{% if is_edit and post.published %}Update{% else %}Publish{% endif %}</button>
+        </div>
+      </div>
+
+      <form id="post-form" class="post-form">
+        {% if is_edit %}
+        <input type="hidden" id="post-id" name="id" value="{{ post.id }}">
+        {% endif %}
+
+        <div class="form-group">
+          <label for="title">Title</label>
+          <input type="text" id="title" name="title" required {% if is_edit %}value="{{ post.title }}"{% endif %}>
+        </div>
+
+        <div class="form-group">
+          <label for="slug">Slug</label>
+          <input type="text" id="slug" name="slug" {% if is_edit %}value="{{ post.slug }}"{% endif %}>
+          <div class="form-hint">URL-friendly identifier. Leave blank to auto-generate from title.</div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="date">Date</label>
+            <input type="date" id="date" name="date" required 
+                  {% if is_edit %}value="{{ post.date }}"{% else %}value="{{ today }}"{% endif %}>
+          </div>
+
+          <div class="form-group">
+            <label for="author">Author</label>
+            <input type="text" id="author" name="author" required 
+                  {% if is_edit %}value="{{ post.author }}"{% else %}value="{{ personal_info.name }}"{% endif %}>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="excerpt">Excerpt</label>
+          <textarea id="excerpt" name="excerpt" rows="3">{% if is_edit %}{{ post.excerpt }}{% endif %}</textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="image">Featured Image URL</label>
+          <input type="text" id="image" name="image" {% if is_edit and post.image %}value="{{ post.image }}"{% endif %}>
+        </div>
+
+        <div class="form-group">
+          <label for="content">Content (Markdown)</label>
+          <textarea id="content" name="content" class="code-editor">{% if is_edit %}{{ post.content }}{% endif %}</textarea>
+        </div>
+      </form>
+
+      <div id="preview-container" class="preview-container" style="display: none;">
+        <h2>Preview</h2>
+        <div id="preview-content" class="preview-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/codemirror.js"></script>
+  <script src="/mode/markdown.js"></script>
+  <script src="/markdown-it.min.js"></script>
+  <script src="/prism.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Initialize CodeMirror editor
+      const contentArea = document.getElementById('content');
+      const editor = CodeMirror.fromTextArea(contentArea, {
+        mode: 'markdown',
+        lineNumbers: true,
+        theme: 'default',
+        lineWrapping: true
+      });
+
+      // Initialize Markdown parser
+      const md = window.markdownit({
+        html: true,
+        linkify: true,
+        typographer: true,
+        highlight: function (str, lang) {
+          if (lang && Prism.languages[lang]) {
+            try {
+              return Prism.highlight(str, Prism.languages[lang], lang);
+            } catch (e) {}
+          }
+          return ''; // use external default escaping
+        }
+      });
+
+      // Toggle status labels
+      const publishedToggle = document.getElementById('published');
+      const publishedLabel = publishedToggle.nextElementSibling.nextElementSibling;
+      publishedToggle.addEventListener('change', () => {
+        publishedLabel.textContent = publishedToggle.checked ? 'Published' : 'Draft';
+      });
+
+      const featuredToggle = document.getElementById('featured');
+      const featuredLabel = featuredToggle.nextElementSibling.nextElementSibling;
+      featuredToggle.addEventListener('change', () => {
+        featuredLabel.textContent = featuredToggle.checked ? 'Yes' : 'No';
+      });
+
+      // Auto-generate slug from title
+      const titleInput = document.getElementById('title');
+      const slugInput = document.getElementById('slug');
+
+      titleInput.addEventListener('input', () => {
+        if (!slugInput.value.trim() || slugInput.dataset.auto === 'true') {
+          slugInput.value = titleInput.value
+            .toLowerCase()
+            .replace(/[^\w\s-]/g, '')
+            .replace(/\s+/g, '-');
+          slugInput.dataset.auto = 'true';
+        }
+      });
+
+      slugInput.addEventListener('input', () => {
+        if (slugInput.value.trim()) {
+          slugInput.dataset.auto = 'false';
+        } else {
+          slugInput.dataset.auto = 'true';
+        }
+      });
+
+      // Add new tag
+      const addTagBtn = document.getElementById('add-new-tag');
+      const newTagInput = document.getElementById('new-tag-name');
+      const tagsContainer = document.querySelector('.tags-selector');
+
+      addTagBtn.addEventListener('click', async () => {
+        const tagName = newTagInput.value.trim();
+        if (!tagName) return;
+
+        try {
+          const response = await fetch('/api/blog/tags', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name: tagName })
+          });
+
+          if (response.ok) {
+            const tag = await response.json();
+
+            // Create new tag checkbox
+            const tagDiv = document.createElement('div');
+            tagDiv.className = 'tag-checkbox';
+            tagDiv.innerHTML = `
+              <input type="checkbox" id="tag-${tag.id}" name="tags[]" value="${tag.id}" checked>
+              <label for="tag-${tag.id}">${tag.name}</label>
+            `;
+
+            tagsContainer.appendChild(tagDiv);
+            newTagInput.value = '';
+          } else {
+            alert('Failed to create tag');
+          }
+        } catch (error) {
+          console.error('Error creating tag:', error);
+          alert('Error creating tag');
+        }
+      });
+
+      // Add metadata field
+      const addMetadataBtn = document.getElementById('add-metadata');
+      const metadataContainer = document.getElementById('metadata-container');
+
+      addMetadataBtn.addEventListener('click', () => {
+        const metadataItem = document.createElement('div');
+        metadataItem.className = 'metadata-item';
+        metadataItem.innerHTML = `
+          <div class="form-group">
+            <input type="text" name="metadata-key[]" placeholder="Key">
+          </div>
+          <div class="form-group">
+            <input type="text" name="metadata-value[]" placeholder="Value">
+          </div>
+          <button type="button" class="btn btn-icon remove-metadata">×</button>
+        `;
+
+        metadataContainer.appendChild(metadataItem);
+
+        // Add event listener to the remove button
+        const removeBtn = metadataItem.querySelector('.remove-metadata');
+        removeBtn.addEventListener('click', () => {
+          metadataItem.remove();
+        });
+      });
+
+      // Add event listeners to existing remove buttons
+      document.querySelectorAll('.remove-metadata').forEach(btn => {
+        btn.addEventListener('click', () => {
+          btn.closest('.metadata-item').remove();
+        });
+      });
+
+      // Preview functionality
+      const previewBtn = document.getElementById('preview-post');
+      const previewContainer = document.getElementById('preview-container');
+      const previewContent = document.getElementById('preview-content');
+
+      previewBtn.addEventListener('click', () => {
+        const content = editor.getValue();
+        previewContent.innerHTML = md.render(content);
+
+        // Toggle visibility
+        if (previewContainer.style.display === 'none') {
+          previewContainer.style.display = 'block';
+          previewBtn.textContent = 'Hide Preview';
+        } else {
+          previewContainer.style.display = 'none';
+          previewBtn.textContent = 'Preview';
+        }
+
+        // Apply syntax highlighting to code blocks
+        previewContent.querySelectorAll('pre code').forEach((block) => {
+          Prism.highlightElement(block);
+        });
+      });
+
+      // Save draft functionality
+      const saveDraftBtn = document.getElementById('save-draft');
+      saveDraftBtn.addEventListener('click', () => {
+        savePost(false);
+      });
+
+      // Publish functionality
+      const publishBtn = document.getElementById('publish-post');
+      publishBtn.addEventListener('click', () => {
+        savePost(true);
+      });
+
+      // Save post function
+      async function savePost(publish) {
+        // Update content from CodeMirror
+        editor.save();
+
+        // Get form data
+        const form = document.getElementById('post-form');
+        const postId = document.getElementById('post-id')?.value;
+        const title = document.getElementById('title').value;
+        let slug = document.getElementById('slug').value;
+
+        // Generate slug if empty
+        if (!slug) {
+          slug = title
+            .toLowerCase()
+            .replace(/[^\w\s-]/g, '')
+            .replace(/\s+/g, '-');
+        }
+
+        // Collect tags
+        const selectedTags = [];
+        document.querySelectorAll('input[name="tags[]"]:checked').forEach(checkbox => {
+          selectedTags.push({
+            id: parseInt(checkbox.value),
+            name: checkbox.nextElementSibling.textContent,
+            slug: checkbox.nextElementSibling.textContent
+              .toLowerCase()
+              .replace(/[^\w\s-]/g, '')
+              .replace(/\s+/g, '-')
+          });
+        });
+
+        // Collect metadata
+        const metadata = {};
+        document.querySelectorAll('.metadata-item').forEach(item => {
+          const keyInput = item.querySelector('input[name="metadata-key[]"]');
+          const valueInput = item.querySelector('input[name="metadata-value[]"]');
+
+          const key = keyInput.value.trim();
+          const value = valueInput.value.trim();
+
+          if (key) {
+            metadata[key] = value;
+          }
+        });
+
+        // Create post object
+        const post = {
+          id: postId ? parseInt(postId) : undefined,
+          title,
+          slug,
+          date: document.getElementById('date').value,
+          author: document.getElementById('author').value,
+          excerpt: document.getElementById('excerpt').value,
+          content: document.getElementById('content').value,
+          published: publish || document.getElementById('published').checked,
+          featured: document.getElementById('featured').checked,
+          image: document.getElementById('image').value || null,
+          tags: selectedTags,
+          metadata
+        };
+
+        try {
+          const method = postId ? 'PUT' : 'POST';
+          const url = postId ? `/api/blog/${slug}` : '/api/blog';
+
+          const response = await fetch(url, {
+            method,
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(post)
+          });
+
+          if (response.ok) {
+            const savedPost = await response.json();
+
+            // Redirect to edit page if this was a new post
+            if (!postId) {
+              window.location.href = `/blog/admin/posts/edit/${savedPost.id}`;
+            } else {
+              alert(publish ? 'Post published successfully!' : 'Draft saved successfully!');
+            }
+          } else {
+            alert('Failed to save post');
+          }
+        } catch (error) {
+          console.error('Error saving post:', error);
+          alert('Error saving post');
+        }
+      }
+    });
+  </script>
+</body>
+</html>

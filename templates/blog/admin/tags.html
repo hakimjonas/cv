@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Tags - Blog Admin</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/admin.css">
+</head>
+<body>
+  <header class="admin-header">
+    <div class="container">
+      <a href="/" class="logo">{{ personal_info.name }}</a>
+      <div class="admin-title">Blog Admin</div>
+      <nav class="admin-nav">
+        <ul>
+          <li><a href="/blog/admin">Dashboard</a></li>
+          <li><a href="/blog/admin/posts">Posts</a></li>
+          <li><a href="/blog/admin/tags" class="active">Tags</a></li>
+          <li><a href="/blog" target="_blank">View Blog</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <div class="admin-container">
+    <div class="admin-sidebar">
+      <div class="sidebar-section">
+        <h3>Add New Tag</h3>
+        <form id="new-tag-form" class="sidebar-form">
+          <div class="form-group">
+            <label for="tag-name">Name</label>
+            <input type="text" id="tag-name" name="name" required>
+          </div>
+
+          <div class="form-group">
+            <label for="tag-slug">Slug</label>
+            <input type="text" id="tag-slug" name="slug">
+            <div class="form-hint">Leave blank to auto-generate from name</div>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Add Tag</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="admin-content">
+      <div class="content-header">
+        <h1>Manage Tags</h1>
+      </div>
+
+      {% if tags.is_empty() %}
+      <div class="empty-state">
+        <p>No tags found.</p>
+        <p>Create your first tag using the form on the left.</p>
+      </div>
+      {% else %}
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Slug</th>
+            <th>Posts</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for tag in tags %}
+          <tr>
+            <td>
+              <form id="edit-tag-form-{{ tag.id }}" class="inline-edit-form">
+                <input type="text" name="name" value="{{ tag.name }}" class="inline-input" disabled>
+                <div class="edit-actions" style="display:none">
+                  <button type="submit" class="action-link save-tag">Save</button>
+                  <button type="button" class="action-link cancel-edit">Cancel</button>
+                </div>
+              </form>
+            </td>
+            <td>
+              <input type="text" name="slug" value="{{ tag.slug }}" class="inline-input" form="edit-tag-form-{{ tag.id }}" disabled>
+            </td>
+            <td>{{ tag_counts[tag.id] | default(value=0) }}</td>
+            <td>
+              <div class="table-actions">
+                <button class="action-link edit-tag">Edit</button>
+                <a href="/blog/tag/{{ tag.slug }}" target="_blank" class="action-link">View</a>
+                {% if tag_counts[tag.id] == 0 %}
+                <button class="action-link delete-tag" data-id="{{ tag.id }}" data-name="{{ tag.name }}">Delete</button>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+    </div>
+  </div>
+
+  <div id="delete-modal" class="modal">
+    <div class="modal-content">
+      <h2>Confirm Deletion</h2>
+      <p>Are you sure you want to delete the tag "<span id="delete-tag-name"></span>"?</p>
+      <div class="modal-actions">
+        <button id="confirm-delete" class="btn btn-danger">Delete</button>
+        <button id="cancel-delete" class="btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/admin.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Auto-generate slug from name
+      const nameInput = document.getElementById('tag-name');
+      const slugInput = document.getElementById('tag-slug');
+
+      nameInput.addEventListener('input', () => {
+        if (!slugInput.value.trim() || slugInput.dataset.auto === 'true') {
+          slugInput.value = nameInput.value
+            .toLowerCase()
+            .replace(/[^\w\s-]/g, '')
+            .replace(/\s+/g, '-');
+          slugInput.dataset.auto = 'true';
+        }
+      });
+
+      slugInput.addEventListener('input', () => {
+        if (slugInput.value.trim()) {
+          slugInput.dataset.auto = 'false';
+        } else {
+          slugInput.dataset.auto = 'true';
+        }
+      });
+
+      // New tag form submission
+      const newTagForm = document.getElementById('new-tag-form');
+      newTagForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const name = nameInput.value.trim();
+        let slug = slugInput.value.trim();
+
+        if (!name) return;
+
+        if (!slug) {
+          slug = name
+            .toLowerCase()
+            .replace(/[^\w\s-]/g, '')
+            .replace(/\s+/g, '-');
+        }
+
+        try {
+          const response = await fetch('/api/blog/tags', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name, slug })
+          });
+
+          if (response.ok) {
+            window.location.reload();
+          } else {
+            alert('Failed to create tag');
+          }
+        } catch (error) {
+          console.error('Error creating tag:', error);
+          alert('Error creating tag');
+        }
+      });
+
+      // Edit tag functionality
+      document.querySelectorAll('.edit-tag').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const row = btn.closest('tr');
+          const form = row.querySelector('form');
+          const inputs = row.querySelectorAll('.inline-input');
+          const actions = row.querySelector('.edit-actions');
+
+          // Enable inputs and show actions
+          inputs.forEach(input => {
+            input.disabled = false;
+          });
+
+          actions.style.display = 'block';
+          btn.style.display = 'none';
+        });
+      });
+
+      // Cancel edit
+      document.querySelectorAll('.cancel-edit').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const row = btn.closest('tr');
+          const form = row.querySelector('form');
+          const inputs = row.querySelectorAll('.inline-input');
+          const actions = row.querySelector('.edit-actions');
+          const editBtn = row.querySelector('.edit-tag');
+
+          // Reset form
+          form.reset();
+
+          // Disable inputs and hide actions
+          inputs.forEach(input => {
+            input.disabled = true;
+          });
+
+          actions.style.display = 'none';
+          editBtn.style.display = 'inline';
+        });
+      });
+
+      // Save tag
+      document.querySelectorAll('.save-tag').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          e.preventDefault();
+
+          const row = btn.closest('tr');
+          const form = row.querySelector('form');
+          const tagId = form.id.replace('edit-tag-form-', '');
+          const name = form.querySelector('input[name="name"]').value.trim();
+          const slug = row.querySelector('input[name="slug"]').value.trim();
+
+          if (!name) return;
+
+          try {
+            const response = await fetch(`/api/blog/tags/${tagId}`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ id: parseInt(tagId), name, slug })
+            });
+
+            if (response.ok) {
+              const inputs = row.querySelectorAll('.inline-input');
+              const actions = row.querySelector('.edit-actions');
+              const editBtn = row.querySelector('.edit-tag');
+
+              // Disable inputs and hide actions
+              inputs.forEach(input => {
+                input.disabled = true;
+              });
+
+              actions.style.display = 'none';
+              editBtn.style.display = 'inline';
+            } else {
+              alert('Failed to update tag');
+            }
+          } catch (error) {
+            console.error('Error updating tag:', error);
+            alert('Error updating tag');
+          }
+        });
+      });
+
+      // Delete tag functionality
+      const deleteModal = document.getElementById('delete-modal');
+      const deleteTagName = document.getElementById('delete-tag-name');
+      const confirmDeleteBtn = document.getElementById('confirm-delete');
+      const cancelDeleteBtn = document.getElementById('cancel-delete');
+      let tagIdToDelete = null;
+
+      // Show delete modal
+      document.querySelectorAll('.delete-tag').forEach(btn => {
+        btn.addEventListener('click', () => {
+          tagIdToDelete = btn.getAttribute('data-id');
+          deleteTagName.textContent = btn.getAttribute('data-name');
+          deleteModal.style.display = 'flex';
+        });
+      });
+
+      // Hide delete modal
+      cancelDeleteBtn.addEventListener('click', () => {
+        deleteModal.style.display = 'none';
+      });
+
+      // Handle delete confirmation
+      confirmDeleteBtn.addEventListener('click', async () => {
+        if (!tagIdToDelete) return;
+
+        try {
+          const response = await fetch(`/api/blog/tags/${tagIdToDelete}`, {
+            method: 'DELETE'
+          });
+
+          if (response.ok) {
+            window.location.reload();
+          } else {
+            alert('Failed to delete tag');
+          }
+        } catch (error) {
+          console.error('Error deleting tag:', error);
+          alert('Error deleting tag');
+        } finally {
+          deleteModal.style.display = 'none';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

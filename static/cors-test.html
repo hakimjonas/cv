@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORS Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 { color: #333; }
+        pre {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        button:hover { background-color: #45a049; }
+        .error { color: #e74c3c; }
+        .success { color: #2ecc71; }
+        #port-selector {
+            margin: 20px 0;
+        }
+        input[type="number"] {
+            padding: 8px;
+            width: 100px;
+        }
+    </style>
+</head>
+<body>
+    <h1>CORS Test</h1>
+    <p>This page tests Cross-Origin Resource Sharing (CORS) configuration for the blog API.</p>
+
+    <div id="port-selector">
+        <label for="api-port">API Server Port:</label>
+        <input type="number" id="api-port" value="3002" min="3000" max="3010">
+        <button id="update-port">Update Port</button>
+    </div>
+
+    <div>
+        <button id="test-get">Test GET Request</button>
+        <button id="test-post">Test POST Request</button>
+        <button id="test-options">Test OPTIONS Request</button>
+    </div>
+
+    <h3>Results:</h3>
+    <pre id="results">Click a button to run a test.</pre>
+
+    <script>
+        // Elements
+        const apiPortInput = document.getElementById('api-port');
+        const updatePortButton = document.getElementById('update-port');
+        const testGetButton = document.getElementById('test-get');
+        const testPostButton = document.getElementById('test-post');
+        const testOptionsButton = document.getElementById('test-options');
+        const resultsElement = document.getElementById('results');
+
+        // State
+        let apiPort = 3002;
+
+        // Get API URL
+        function getApiUrl() {
+            return `http://localhost:${apiPort}/api/blog`;
+        }
+
+        // Update results
+        function updateResults(message, isError = false) {
+            resultsElement.textContent = message;
+            resultsElement.className = isError ? 'error' : '';
+        }
+
+        // Update port
+        updatePortButton.addEventListener('click', () => {
+            apiPort = parseInt(apiPortInput.value, 10);
+            updateResults(`API URL updated to: ${getApiUrl()}`);
+        });
+
+        // Test GET request
+        testGetButton.addEventListener('click', async () => {
+            updateResults('Running GET test...');
+
+            try {
+                const response = await fetch(getApiUrl(), {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                // Get response headers as string
+                const headers = {};
+                response.headers.forEach((value, key) => {
+                    headers[key] = value;
+                });
+
+                // Get response body
+                const text = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    data = text;
+                }
+
+                updateResults(
+                    `GET Request Successful\n` +
+                    `Status: ${response.status} ${response.statusText}\n` +
+                    `Headers: ${JSON.stringify(headers, null, 2)}\n` +
+                    `Body: ${JSON.stringify(data, null, 2)}`
+                );
+            } catch (error) {
+                updateResults(`GET Request Failed: ${error.message}`, true);
+                console.error('GET Request Error:', error);
+            }
+        });
+
+        // Test POST request
+        testPostButton.addEventListener('click', async () => {
+            updateResults('Running POST test...');
+
+            const testPost = {
+                title: "CORS Test Post",
+                slug: "cors-test-post",
+                date: "2025-06-12",
+                author: "CORS Tester",
+                excerpt: "Testing CORS configuration",
+                content: "This is a test post to verify CORS is working correctly.",
+                published: true,
+                featured: false,
+                tags: [],
+                metadata: {}
+            };
+
+            try {
+                const response = await fetch(getApiUrl(), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(testPost)
+                });
+
+                // Get response headers as string
+                const headers = {};
+                response.headers.forEach((value, key) => {
+                    headers[key] = value;
+                });
+
+                // Get response body
+                const text = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    data = text;
+                }
+
+                updateResults(
+                    `POST Request Successful\n` +
+                    `Status: ${response.status} ${response.statusText}\n` +
+                    `Headers: ${JSON.stringify(headers, null, 2)}\n` +
+                    `Body: ${JSON.stringify(data, null, 2)}`
+                );
+            } catch (error) {
+                updateResults(`POST Request Failed: ${error.message}`, true);
+                console.error('POST Request Error:', error);
+            }
+        });
+
+        // Test OPTIONS request (CORS preflight)
+        testOptionsButton.addEventListener('click', async () => {
+            updateResults('Running OPTIONS test (CORS preflight)...');
+
+            try {
+                const response = await fetch(getApiUrl(), {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Access-Control-Request-Method': 'POST',
+                        'Access-Control-Request-Headers': 'content-type',
+                        'Origin': window.location.origin
+                    }
+                });
+
+                // Get response headers as string
+                const headers = {};
+                response.headers.forEach((value, key) => {
+                    headers[key] = value;
+                });
+
+                updateResults(
+                    `OPTIONS Request Successful\n` +
+                    `Status: ${response.status} ${response.statusText}\n` +
+                    `Headers: ${JSON.stringify(headers, null, 2)}`
+                );
+            } catch (error) {
+                updateResults(`OPTIONS Request Failed: ${error.message}`, true);
+                console.error('OPTIONS Request Error:', error);
+            }
+        });
+
+        // Initialize
+        updateResults(`API URL: ${getApiUrl()}`);
+    </script>
+</body>
+</html>

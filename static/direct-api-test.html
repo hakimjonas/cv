@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Direct API Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2 {
+            color: #2c3e50;
+        }
+        .test-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 300px;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        pre {
+            background-color: #f8f8f8;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            border: 1px solid #ddd;
+            height: 300px;
+            overflow-y: auto;
+            margin: 0;
+        }
+        .buttons {
+            margin: 20px 0;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .error {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .success {
+            color: #2ecc71;
+            font-weight: bold;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f8f8;
+            border-radius: 4px;
+        }
+        .network-info {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f8f8f8;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Direct API Test</h1>
+    <p>Use this tool to directly test the Blog API without any frameworks or libraries.</p>
+
+    <div class="network-info">
+        <h3>Network Information</h3>
+        <div id="network-details">Loading network information...</div>
+    </div>
+
+    <div class="buttons">
+        <button id="get-posts">GET All Posts</button>
+        <button id="create-post">Create Test Post</button>
+        <button id="fetch-test">Basic Fetch Test</button>
+    </div>
+
+    <div class="status" id="status">Ready to test API</div>
+
+    <div class="test-area">
+        <div>
+            <h2>Request</h2>
+            <textarea id="request-data">{
+  "title": "Direct Test Post",
+  "slug": "direct-test-post",
+  "date": "2025-06-12",
+  "author": "Direct Tester",
+  "excerpt": "This is a test excerpt",
+  "content": "This is the full content of the test post.",
+  "published": true,
+  "featured": false,
+  "image": null,
+  "tags": [
+    {
+      "name": "Test",
+      "slug": "test"
+    }
+  ],
+  "metadata": {}
+}</textarea>
+        </div>
+        <div>
+            <h2>Response</h2>
+            <pre id="response-data">Response will appear here</pre>
+        </div>
+    </div>
+
+    <script>
+        // Display network information
+        function displayNetworkInfo() {
+            const networkDiv = document.getElementById('network-details');
+            const info = [];
+
+            // Current URL
+            info.push(`Current URL: ${window.location.href}`);
+            info.push(`Host: ${window.location.host}`);
+            info.push(`Protocol: ${window.location.protocol}`);
+            info.push(`Origin: ${window.location.origin}`);
+            info.push(`Pathname: ${window.location.pathname}`);
+
+            // Connection information if available
+            if (navigator.connection) {
+                info.push(`Connection Type: ${navigator.connection.effectiveType || 'unknown'}`);
+                info.push(`Downlink: ${navigator.connection.downlink || 'unknown'} Mbps`);
+                info.push(`RTT: ${navigator.connection.rtt || 'unknown'} ms`);
+            }
+
+            // User agent
+            info.push(`User Agent: ${navigator.userAgent}`);
+
+            networkDiv.innerHTML = info.map(i => `<div>${i}</div>`).join('');
+        }
+
+        // Update status with timing information
+        function updateStatus(message, isError = false, startTime = null) {
+            const statusEl = document.getElementById('status');
+            let statusText = message;
+
+            if (startTime) {
+                const endTime = performance.now();
+                const duration = (endTime - startTime).toFixed(2);
+                statusText += ` (${duration}ms)`;
+            }
+
+            statusEl.innerHTML = statusText;
+            statusEl.className = 'status ' + (isError ? 'error' : 'success');
+        }
+
+        // Log both to console and response area
+        function logResponse(message, data = null) {
+            const responseEl = document.getElementById('response-data');
+            let logMessage = message;
+
+            if (data) {
+                console.log(message, data);
+                if (typeof data === 'object') {
+                    logMessage += '\n' + JSON.stringify(data, null, 2);
+                } else {
+                    logMessage += '\n' + data;
+                }
+            } else {
+                console.log(message);
+            }
+
+            responseEl.textContent = logMessage;
+        }
+
+        // Basic fetch test to check connectivity
+        async function testBasicFetch() {
+            const startTime = performance.now();
+            updateStatus('Testing basic fetch...');
+            logResponse('Running basic fetch test...');
+
+            try {
+                // First try to fetch the root path
+                const rootResponse = await fetch('/');
+                logResponse(`Root path fetch status: ${rootResponse.status} ${rootResponse.statusText}`);
+
+                // Then try a simple text file
+                const response = await fetch('/static/test.txt', {
+                    method: 'GET',
+                    cache: 'no-cache',
+                });
+
+                if (response.ok) {
+                    const text = await response.text();
+                    updateStatus('Basic fetch successful', false, startTime);
+                    logResponse('Fetch successful:', text);
+                } else {
+                    updateStatus(`Fetch failed with status: ${response.status}`, true, startTime);
+                    logResponse(`Fetch failed with status: ${response.status} ${response.statusText}`);
+                }
+            } catch (error) {
+                updateStatus('Fetch error: ' + error.message, true, startTime);
+                logResponse('Error during fetch test:', error.toString());
+                console.error('Fetch error:', error);
+            }
+        }
+
+        // Get all posts
+        async function getAllPosts() {
+            const startTime = performance.now();
+            updateStatus('Fetching all posts...');
+            logResponse('Fetching all posts...');
+
+            try {
+                const response = await fetch('/api/blog', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                    },
+                    cache: 'no-cache',
+                });
+
+                logResponse('Response status:', `${response.status} ${response.statusText}`);
+                logResponse('Response headers:', Object.fromEntries([...response.headers]));
+
+                const text = await response.text();
+
+                try {
+                    const data = JSON.parse(text);
+                    updateStatus('Successfully fetched posts', false, startTime);
+                    logResponse('Posts:', data);
+                } catch (e) {
+                    updateStatus('Error parsing JSON', true, startTime);
+                    logResponse('Received text (not valid JSON):', text);
+                }
+            } catch (error) {
+                updateStatus('Error: ' + error.message, true, startTime);
+                logResponse('Error fetching posts:', error.toString());
+                console.error('Fetch error:', error);
+            }
+        }
+
+        // Create a test post
+        async function createTestPost() {
+            const startTime = performance.now();
+            updateStatus('Creating test post...');
+
+            const requestData = document.getElementById('request-data').value;
+            let postData;
+
+            try {
+                postData = JSON.parse(requestData);
+            } catch (e) {
+                updateStatus('Invalid JSON in request data', true);
+                logResponse('Error parsing request JSON:', e.toString());
+                return;
+            }
+
+            logResponse('Sending post data:', postData);
+
+            try {
+                // Use XMLHttpRequest instead of fetch for better error details
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '/api/blog', true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4) { // Request completed
+                        logResponse(`XHR Status: ${xhr.status}`);
+                        logResponse(`XHR Response Text: ${xhr.responseText}`);
+
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            updateStatus('Successfully created post', false, startTime);
+                            try {
+                                const data = JSON.parse(xhr.responseText);
+                                logResponse('Created post:', data);
+                            } catch (e) {
+                                logResponse('Response is not JSON:', xhr.responseText);
+                            }
+                        } else {
+                            updateStatus(`Error: ${xhr.status} ${xhr.statusText}`, true, startTime);
+                        }
+                    }
+                };
+
+                xhr.onerror = function(e) {
+                    updateStatus('XHR Network Error', true, startTime);
+                    logResponse('XHR Network Error details:', e);
+                };
+
+                // Send the request
+                xhr.send(JSON.stringify(postData));
+
+            } catch (error) {
+                updateStatus('Error: ' + error.message, true, startTime);
+                logResponse('Error sending post:', error.toString());
+                console.error('XHR error:', error);
+            }
+        }
+
+        // Set up event listeners
+        document.getElementById('get-posts').addEventListener('click', getAllPosts);
+        document.getElementById('create-post').addEventListener('click', createTestPost);
+        document.getElementById('fetch-test').addEventListener('click', testBasicFetch);
+
+        // Initialize
+        displayNetworkInfo();
+    </script>
+</body>
+</html>

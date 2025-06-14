@@ -1,0 +1,2 @@
+This is a test file to check if static file serving is working correctly.
+If you can see this text, your server is serving static files properly.

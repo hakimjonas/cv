@@ -3,6 +3,14 @@ name = "cv"
 version = "0.1.0"
 edition = "2024"
 
+[[bin]]
+name = "blog_api_server"
+path = "src/bin/blog_api_server.rs"
+
+[[bin]]
+name = "blog_tester"
+path = "src/bin/blog_tester.rs"
+
 [dependencies]
 serde = { version = "1.0.129", features = ["derive"] }
 serde_json = "1.0.140"
@@ -12,6 +20,7 @@ anyhow = "1.0.98"
 reqwest = { version = "0.12.18", features = ["json", "blocking"] }
 tokio = { version = "1.45.1", features = ["full"] }
 git2 = "0.20.2"
+tempfile = "3.8.0"
 flate2 = "1.1.1"
 minify-html = "0.16.4"
 regex = "1.11.1"
@@ -21,3 +30,7 @@ keyring = "4.0.0-rc.1"
 dirs = "6.0.0"
 hostname = "0.4.1"
 whoami = "2.0.0-pre.2"
+axum = { version = "0.8.4", features = ["macros"] }
+chrono = "0.4.35"
+tower-http = { version = "0.5.2", features = ["fs", "cors", "timeout"] }
+rand = "0.8.5"

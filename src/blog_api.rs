@@ -1,5 +1,5 @@
 use crate::blog_data::{BlogPost, Tag};
-use crate::db::{Database, BlogRepository, error::DatabaseError};
+use crate::db::{Database, BlogRepository};
 use anyhow::Result;
 use axum::{
     Router,

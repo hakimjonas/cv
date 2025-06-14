@@ -27,7 +27,7 @@ pub fn migrate_json_to_sqlite<P: AsRef<Path>, Q: AsRef<Path>>(
 
     // Create database and schema
     println!("Creating database: {}", db_path.as_ref().display());
-    let mut db = Database::new(db_path)?;
+    let db = Database::new(db_path)?;
     db.create_schema()?;
 
     // Insert CV data into database

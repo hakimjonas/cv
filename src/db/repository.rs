@@ -595,9 +595,9 @@ impl BlogRepository {
         // Use functional approach to collect metadata
         let metadata_pairs = metadata_iter
             .map(|result| result.map_err(anyhow::Error::from))
-            .collect::<Result<Vec<(String, String)>>>()?;
+            .collect::<Result<Vector<(String, String)>>>()?;
 
-        // Convert Vec of pairs to HashMap using functional approach
+        // Convert Vector of pairs to HashMap using functional approach
         let metadata = metadata_pairs.into_iter()
             .fold(HashMap::new(), |acc, (key, value)| acc.update(key, value));
 

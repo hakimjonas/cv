@@ -149,8 +149,8 @@ impl LanguageIcons {
         project_name: &str,
         technologies: &im::Vector<String>,
     ) -> Option<String> {
-        // Convert technologies to a slice and delegate to the existing method
-        let tech_slice: Vec<String> = technologies.iter().cloned().collect();
-        self.detect_language(project_name, &tech_slice)
+        // Convert technologies to a Vec and then get a slice to delegate to the existing method
+        let tech_vec: Vec<String> = technologies.iter().cloned().collect();
+        self.detect_language(project_name, &tech_vec)
     }
 }

@@ -91,14 +91,15 @@ impl BlogRepository {
                 })
             })?;
 
-            let mut posts = Vector::new();
-            for post_result in post_iter {
-                let post = post_result?;
-                let post_with_tags = Self::load_tags_for_post(&conn, post)?;
-                let post_with_tags_and_metadata =
-                    Self::load_metadata_for_post(&conn, post_with_tags)?;
-                posts.push_back(post_with_tags_and_metadata);
-            }
+            // Use functional approach to collect and process posts
+            let posts = post_iter
+                .map(|post_result| -> Result<BlogPost> {
+                    let post = post_result?;
+                    let post_with_tags = Self::load_tags_for_post(&conn, post)?;
+                    let post_with_tags_and_metadata = Self::load_metadata_for_post(&conn, post_with_tags)?;
+                    Ok(post_with_tags_and_metadata)
+                })
+                .collect::<Result<Vector<_>>>()?;
 
             debug!("Loaded {} blog posts", posts.len());
             Ok(posts)
@@ -386,10 +387,10 @@ impl BlogRepository {
                 })
             })?;
 
-            let mut tags = Vector::new();
-            for tag_result in tag_iter {
-                tags.push_back(tag_result?);
-            }
+            // Use functional approach to collect tags
+            let tags = tag_iter
+                .map(|tag_result| tag_result.map_err(anyhow::Error::from))
+                .collect::<Result<Vector<_>>>()?;
 
             debug!("Loaded {} tags", tags.len());
             Ok(tags)
@@ -441,14 +442,15 @@ impl BlogRepository {
                 })
             })?;
 
-            let mut posts = Vector::new();
-            for post_result in post_iter {
-                let post = post_result?;
-                let post_with_tags = Self::load_tags_for_post(&conn, post)?;
-                let post_with_tags_and_metadata =
-                    Self::load_metadata_for_post(&conn, post_with_tags)?;
-                posts.push_back(post_with_tags_and_metadata);
-            }
+            // Use functional approach to collect and process posts
+            let posts = post_iter
+                .map(|post_result| -> Result<BlogPost> {
+                    let post = post_result?;
+                    let post_with_tags = Self::load_tags_for_post(&conn, post)?;
+                    let post_with_tags_and_metadata = Self::load_metadata_for_post(&conn, post_with_tags)?;
+                    Ok(post_with_tags_and_metadata)
+                })
+                .collect::<Result<Vector<_>>>()?;
 
             debug!("Loaded {} published blog posts", posts.len());
             Ok(posts)
@@ -561,10 +563,10 @@ impl BlogRepository {
             })
         })?;
 
-        let mut tags = Vector::new();
-        for tag_result in tag_iter {
-            tags.push_back(tag_result?);
-        }
+        // Use functional approach to collect tags
+        let tags = tag_iter
+            .map(|tag_result| tag_result.map_err(anyhow::Error::from))
+            .collect::<Result<Vector<_>>>()?;
 
         Ok(BlogPost { tags, ..post })
     }
@@ -590,11 +592,14 @@ impl BlogRepository {
             Ok((key, value))
         })?;
 
-        let mut metadata = HashMap::new();
-        for metadata_result in metadata_iter {
-            let (key, value) = metadata_result?;
-            metadata.insert(key, value);
-        }
+        // Use functional approach to collect metadata
+        let metadata_pairs = metadata_iter
+            .map(|result| result.map_err(anyhow::Error::from))
+            .collect::<Result<Vec<(String, String)>>>()?;
+
+        // Convert Vec of pairs to HashMap using functional approach
+        let metadata = metadata_pairs.into_iter()
+            .fold(HashMap::new(), |acc, (key, value)| acc.update(key, value));
 
         Ok(BlogPost { metadata, ..post })
     }

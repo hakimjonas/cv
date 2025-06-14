@@ -61,8 +61,8 @@ Now that the immediate next steps have been completed, the following tasks shoul
   - ✅ Refactor with_removed_tag
   - ✅ Refactor with_added_metadata
   - ✅ Refactor with_removed_metadata
-- Replace remaining mutable operations with functional transformations
-- Eliminate side effects in data processing functions
+- ✅ Replace remaining mutable operations with functional transformations in db/repository.rs
+- ✅ Eliminate side effects in data processing functions in db/repository.rs
 
 ### 3. Improve Test Coverage
 

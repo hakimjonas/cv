@@ -1,5 +1,5 @@
-use crate::blog_data::{BlogManager, BlogPost, Tag};
-use crate::db::Database;
+use crate::blog_data::{BlogPost, Tag};
+use crate::db::{Database, BlogRepository, error::DatabaseError};
 use anyhow::Result;
 use axum::{
     Router,
@@ -16,6 +16,61 @@ use tower_http::{
     services::ServeDir,
     timeout::TimeoutLayer,
 };
+use tracing::{debug, error, info, instrument, warn};
+
+/// Convert from repository::BlogPost to blog_data::BlogPost
+fn repo_to_api_post(repo_post: crate::db::repository::BlogPost) -> BlogPost {
+    BlogPost {
+        id: repo_post.id,
+        title: repo_post.title,
+        slug: repo_post.slug,
+        date: repo_post.date,
+        author: repo_post.author,
+        excerpt: repo_post.excerpt,
+        content: repo_post.content,
+        published: repo_post.published,
+        featured: repo_post.featured,
+        image: repo_post.image,
+        tags: repo_post.tags.into_iter().map(repo_to_api_tag).collect(),
+        metadata: repo_post.metadata.into_iter().collect(),
+    }
+}
+
+/// Convert from blog_data::BlogPost to repository::BlogPost
+fn api_to_repo_post(api_post: &BlogPost) -> crate::db::repository::BlogPost {
+    crate::db::repository::BlogPost {
+        id: api_post.id,
+        title: api_post.title.clone(),
+        slug: api_post.slug.clone(),
+        date: api_post.date.clone(),
+        author: api_post.author.clone(),
+        excerpt: api_post.excerpt.clone(),
+        content: api_post.content.clone(),
+        published: api_post.published,
+        featured: api_post.featured,
+        image: api_post.image.clone(),
+        tags: api_post.tags.iter().map(api_to_repo_tag).collect(),
+        metadata: api_post.metadata.iter().map(|(k, v)| (k.clone(), v.clone())).collect(),
+    }
+}
+
+/// Convert from repository::Tag to blog_data::Tag
+fn repo_to_api_tag(repo_tag: crate::db::repository::Tag) -> Tag {
+    Tag {
+        id: repo_tag.id,
+        name: repo_tag.name,
+        slug: repo_tag.slug,
+    }
+}
+
+/// Convert from blog_data::Tag to repository::Tag
+fn api_to_repo_tag(api_tag: &Tag) -> crate::db::repository::Tag {
+    crate::db::repository::Tag {
+        id: api_tag.id,
+        name: api_tag.name.clone(),
+        slug: api_tag.slug.clone(),
+    }
+}
 
 /// API error types
 #[derive(Debug, Error)]
@@ -46,46 +101,63 @@ impl IntoResponse for ApiError {
     }
 }
 
-/// API state containing the database connection and blog manager
+/// API state containing the database connection and blog repository
 pub struct ApiState {
-    pub blog_manager: Arc<BlogManager>,
+    pub blog_repo: BlogRepository,
     pub db: Database,
 }
 
 /// Gets all blog posts
 #[axum::debug_handler]
+#[instrument(skip(state), err)]
 async fn get_all_posts(
     State(state): State<Arc<ApiState>>,
-) -> Result<Json<Vector<BlogPost>>, StatusCode> {
-    state
-        .blog_manager
-        .get_all_posts()
-        .map(Json)
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
+) -> Result<Json<Vector<BlogPost>>, ApiError> {
+    match state.blog_repo.get_all_posts().await {
+        Ok(repo_posts) => {
+            let posts: Vector<BlogPost> = repo_posts.into_iter().map(repo_to_api_post).collect();
+            debug!("Retrieved {} blog posts", posts.len());
+            Ok(Json(posts))
+        }
+        Err(e) => {
+            error!("Failed to get all posts: {}", e);
+            Err(ApiError::DatabaseError(e.to_string()))
+        }
+    }
 }
 
 /// Gets a blog post by slug
 #[axum::debug_handler]
+#[instrument(skip(state), err)]
 async fn get_post_by_slug(
     State(state): State<Arc<ApiState>>,
     Path(slug): Path<String>,
-) -> Result<Json<BlogPost>, StatusCode> {
-    state
-        .blog_manager
-        .get_post_by_slug(&slug)
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
-        .and_then(|post_opt| post_opt.ok_or(StatusCode::NOT_FOUND))
-        .map(Json)
+) -> Result<Json<BlogPost>, ApiError> {
+    match state.blog_repo.get_post_by_slug(&slug).await {
+        Ok(Some(repo_post)) => {
+            let post = repo_to_api_post(repo_post);
+            debug!("Retrieved blog post with slug: {}", slug);
+            Ok(Json(post))
+        }
+        Ok(None) => {
+            warn!("Blog post with slug '{}' not found", slug);
+            Err(ApiError::NotFound(format!("Blog post with slug '{}' not found", slug)))
+        }
+        Err(e) => {
+            error!("Failed to get post by slug '{}': {}", slug, e);
+            Err(ApiError::DatabaseError(e.to_string()))
+        }
+    }
 }
 
 /// Creates a new blog post
 #[axum::debug_handler]
+#[instrument(skip(state, post), err)]
 async fn create_post(
     State(state): State<Arc<ApiState>>,
     Json(post): Json<BlogPost>,
-) -> Result<(StatusCode, Json<BlogPost>), (StatusCode, String)> {
-    println!("=== CREATE POST REQUEST ===");
-    println!("Received create post request: {:?}", post);
+) -> Result<(StatusCode, Json<BlogPost>), ApiError> {
+    info!("Creating new blog post with slug: {}", post.slug);
 
     // Validate required fields
     if post.title.is_empty()
@@ -94,94 +166,84 @@ async fn create_post(
         || post.date.is_empty()
         || post.author.is_empty()
     {
-        println!("❌ Validation failed: Missing required fields");
-        return Err((
-            StatusCode::UNPROCESSABLE_ENTITY,
+        warn!("Validation failed: Missing required fields for blog post");
+        return Err(ApiError::ValidationError(
             "Missing required fields: title, slug, content, date, author must be non-empty"
                 .to_string(),
         ));
     }
 
-    println!("✅ Validation passed");
+    debug!("Validation passed for new blog post");
 
-    // Try to create or update the post
-    println!("Creating/updating post in database...");
-    let post_id = match state.blog_manager.create_or_update_post(&post) {
-        Ok(id) => {
-            println!("✅ Post created/updated successfully with ID: {}", id);
-            id
+    // Convert API post to repository post
+    let repo_post = api_to_repo_post(&post);
+
+    // Try to save the post
+    match state.blog_repo.save_post(&repo_post).await {
+        Ok(post_id) => {
+            info!("Successfully created blog post with ID: {}", post_id);
+
+            // Get the created post from the database
+            match state.blog_repo.get_post_by_id(post_id).await {
+                Ok(Some(created_repo_post)) => {
+                    let created_post = repo_to_api_post(created_repo_post);
+                    debug!("Retrieved created blog post with ID: {}", post_id);
+                    Ok((StatusCode::CREATED, Json(created_post)))
+                }
+                Ok(None) => {
+                    warn!("Post with ID {} was created but not found when retrieving it", post_id);
+                    // Return a constructed post instead
+                    let constructed_post = BlogPost {
+                        id: Some(post_id),
+                        ..post
+                    };
+                    Ok((StatusCode::CREATED, Json(constructed_post)))
+                }
+                Err(e) => {
+                    warn!("Error retrieving created post: {}", e);
+                    // Return a constructed post instead
+                    let constructed_post = BlogPost {
+                        id: Some(post_id),
+                        ..post
+                    };
+                    Ok((StatusCode::CREATED, Json(constructed_post)))
+                }
+            }
         }
         Err(e) => {
             // Special handling for SQLite locking errors which might actually indicate success
             if e.to_string().contains("locked") || e.to_string().contains("busy") {
-                println!(
-                    "⚠️ Warning: Database lock detected during post creation, but operation may have succeeded"
-                );
+                warn!("Database lock detected during post creation, but operation may have succeeded");
+
                 // Try to see if the post was actually created despite the error
-                if let Ok(Some(created_post)) = state.blog_manager.get_post_by_slug(&post.slug) {
-                    println!("✅ Post was successfully created despite transaction lock error");
-                    return Ok((StatusCode::CREATED, Json(created_post)));
+                match state.blog_repo.get_post_by_slug(&post.slug).await {
+                    Ok(Some(created_repo_post)) => {
+                        info!("Post was successfully created despite transaction lock error");
+                        let created_post = repo_to_api_post(created_repo_post);
+                        return Ok((StatusCode::CREATED, Json(created_post)));
+                    }
+                    _ => {
+                        error!("Failed to create post due to database lock: {}", e);
+                        return Err(ApiError::DatabaseError(format!("Failed to create post: {}", e)));
+                    }
                 }
             }
 
-            println!("❌ Error creating post: {:?}", e);
-            return Err((
-                StatusCode::INTERNAL_SERVER_ERROR,
-                format!("Failed to create post: {}", e),
-            ));
+            error!("Failed to create post: {}", e);
+            Err(ApiError::DatabaseError(format!("Failed to create post: {}", e)))
         }
-    };
-
-    // Get the created post from the database to ensure all fields are properly set
-    println!("Retrieving created post from database...");
-    let updated_post = match state.blog_manager.get_post_by_id(post_id) {
-        Ok(Some(post)) => {
-            println!("✅ Successfully retrieved created post with ID {}", post_id);
-            post
-        }
-        Ok(None) => {
-            println!(
-                "⚠️  Warning: Post with ID {} was created but not found when retrieving it",
-                post_id
-            );
-            println!("Database may have consistency issues - using constructed post instead");
-
-            BlogPost {
-                id: Some(post_id),
-                ..post
-            }
-        }
-        Err(e) => {
-            println!("⚠️  Warning: Error retrieving created post: {:?}", e);
-            println!("Will return constructed post instead of retrieved one");
-
-            BlogPost {
-                id: Some(post_id),
-                ..post
-            }
-        }
-    };
-
-    println!("✅ Successfully created post with ID: {}", post_id);
-    println!("Response structure prepared successfully");
-
-    // Create a simplified response for debugging
-    let response_json = Json(updated_post);
-
-    println!("=== CREATE POST RESPONSE ===");
-    println!("Sending successful response");
-
-    Ok((StatusCode::CREATED, response_json))
+    }
 }
 
 /// Updates an existing blog post
 #[axum::debug_handler]
+#[instrument(skip(state, post), err)]
 async fn update_post(
     State(state): State<Arc<ApiState>>,
     Path(slug): Path<String>,
     Json(post): Json<BlogPost>,
-) -> Result<Json<BlogPost>, (StatusCode, String)> {
-    println!("Received update post request for slug {}: {:?}", slug, post);
+) -> Result<Json<BlogPost>, ApiError> {
+    info!("Updating blog post with slug: {}", slug);
 
     // Validate required fields
     if post.title.is_empty()
@@ -190,28 +252,26 @@ async fn update_post(
         || post.date.is_empty()
         || post.author.is_empty()
     {
-        return Err((
-            StatusCode::UNPROCESSABLE_ENTITY,
+        warn!("Validation failed: Missing required fields for blog post update");
+        return Err(ApiError::ValidationError(
             "Missing required fields: title, slug, content, date, author must be non-empty"
                 .to_string(),
         ));
     }
 
     // First, check if post exists
-    let existing_post = match state.blog_manager.get_post_by_slug(&slug) {
-        Ok(Some(post)) => post,
+    let existing_post = match state.blog_repo.get_post_by_slug(&slug).await {
+        Ok(Some(repo_post)) => {
+            debug!("Found existing post with slug: {}", slug);
+            repo_to_api_post(repo_post)
+        }
         Ok(None) => {
-            return Err((
-                StatusCode::NOT_FOUND,
-                format!("Post with slug '{}' not found", slug),
-            ));
+            warn!("Post with slug '{}' not found for update", slug);
+            return Err(ApiError::NotFound(format!("Post with slug '{}' not found", slug)));
         }
         Err(e) => {
-            println!("Error getting post with slug {}: {:?}", slug, e);
-            return Err((
-                StatusCode::INTERNAL_SERVER_ERROR,
-                format!("Failed to retrieve post: {}", e),
-            ));
+            error!("Error getting post with slug {}: {}", slug, e);
+            return Err(ApiError::DatabaseError(format!("Failed to retrieve post: {}", e)));
         }
     };
 
@@ -221,106 +281,156 @@ async fn update_post(
         ..post
     };
 
+    // Convert to repository post
+    let repo_post = api_to_repo_post(&post_to_update);
+
     // Update the post
-    match state.blog_manager.create_or_update_post(&post_to_update) {
-        Ok(_) => {}
+    match state.blog_repo.update_post(&repo_post).await {
+        Ok(_) => {
+            debug!("Successfully updated post in database");
+        }
         Err(e) => {
-            println!("Error updating post: {:?}", e);
-            return Err((
-                StatusCode::INTERNAL_SERVER_ERROR,
-                format!("Failed to update post: {}", e),
-            ));
+            error!("Error updating post: {}", e);
+            return Err(ApiError::DatabaseError(format!("Failed to update post: {}", e)));
         }
     };
 
     // Return the updated post
-    match state.blog_manager.get_post_by_slug(&post_to_update.slug) {
-        Ok(Some(updated_post)) => {
-            println!("Successfully updated post with ID: {:?}", updated_post.id);
+    match state.blog_repo.get_post_by_slug(&post_to_update.slug).await {
+        Ok(Some(updated_repo_post)) => {
+            let updated_post = repo_to_api_post(updated_repo_post);
+            info!("Successfully updated post with ID: {:?}", updated_post.id);
             Ok(Json(updated_post))
         }
-        Ok(None) => Err((
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "Post was updated but could not be retrieved".to_string(),
-        )),
+        Ok(None) => {
+            error!("Post was updated but could not be retrieved");
+            Err(ApiError::InternalError("Post was updated but could not be retrieved".to_string()))
+        }
         Err(e) => {
-            println!("Error retrieving updated post: {:?}", e);
-            Err((
-                StatusCode::INTERNAL_SERVER_ERROR,
-                format!("Failed to retrieve updated post: {}", e),
-            ))
+            error!("Error retrieving updated post: {}", e);
+            Err(ApiError::DatabaseError(format!("Failed to retrieve updated post: {}", e)))
         }
     }
 }
 
 /// Deletes a blog post
 #[axum::debug_handler]
+#[instrument(skip(state), err)]
 async fn delete_post(
     State(state): State<Arc<ApiState>>,
     Path(slug): Path<String>,
-) -> Result<StatusCode, StatusCode> {
+) -> Result<StatusCode, ApiError> {
     // First, check if post exists
-    let existing_post = state
-        .blog_manager
-        .get_post_by_slug(&slug)
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
-        .and_then(|post_opt| post_opt.ok_or(StatusCode::NOT_FOUND))?;
+    let existing_post = match state.blog_repo.get_post_by_slug(&slug).await {
+        Ok(Some(post)) => post,
+        Ok(None) => {
+            warn!("Blog post with slug '{}' not found for deletion", slug);
+            return Err(ApiError::NotFound(format!("Blog post with slug '{}' not found", slug)));
+        }
+        Err(e) => {
+            error!("Failed to get post by slug '{}' for deletion: {}", slug, e);
+            return Err(ApiError::DatabaseError(e.to_string()));
+        }
+    };
 
     // Delete the post
-    state
-        .blog_manager
-        .delete_post(existing_post.id.unwrap())
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
-    Ok(StatusCode::NO_CONTENT)
+    match state.blog_repo.delete_post(existing_post.id.unwrap()).await {
+        Ok(_) => {
+            info!("Deleted blog post with slug: {}", slug);
+            Ok(StatusCode::NO_CONTENT)
+        }
+        Err(e) => {
+            error!("Failed to delete post with slug '{}': {}", slug, e);
+            Err(ApiError::DatabaseError(e.to_string()))
+        }
+    }
 }
 
 /// Gets all tags
 #[axum::debug_handler]
+#[instrument(skip(state), err)]
 #[allow(dead_code)]
-async fn get_all_tags(State(state): State<Arc<ApiState>>) -> Result<Json<Vector<Tag>>, StatusCode> {
-    state
-        .blog_manager
-        .get_all_tags()
-        .map(Json)
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
+async fn get_all_tags(State(state): State<Arc<ApiState>>) -> Result<Json<Vector<Tag>>, ApiError> {
+    match state.blog_repo.get_all_tags().await {
+        Ok(repo_tags) => {
+            let tags: Vector<Tag> = repo_tags.into_iter().map(repo_to_api_tag).collect();
+            debug!("Retrieved {} tags", tags.len());
+            Ok(Json(tags))
+        }
+        Err(e) => {
+            error!("Failed to get all tags: {}", e);
+            Err(ApiError::DatabaseError(e.to_string()))
+        }
+    }
 }
 
 /// Gets all published blog posts
 #[axum::debug_handler]
+#[instrument(skip(state), err)]
 async fn get_published_posts(
     State(state): State<Arc<ApiState>>,
-) -> Result<Json<Vector<BlogPost>>, StatusCode> {
-    state
-        .blog_manager
-        .get_published_posts()
-        .map(Json)
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
+) -> Result<Json<Vector<BlogPost>>, ApiError> {
+    match state.blog_repo.get_published_posts().await {
+        Ok(repo_posts) => {
+            let posts: Vector<BlogPost> = repo_posts.into_iter().map(repo_to_api_post).collect();
+            debug!("Retrieved {} published blog posts", posts.len());
+            Ok(Json(posts))
+        }
+        Err(e) => {
+            error!("Failed to get published posts: {}", e);
+            Err(ApiError::DatabaseError(e.to_string()))
+        }
+    }
 }
 
 /// Gets all featured blog posts
 #[axum::debug_handler]
+#[instrument(skip(state), err)]
 async fn get_featured_posts(
     State(state): State<Arc<ApiState>>,
-) -> Result<Json<Vector<BlogPost>>, StatusCode> {
-    state
-        .blog_manager
-        .get_featured_posts()
-        .map(Json)
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
+) -> Result<Json<Vector<BlogPost>>, ApiError> {
+    match state.blog_repo.get_published_posts().await {
+        Ok(repo_posts) => {
+            // Filter for featured posts
+            let featured_posts: Vector<BlogPost> = repo_posts
+                .into_iter()
+                .map(repo_to_api_post)
+                .filter(|post| post.featured)
+                .collect();
+            debug!("Retrieved {} featured blog posts", featured_posts.len());
+            Ok(Json(featured_posts))
+        }
+        Err(e) => {
+            error!("Failed to get featured posts: {}", e);
+            Err(ApiError::DatabaseError(e.to_string()))
+        }
+    }
 }
 
 /// Gets posts by tag
 #[axum::debug_handler]
+#[instrument(skip(state), err)]
 async fn get_posts_by_tag(
     State(state): State<Arc<ApiState>>,
     Path(tag_slug): Path<String>,
-) -> Result<Json<Vector<BlogPost>>, StatusCode> {
-    state
-        .blog_manager
-        .get_posts_by_tag(&tag_slug)
-        .map(Json)
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
+) -> Result<Json<Vector<BlogPost>>, ApiError> {
+    match state.blog_repo.get_all_posts().await {
+        Ok(repo_posts) => {
+            // Filter posts by tag
+            let posts_with_tag: Vector<BlogPost> = repo_posts
+                .into_iter()
+                .map(repo_to_api_post)
+                .filter(|post| post.tags.iter().any(|tag| tag.slug == tag_slug))
+                .collect();
+
+            debug!("Retrieved {} posts with tag '{}'", posts_with_tag.len(), tag_slug);
+            Ok(Json(posts_with_tag))
+        }
+        Err(e) => {
+            error!("Failed to get posts by tag '{}': {}", tag_slug, e);
+            Err(ApiError::DatabaseError(e.to_string()))
+        }
+    }
 }
 
 /// Serves a simple HTML page at the root
@@ -436,9 +546,9 @@ async fn root_handler() -> impl axum::response::IntoResponse {
 
 /// Creates the blog API router
 pub fn create_blog_api_router(db_path: PathBuf) -> Result<Router> {
-    let blog_manager = Arc::new(BlogManager::new(&db_path)?);
     let db = Database::new(&db_path)?;
-    let state = Arc::new(ApiState { blog_manager, db });
+    let blog_repo = db.blog_repository();
+    let state = Arc::new(ApiState { blog_repo, db });
 
     // Create a static file service for the static directory
     let static_service = ServeDir::new("static");

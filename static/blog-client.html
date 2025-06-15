@@ -61,7 +61,8 @@
         }
         .post-actions {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-start;
+            gap: 10px;
             margin-top: 15px;
         }
         button {
@@ -75,6 +76,21 @@
         }
         button:hover {
             background-color: #1a252f;
+        }
+        .view-btn {
+            background-color: #2c3e50;
+        }
+        .edit-btn {
+            background-color: #f39c12;
+        }
+        .edit-btn:hover {
+            background-color: #e67e22;
+        }
+        .delete-btn {
+            background-color: #e74c3c;
+        }
+        .delete-btn:hover {
+            background-color: #c0392b;
         }
         .form-container {
             background-color: white;
@@ -165,6 +181,7 @@
         <div class="tabs">
             <div class="tab active" data-tab="posts">View Posts</div>
             <div class="tab" data-tab="create">Create Post</div>
+            <div class="tab" data-tab="edit">Edit Post</div>
         </div>
 
         <!-- Tab content for viewing posts -->
@@ -218,6 +235,62 @@
                     </div>
 
                     <button type="submit">Create Post</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tab content for editing posts -->
+        <div id="edit-tab" class="tab-content">
+            <h2>Edit Post</h2>
+            <div id="edit-message"></div>
+
+            <div class="form-container">
+                <div id="post-selector" class="form-group">
+                    <label for="post-select">Select Post to Edit</label>
+                    <select id="post-select">
+                        <option value="">-- Select a post --</option>
+                    </select>
+                </div>
+
+                <form id="edit-post-form" style="display: none;">
+                    <input type="hidden" id="edit-original-slug" name="original-slug">
+
+                    <div class="form-group">
+                        <label for="edit-title">Title</label>
+                        <input type="text" id="edit-title" name="title" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-slug">Slug</label>
+                        <input type="text" id="edit-slug" name="slug" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-content">Content</label>
+                        <textarea id="edit-content" name="content" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-excerpt">Excerpt</label>
+                        <textarea id="edit-excerpt" name="excerpt"></textarea>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <input type="checkbox" id="edit-published" name="published">
+                        <label for="edit-published">Published</label>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <input type="checkbox" id="edit-featured" name="featured">
+                        <label for="edit-featured">Featured</label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-tags">Tags (comma separated)</label>
+                        <input type="text" id="edit-tags" name="tags" placeholder="tag1, tag2, tag3">
+                    </div>
+
+                    <button type="submit">Update Post</button>
                 </form>
             </div>
         </div>
@@ -285,6 +358,8 @@
                         <p>${post.excerpt || post.content.substring(0, 150)}...</p>
                         <div class="post-actions">
                             <button class="view-btn" data-slug="${post.slug}">View Details</button>
+                            <button class="edit-btn" data-slug="${post.slug}">Edit</button>
+                            <button class="delete-btn" data-slug="${post.slug}">Delete</button>
                         </div>
                     `;
 
@@ -302,6 +377,34 @@
                         } catch (error) {
                             console.error('Error fetching post details:', error);
                             alert(`Error: ${error.message}`);
+                        }
+                    });
+                });
+
+                // Add event listeners to edit buttons
+                document.querySelectorAll('.edit-btn').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const slug = btn.dataset.slug;
+                        // Switch to edit tab
+                        document.querySelector('.tab[data-tab="edit"]').click();
+                        // Select the post in the dropdown
+                        const selectElement = document.getElementById('post-select');
+                        selectElement.value = slug;
+                        // Trigger the change event to load the post data
+                        selectElement.dispatchEvent(new Event('change'));
+                    });
+                });
+
+                // Add event listeners to delete buttons
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const slug = btn.dataset.slug;
+                        if (confirm(`Are you sure you want to delete the post "${slug}"?`)) {
+                            try {
+                                await deletePost(slug);
+                            } catch (error) {
+                                // Error is already handled in deletePost function
+                            }
                         }
                     });
                 });
@@ -333,6 +436,119 @@
                 console.error('Error creating post:', error);
                 messageContainer.innerHTML = `<div class="error">Error creating post: ${error.message}</div>`;
                 throw error;
+            }
+        }
+
+        // Function to update an existing post
+        async function updatePost(slug, postData) {
+            const messageContainer = document.getElementById('edit-message');
+            messageContainer.innerHTML = '<div>Updating post...</div>';
+
+            try {
+                // Use our API client instead of fetch
+                const result = await BlogAPI.updatePost(slug, postData);
+
+                messageContainer.innerHTML = `<div class="success">Post updated successfully!</div>`;
+
+                // Switch to posts tab and reload posts
+                document.querySelector('.tab[data-tab="posts"]').click();
+                loadPosts();
+
+                return result;
+            } catch (error) {
+                console.error('Error updating post:', error);
+                messageContainer.innerHTML = `<div class="error">Error updating post: ${error.message}</div>`;
+                throw error;
+            }
+        }
+
+        // Function to delete a post
+        async function deletePost(slug) {
+            try {
+                // Use our API client instead of fetch
+                await BlogAPI.deletePost(slug);
+
+                // Show success message
+                alert('Post deleted successfully!');
+
+                // Reload posts
+                loadPosts();
+
+                return true;
+            } catch (error) {
+                console.error('Error deleting post:', error);
+                alert(`Error deleting post: ${error.message}`);
+                throw error;
+            }
+        }
+
+        // Function to populate the post selector dropdown
+        async function populatePostSelector() {
+            const selectElement = document.getElementById('post-select');
+
+            try {
+                // Clear existing options except the first one
+                while (selectElement.options.length > 1) {
+                    selectElement.remove(1);
+                }
+
+                // Get all posts
+                const posts = await BlogAPI.getPosts();
+
+                // Add each post to the dropdown
+                posts.forEach(post => {
+                    const option = document.createElement('option');
+                    option.value = post.slug;
+                    option.textContent = post.title;
+                    selectElement.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error populating post selector:', error);
+                alert(`Error loading posts: ${error.message}`);
+            }
+        }
+
+        // Function to load a post into the edit form
+        async function loadPostForEditing(slug) {
+            const form = document.getElementById('edit-post-form');
+            const messageContainer = document.getElementById('edit-message');
+
+            if (!slug) {
+                form.style.display = 'none';
+                messageContainer.innerHTML = '';
+                return;
+            }
+
+            messageContainer.innerHTML = '<div>Loading post...</div>';
+
+            try {
+                // Get the post
+                const post = await BlogAPI.getPost(slug);
+
+                // Populate the form
+                document.getElementById('edit-original-slug').value = post.slug;
+                document.getElementById('edit-title').value = post.title;
+                document.getElementById('edit-slug').value = post.slug;
+                document.getElementById('edit-content').value = post.content;
+                document.getElementById('edit-excerpt').value = post.excerpt || '';
+                document.getElementById('edit-published').checked = post.published;
+                document.getElementById('edit-featured').checked = post.featured;
+
+                // Handle tags
+                if (post.tags && post.tags.length > 0) {
+                    const tagNames = post.tags.map(tag => tag.name);
+                    document.getElementById('edit-tags').value = tagNames.join(', ');
+                } else {
+                    document.getElementById('edit-tags').value = '';
+                }
+
+                // Show the form
+                form.style.display = 'block';
+                messageContainer.innerHTML = '';
+            } catch (error) {
+                console.error('Error loading post for editing:', error);
+                messageContainer.innerHTML = `<div class="error">Error loading post: ${error.message}</div>`;
+                form.style.display = 'none';
             }
         }
 
@@ -386,6 +602,78 @@
                 .replace(/\s+/g, '-');
 
             document.getElementById('slug').value = slug;
+        });
+
+        // Auto-generate slug from title in edit form
+        document.getElementById('edit-title').addEventListener('input', (e) => {
+            const title = e.target.value;
+            const slug = title.toLowerCase()
+                .replace(/[^\w\s-]/g, '')
+                .replace(/\s+/g, '-');
+
+            document.getElementById('edit-slug').value = slug;
+        });
+
+        // Event listener for edit form submission
+        document.getElementById('edit-post-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const originalSlug = document.getElementById('edit-original-slug').value;
+            const title = document.getElementById('edit-title').value;
+            const slug = document.getElementById('edit-slug').value;
+            const content = document.getElementById('edit-content').value;
+            const excerpt = document.getElementById('edit-excerpt').value;
+            const published = document.getElementById('edit-published').checked;
+            const featured = document.getElementById('edit-featured').checked;
+            const tagsInput = document.getElementById('edit-tags').value;
+
+            // Parse tags
+            const tags = tagsInput.split(',')
+                .map(tag => tag.trim())
+                .filter(tag => tag)
+                .map(tag => ({
+                    name: tag,
+                    slug: tag.toLowerCase().replace(/\s+/g, '-')
+                }));
+
+            const postData = {
+                title,
+                slug,
+                content,
+                excerpt: excerpt || content.substring(0, 150),
+                published,
+                featured,
+                date: new Date().toISOString().split('T')[0],
+                author: 'Blog Client User',
+                image: null,
+                tags,
+                metadata: {}
+            };
+
+            try {
+                await updatePost(originalSlug, postData);
+                // Reset the form and hide it
+                document.getElementById('edit-post-form').reset();
+                document.getElementById('edit-post-form').style.display = 'none';
+                document.getElementById('post-select').value = '';
+            } catch (error) {
+                // Error is already handled in updatePost function
+            }
+        });
+
+        // Event listener for post selector change
+        document.getElementById('post-select').addEventListener('change', (e) => {
+            const slug = e.target.value;
+            loadPostForEditing(slug);
+        });
+
+        // Event listener for tab changes to populate the post selector
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                if (tab.dataset.tab === 'edit') {
+                    populatePostSelector();
+                }
+            });
         });
 
         // Load posts when the page loads

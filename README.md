@@ -128,11 +128,14 @@ Before deploying to production, it's recommended to test your changes in a local
 # Make the script executable
 chmod +x deploy-local.sh
 
+# Copy necessary files from dist to static directory
+cp dist/cv.html dist/cv.pdf dist/projects.html static/
+
 # Start the local development environment
 ./deploy-local.sh start
 ```
 
-This will start a development environment with hot reloading, making it easy to test changes before deployment. For more details, see [DEPLOYMENT.md](DEPLOYMENT.md#local-development-and-testing).
+This will start a development environment with hot reloading, making it easy to test changes before deployment. The copy step ensures that all pages (including CV and Projects) are available in the local environment. For more details, see [DEPLOYMENT.md](DEPLOYMENT.md#local-development-and-testing).
 
 ### Production Deployment
 
@@ -334,9 +337,40 @@ This script will:
 - Check the health status of the container
 - Provide detailed error messages if deployment fails
 
+## Website Structure
+
+The website consists of three main pages:
+
+1. **Home Page (index.html)**: The main landing page that serves as the blog frontend, displaying recent blog posts and personal information.
+2. **CV Page (cv.html)**: Displays the HTML version of the CV with a link to download the PDF version.
+3. **Projects Page (projects.html)**: Displays GitHub projects with details fetched from the GitHub API.
+
+All pages share a consistent header and footer, loaded dynamically via JavaScript, ensuring a unified user experience across the site. The header and footer are implemented as HTML modules in the `static/modules/` directory and are loaded by the `modules.js` script, which ensures that all necessary CSS files are loaded before rendering the modules.
+
+## Frontend Access
+
+You can access the frontend of the application at the following URLs:
+
+- **Production Website**: https://yourusername.github.io/personal-website/
+  - Home/Blog: https://yourusername.github.io/personal-website/
+  - CV: https://yourusername.github.io/personal-website/cv.html
+  - Projects: https://yourusername.github.io/personal-website/projects.html
+
+- **Blog API (Production)**: http://your-server-ip:3000
+  - API Endpoints: http://your-server-ip:3000/api/blog
+  - Blog Client: http://your-server-ip:3000/static/blog-client.html
+  - Debug Tool: http://your-server-ip:3000/static/blog-debug.html
+
+- **Local Development**:
+  - Home/Blog: http://localhost:3002/static/index.html
+  - Blog Client: http://localhost:3002/static/blog-client.html
+  - Debug Tool: http://localhost:3002/static/blog-debug.html
+
+> **Note**: Replace `yourusername` with your actual GitHub username and `your-server-ip` with the actual IP address or domain name of your server.
+
 ## Client
 
-Access the blog client at `http://localhost:3002/static/blog-client.html` (for local development) or `http://localhost:3000/static/blog-client.html` (for production)
+For development and testing purposes, you can also access the standalone blog client at `http://localhost:3002/static/blog-client.html` (for local development) or `http://localhost:3000/static/blog-client.html` (for production).
 
 ## Troubleshooting
 

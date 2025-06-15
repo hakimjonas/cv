@@ -51,7 +51,14 @@ Before deploying to production, it's recommended to test your changes in a local
    chmod +x deploy-local.sh
    ```
 
-3. Start the local development environment:
+3. Copy necessary files from the dist directory to the static directory:
+   ```bash
+   cp dist/cv.html dist/cv.pdf dist/projects.html static/
+   ```
+
+   This ensures that all pages are available in the local development environment.
+
+4. Start the local development environment:
    ```bash
    ./deploy-local.sh start
    ```
@@ -64,8 +71,11 @@ Before deploying to production, it's recommended to test your changes in a local
 
 4. Access the application:
    - Blog API: http://localhost:3002
+   - Main Frontend: http://localhost:3002/static/index.html
    - Blog Client: http://localhost:3002/static/blog-client.html
    - Debug Tool: http://localhost:3002/static/blog-debug.html
+
+   > **Note**: The first time you start the local environment, it may take several minutes for the blog-api service to compile and start up. The script will wait for the service to be ready and provide appropriate feedback. If the service takes longer than expected to start, the script will provide instructions on how to check the status and view the logs.
 
 ### Managing the Local Environment
 
@@ -121,6 +131,18 @@ Before deploying to production, it's recommended to:
    ```bash
    cargo test
    ```
+
+### How Local Deployment Validates Production Readiness
+
+The local development environment is designed to closely simulate the production environment, making it an effective way to validate that your changes will work in production:
+
+1. **Similar Docker-based Architecture**: Both environments use Docker and Docker Compose, ensuring that container-related issues are caught early.
+2. **Same Application Code**: The local environment runs the same application code that will be deployed to production.
+3. **Identical API Endpoints**: All API endpoints available in production are also available in the local environment.
+4. **Similar Frontend Integration**: The frontend integration works the same way in both environments, just on different ports (3002 for local, 3000 for production).
+5. **Health Checks**: The local environment includes health checks similar to those used in production, helping validate that your service will pass production health checks.
+
+If your application works correctly in the local environment, it's a strong indication that it will work in production. Any differences between the environments are primarily related to development convenience (e.g., hot reloading, debug logging) and don't affect the core functionality.
 
 ## CI/CD Pipeline
 
@@ -226,6 +248,23 @@ The application includes a health check endpoint at `/health` that returns a 200
    - Check if Docker and Docker Compose are installed
    - Ensure the ports are not already in use
    - Check if there are permission issues with the volumes
+
+## Frontend Access URLs
+
+After deployment, you can access the frontend of the application at the following URLs:
+
+- **GitHub Pages Deployment**:
+  - Main Website: https://yourusername.github.io/personal-website/
+  - CV Page: https://yourusername.github.io/personal-website/cv.html
+  - Projects Page: https://yourusername.github.io/personal-website/projects.html
+
+- **Server Deployment (Blog API)**:
+  - API Root: http://your-server-ip:3000/
+  - API Endpoints: http://your-server-ip:3000/api/blog
+  - Blog Client: http://your-server-ip:3000/static/blog-client.html
+  - Debug Tool: http://your-server-ip:3000/static/blog-debug.html
+
+> **Note**: Replace `yourusername` with your actual GitHub username and `your-server-ip` with the actual IP address or domain name of your server.
 
 ### Getting Help
 

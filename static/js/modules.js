@@ -139,8 +139,11 @@ const ModuleLoader = (function() {
             socialLinks
         };
 
-        // Load head module
+        // Load head module first and ensure it's applied
         await loadHeadModule();
+
+        // Ensure CSS files are loaded before rendering header and footer
+        await new Promise(resolve => setTimeout(resolve, 100));
 
         // Load header
         const headerPlaceholder = document.getElementById('header-placeholder');

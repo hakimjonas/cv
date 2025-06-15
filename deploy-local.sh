@@ -34,19 +34,52 @@ start_local_env() {
     docker-compose -f docker-compose.local.yml up -d --build
 
     echo "Waiting for services to start..."
-    sleep 5
 
-    # Check if the service is running
-    if docker-compose -f docker-compose.local.yml ps | grep -q "blog-api.*Up"; then
-        echo "Local development environment is running!"
-        echo "You can access the blog API at http://localhost:3002"
-        echo "You can access the blog client at http://localhost:3002/static/blog-client.html"
-        echo "You can access the debug tool at http://localhost:3002/static/blog-debug.html"
-    else
-        echo "Failed to start local development environment. Check the logs:"
-        docker-compose -f docker-compose.local.yml logs
-        exit 1
-    fi
+    # Wait for the container to be up
+    echo "Checking if container is running..."
+    for i in {1..10}; do
+        if docker-compose -f docker-compose.local.yml ps | grep -q "blog-api.*Up"; then
+            echo "Container is up and running."
+            break
+        fi
+        if [ $i -eq 10 ]; then
+            echo "Failed to start container. Check the logs:"
+            docker-compose -f docker-compose.local.yml logs
+            exit 1
+        fi
+        echo "Waiting for container to start... (attempt $i/10)"
+        sleep 3
+    done
+
+    # Wait for the application to be healthy
+    echo "Waiting for application to be ready..."
+    for i in {1..20}; do
+        HEALTH_STATUS=$(docker inspect --format='{{.State.Health.Status}}' $(docker-compose -f docker-compose.local.yml ps -q blog-api) 2>/dev/null)
+        if [ "$HEALTH_STATUS" = "healthy" ]; then
+            echo "Application is ready!"
+            echo "Local development environment is running!"
+            echo "You can access the blog API at http://localhost:3002"
+            echo "You can access the main frontend at http://localhost:3002/static/index.html"
+            echo "You can access the blog client at http://localhost:3002/static/blog-client.html"
+            echo "You can access the debug tool at http://localhost:3002/static/blog-debug.html"
+            return 0
+        fi
+        echo "Waiting for application to be ready... (attempt $i/20, status: ${HEALTH_STATUS:-unknown})"
+        sleep 5
+    done
+
+    echo "Application failed to become ready in the expected time."
+    echo "This is normal for the first run as Rust needs to compile the application."
+    echo "Check the logs to see the compilation progress:"
+    echo "  ./deploy-local.sh logs"
+    echo "You can also check the status with:"
+    echo "  ./deploy-local.sh status"
+    echo
+    echo "The application should be available at the following URLs once compilation is complete:"
+    echo "  Blog API: http://localhost:3002"
+    echo "  Main Frontend: http://localhost:3002/static/index.html"
+    echo "  Blog Client: http://localhost:3002/static/blog-client.html"
+    echo "  Debug Tool: http://localhost:3002/static/blog-debug.html"
 }
 
 # Function to stop the local development environment

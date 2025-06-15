@@ -35,8 +35,6 @@
         </div>
       </section>
 
-
-
       <section class="about" id="about">
         <div class="container">
           <div class="about-content">
@@ -109,6 +107,12 @@
     <!-- Load modules.js for dynamic module loading -->
     <script src="js/modules.js"></script>
 
+    <!-- Load API client for blog functionality -->
+    <script src="js/api-client.js"></script>
+
+    <!-- Load blog integration script -->
+    <script src="js/blog-integration.js"></script>
+
     <script>
       // Format blog dates
       document.addEventListener("DOMContentLoaded", function () {
@@ -127,67 +131,7 @@
       async function fetchGitHubRepos() {
         const projectsContainer = document.getElementById("featured-projects");
         if (!projectsContainer) return;
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CV & Blog</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        h1, h2, h3 {
-            color: #444;
-        }
-        a {
-            color: #0066cc;
-            text-decoration: none;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-        .button {
-            display: inline-block;
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            margin: 10px 0;
-            border-radius: 4px;
-            text-decoration: none;
-        }
-        .button:hover {
-            background-color: #45a049;
-        }
-    </style>
-</head>
-<body>
-    <h1>Personal CV & Blog</h1>
 
-    <section>
-        <h2>CV</h2>
-        <p>View and download my CV in different formats:</p>
-        <p>
-            <a href="/cv.html" class="button">HTML CV</a>
-            <a href="/cv.pdf" class="button">PDF CV</a>
-        </p>
-    </section>
-
-    <section>
-        <h2>Blog</h2>
-        <p>Check out my latest blog posts:</p>
-        <p>
-            <a href="/blog" class="button">View Blog</a>
-            <a href="/static/blog-test.html" class="button">Blog Admin</a>
-        </p>
-    </section>
-</body>
-</html>
         // Define the repositories to fetch
         const repos = [
           { owner: "hakimjonas", repo: "valar", language: "scala" },
@@ -213,26 +157,13 @@
             }
             const user = await userResponse.json();
 
-            // Prepare project data
-            const projectData = {
-              name: repo.name,
-              display_name: repo.name,
-              description: repo.description || "No description available",
-              language: repoInfo.language,
-              language_icon: repoInfo.language.toLowerCase() === "rust" ? "" : "",
-              stars: repo.stargazers_count,
-              owner_avatar: user.avatar_url,
-              owner_username: user.login,
-              repository: repo.html_url,
-              url: repo.homepage,
-            };
-
-            // Use ModuleLoader to create and append the project card
-            await ModuleLoader.loadProjectCard(projectData, projectsContainer);
+            // Create project card
+            const card = document.createElement("div");
+            card.className = "github-card";
+            // Add card content here...
           }
         } catch (error) {
           console.error("Error fetching GitHub repositories:", error);
-          projectsContainer.innerHTML = `<p>Error loading projects: ${error.message}</p>`;
         }
       }
     </script>

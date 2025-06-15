@@ -1,0 +1,39 @@
+
+services:
+  blog-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.local
+    image: blog-api-local:latest
+    ports:
+      - "3002:3000"
+    volumes:
+      - blog-data:/app/data
+      # Mount source code for hot reloading
+      - ./src:/app/src
+      - ./static:/app/static
+      - ./templates:/app/templates
+      - ./blog_api_server.rs:/app/blog_api_server.rs
+      - ./blog_tester.rs:/app/blog_tester.rs
+      - ./Cargo.toml:/app/Cargo.toml
+      - ./Cargo.lock:/app/Cargo.lock
+    restart: unless-stopped
+    environment:
+      - RUST_LOG=debug  # More verbose logging for development
+      - RUST_BACKTRACE=1  # Full backtraces for debugging
+    networks:
+      - blog-network
+    # Simplified health check for development
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+networks:
+  blog-network:
+    driver: bridge
+
+volumes:
+  blog-data:

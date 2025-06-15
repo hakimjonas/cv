@@ -3,7 +3,6 @@ use cv::blog_api::create_blog_api_router;
 use cv::blog_utils::create_test_database;
 use std::net::SocketAddr;
 use tokio::net::TcpListener;
-use tower_http::services::ServeDir;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -14,13 +13,12 @@ async fn main() -> Result<()> {
     // Create the API router
     let app = create_blog_api_router(db_path)?;
 
-    // Add static file serving
-    let app = app.nest_service("/static", ServeDir::new("static"));
+    // Note: Static file serving is already configured in create_blog_api_router
 
     // Start the server
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     let listener = TcpListener::bind(addr).await?;
-    println!("Blog API server running at http://{}", addr);
+    println!("Blog API server running at http://localhost:3000");
 
     axum::serve(listener, app).await.context("Server error")?;
 

@@ -40,8 +40,8 @@ proptest = "1.4.0"
 
 [[bin]]
 name = "blog_api_server"
-path = "src/bin/blog_api_server.rs"
+path = "blog_api_server.rs"
 
 [[bin]]
 name = "blog_tester"
-path = "src/bin/blog_tester.rs"
+path = "blog_tester.rs"

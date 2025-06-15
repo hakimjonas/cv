@@ -4,5 +4,4 @@ target/
 .gitignore
 target/
 test_data/
-Cargo.lock
 *.rs.bk

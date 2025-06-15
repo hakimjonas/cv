@@ -1,10 +1,11 @@
 # Deployment Guide
 
-This document provides detailed instructions for deploying the application, both manually and using the CI/CD pipeline.
+This document provides detailed instructions for deploying the application, both locally for testing and to production environments, either manually or using the CI/CD pipeline.
 
 ## Table of Contents
 
 - [Prerequisites](#prerequisites)
+- [Local Development and Testing](#local-development-and-testing)
 - [CI/CD Pipeline](#cicd-pipeline)
 - [Manual Deployment](#manual-deployment)
 - [Deployment Configuration](#deployment-configuration)
@@ -15,6 +16,10 @@ This document provides detailed instructions for deploying the application, both
 
 Before deploying the application, ensure you have the following:
 
+- For local development and testing:
+  - Docker and Docker Compose installed
+  - Git repository cloned locally
+
 - For CI/CD deployment:
   - GitHub repository with the code
   - Server with SSH access
@@ -24,6 +29,98 @@ Before deploying the application, ensure you have the following:
 - For manual deployment:
   - Docker and Docker Compose installed
   - Git repository cloned locally
+
+## Local Development and Testing
+
+Before deploying to production, it's recommended to test your changes in a local development environment. This project includes a dedicated setup for local testing that provides:
+
+- Hot reloading for faster development
+- Debug-level logging for better troubleshooting
+- Easy-to-use commands for managing the environment
+
+### Setting Up Local Development Environment
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/personal-website.git
+   cd personal-website
+   ```
+
+2. Make the local deployment script executable (if it's not already):
+   ```bash
+   chmod +x deploy-local.sh
+   ```
+
+3. Start the local development environment:
+   ```bash
+   ./deploy-local.sh start
+   ```
+
+   This will:
+   - Build the Docker image for local development
+   - Start the containers
+   - Check if the service is running properly
+   - Display URLs for accessing the application
+
+4. Access the application:
+   - Blog API: http://localhost:3002
+   - Blog Client: http://localhost:3002/static/blog-client.html
+   - Debug Tool: http://localhost:3002/static/blog-debug.html
+
+### Managing the Local Environment
+
+The `deploy-local.sh` script provides several commands for managing the local environment:
+
+- **Start the environment**:
+  ```bash
+  ./deploy-local.sh start
+  ```
+
+- **Stop the environment**:
+  ```bash
+  ./deploy-local.sh stop
+  ```
+
+- **Restart the environment**:
+  ```bash
+  ./deploy-local.sh restart
+  ```
+
+- **View logs**:
+  ```bash
+  ./deploy-local.sh logs
+  ```
+
+- **Check status**:
+  ```bash
+  ./deploy-local.sh status
+  ```
+
+- **Show help**:
+  ```bash
+  ./deploy-local.sh help
+  ```
+
+### Development Workflow
+
+1. Start the local environment with `./deploy-local.sh start`
+2. Make changes to the code
+3. The application will automatically reload with your changes (thanks to cargo-watch)
+4. Test your changes in the browser or using API tools
+5. View logs with `./deploy-local.sh logs` if you encounter issues
+6. When finished, stop the environment with `./deploy-local.sh stop`
+
+### Testing Before Production Deployment
+
+Before deploying to production, it's recommended to:
+
+1. Test all features in the local environment
+2. Check for any errors in the logs
+3. Verify that the application works as expected with different browsers and devices
+4. Run the automated tests:
+   ```bash
+   cargo test
+   ```
 
 ## CI/CD Pipeline
 

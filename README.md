@@ -118,7 +118,23 @@ This project generates a personal website with a dynamically generated CV in bot
 
 ## Deployment
 
-> **Detailed Deployment Guide**: For comprehensive deployment instructions, including CI/CD pipeline setup, Docker configuration, and troubleshooting, see [DEPLOYMENT.md](DEPLOYMENT.md).
+> **Detailed Deployment Guide**: For comprehensive deployment instructions, including local development setup, CI/CD pipeline configuration, Docker configuration, and troubleshooting, see [DEPLOYMENT.md](DEPLOYMENT.md).
+
+### Local Development and Testing
+
+Before deploying to production, it's recommended to test your changes in a local development environment:
+
+```bash
+# Make the script executable
+chmod +x deploy-local.sh
+
+# Start the local development environment
+./deploy-local.sh start
+```
+
+This will start a development environment with hot reloading, making it easy to test changes before deployment. For more details, see [DEPLOYMENT.md](DEPLOYMENT.md#local-development-and-testing).
+
+### Production Deployment
 
 The production build (created with `cargo run --release`) includes several optimizations and server configuration files:
 
@@ -320,15 +336,16 @@ This script will:
 
 ## Client
 
-Access the blog client at `http://localhost:3000/static/blog-client.html`
+Access the blog client at `http://localhost:3002/static/blog-client.html` (for local development) or `http://localhost:3000/static/blog-client.html` (for production)
 
 ## Troubleshooting
 
 If you encounter any issues:
 
-1. Use the debug tool at `http://localhost:3000/static/blog-debug.html`
+1. Use the debug tool at `http://localhost:3002/static/blog-debug.html` (for local development)
 2. Check the logs with `docker-compose logs blog-api`
-3. Refer to the troubleshooting section in [DEPLOYMENT.md](DEPLOYMENT.md)
+3. Verify you're using the correct port (3002) for local development
+4. Refer to the troubleshooting section in [DEPLOYMENT.md](DEPLOYMENT.md)
 
 ## License
 

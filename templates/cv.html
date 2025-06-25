@@ -1,26 +1,15 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta
-      name="description"
-      content="Professional CV of {{ cv.personal_info.name }}, {{ cv.personal_info.title }}"
-    />
-    <meta name="keywords" content="cv, resume, {{ cv.personal_info.title }}, professional" />
-    <title>{{ cv.personal_info.name }} - CV</title>
-    {% include "partials/head.html" %}
-  </head>
-  <body>
-    <a href="#main-content" class="skip-link">Skip to main content</a>
+{% extends "base.html" %}
 
+{% block title %}{{ cv.personal_info.name }} - CV{% endblock %}
+{% block description %}Professional CV of {{ cv.personal_info.name }}, {{ cv.personal_info.title }}{% endblock %}
+{% block keywords %}cv, resume, {{ cv.personal_info.title }}, professional{% endblock %}
+
+{% block content %}
     <div class="floating-download">
       <a href="cv.pdf" class="btn btn--primary" download aria-label="Download CV as PDF">
         <i class="nf nf-download"></i> Download CV (PDF)
       </a>
     </div>
-
-    <div id="header-placeholder"></div>
-
-    <main id="main-content">
       <div class="cv-container">
         <div class="cv-section cv-header-section">
           <div class="profile-header">
@@ -206,10 +195,9 @@
         </div>
         {% endif %}
       </div>
-    </main>
+{% endblock %}
 
-    <div id="footer-placeholder"></div>
-
+{% block scripts %}
     <script>
       // Update the current year
       document.getElementById("current-year").textContent = new Date().getFullYear();
@@ -247,9 +235,6 @@
       });
     </script>
 
-    <!-- Module Loader for dynamic header and footer -->
-    <script src="js/modules.js"></script>
-
     <!-- Service Worker Registration -->
     <script>
       if ("serviceWorker" in navigator) {
@@ -265,5 +250,4 @@
         });
       }
     </script>
-  </body>
-</html>
+{% endblock %}

@@ -27,7 +27,29 @@
       </a>
     </div>
 
-    <div id="header-placeholder"></div>
+    <!-- Common header with navigation -->
+    <header>
+      <div class="container">
+        <a href="index.html" class="logo">
+          <h1>Hakim Jonas Ghoula</h1>
+        </a>
+        <nav aria-label="Main navigation">
+          <ul>
+            <li><a href="cv.html">CV</a></li>
+            <li><a href="projects.html">Personal Projects</a></li>
+            <li><a href="index.html">Blog</a></li>
+          </ul>
+          <div class="theme-switch-wrapper">
+            <label class="theme-switch" title="Toggle dark/light theme">
+              <input type="checkbox" id="checkbox">
+              <span class="slider round"></span>
+            </label>
+            <i class="nf nf-sun theme-icon light-icon"></i>
+            <i class="nf nf-moon theme-icon dark-icon"></i>
+          </div>
+        </nav>
+      </div>
+    </header>
 
     <main id="main-content">
       <div class="cv-container">
@@ -580,18 +602,134 @@
       </div>
     </main>
 
-    <div id="footer-placeholder"></div>
+    <!-- Common footer -->
+    <footer>
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-nav">
+            <h3>Navigation</h3>
+            <ul>
+              <li><a href="index.html">Home</a></li>
+              <li><a href="cv.html">CV</a></li>
+              <li><a href="#blog">Blog</a></li>
+              <li><a href="#projects">Personal Projects</a></li>
+              <li><a href="#contact">Contact</a></li>
+            </ul>
+          </div>
+          <div class="footer-social">
+            <h3>Connect</h3>
+            <div class="social-links">
+              <a href="https://linkedin.com/in/hakimghoula" class="social-link" target="_blank" rel="noopener" aria-label="LinkedIn profile">
+                <i class="nf nf-linkedin"></i>
+              </a>
+              <a href="https://github.com/hakimjonas" class="social-link" target="_blank" rel="noopener" aria-label="GitHub profile">
+                <i class="nf nf-github"></i>
+              </a>
+            </div>
+          </div>
+          <div class="footer-tech">
+            <h3>Built With</h3>
+            <ul class="tech-list">
+              <li>
+                <i class="nf nf-rust"></i>
+                <a href="https://www.rust-lang.org/" target="_blank" rel="noopener">Rust</a> - Static
+                site generation
+              </li>
+              <li>
+                <i class="nf nf-file-pdf"></i>
+                <a href="https://typst.app/" target="_blank" rel="noopener">Typst</a> - PDF resume
+                creation
+              </li>
+              <li>
+                <div class="accordion-header">
+                  <i class="nf nf-box"></i> Dependencies
+                  <i class="nf nf-chevron-down accordion-icon"></i>
+                </div>
+                <ul class="accordion-content accordion-collapsed">
+                  <li>
+                    <i class="nf nf-cube"></i>
+                    <a href="https://serde.rs/" target="_blank" rel="noopener">serde</a> (v1.0) -
+                    Serialization framework
+                  </li>
+                  <li>
+                    <i class="nf nf-cube"></i>
+                    <a href="https://github.com/serde-rs/json" target="_blank" rel="noopener">serde_json</a>
+                    (v1.0) - JSON support
+                  </li>
+                  <li>
+                    <i class="nf nf-cube"></i>
+                    <a href="https://github.com/djc/askama" target="_blank" rel="noopener">askama</a>
+                    (v0.14.0) - Templating engine
+                  </li>
+                  <li>
+                    <i class="nf nf-cube"></i>
+                    <a href="https://github.com/bodil/im-rs" target="_blank" rel="noopener">im</a>
+                    (v15.1) - Immutable data structures
+                  </li>
+                  <li>
+                    <i class="nf nf-cube"></i>
+                    <a href="https://github.com/dtolnay/anyhow" target="_blank" rel="noopener">anyhow</a>
+                    (v1.0) - Error handling
+                  </li>
+                  <li>
+                    <i class="nf nf-cube"></i>
+                    <a href="https://github.com/seanmonstar/reqwest" target="_blank" rel="noopener">reqwest</a>
+                    (v0.12.15) - HTTP client
+                  </li>
+                  <li>
+                    <i class="nf nf-cube"></i>
+                    <a href="https://tokio.rs/" target="_blank" rel="noopener">tokio</a> (v1) - Async
+                    runtime
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>
+            &copy; <span id="current-year">2023</span> Hakim Jonas Ghoula. All rights reserved.
+          </p>
+        </div>
+      </div>
+    </footer>
 
     <script>
       // Update the current year
       document.getElementById("current-year").textContent = new Date().getFullYear();
 
-      // Theme switching is now handled by the ThemeManager in modules.js
-      // This ensures consistent theme handling across all pages
-    </script>
+      // Theme switcher functionality
+      const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
 
-    <!-- Module Loader for dynamic header and footer -->
-    <script src="js/modules.js"></script>
+      // Function to set a theme
+      function setTheme(theme) {
+        document.documentElement.className = theme;
+        localStorage.setItem("theme", theme);
+
+        if (theme === "theme-dark") {
+          toggleSwitch.checked = true;
+        } else {
+          toggleSwitch.checked = false;
+        }
+      }
+
+      // Check for saved theme preference or use system preference
+      const currentTheme =
+        localStorage.getItem("theme") ||
+        (window.matchMedia("(prefers-color-scheme: dark)").matches ? "theme-dark" : "theme-light");
+
+      // Apply the theme
+      setTheme(currentTheme);
+
+      // Listen for theme toggle
+      toggleSwitch.addEventListener("change", function (e) {
+        if (e.target.checked) {
+          setTheme("theme-dark");
+        } else {
+          setTheme("theme-light");
+        }
+      });
+    </script>
 
     <!-- Service Worker Registration -->
     <script>

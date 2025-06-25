@@ -1,21 +1,48 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Hakim Jonas Ghoula">
+    <meta name="theme-color" content="#286983">
     <meta
       name="description"
-      content="Personal website and blog of a professional developer showcasing projects, skills, and thoughts on technology."
+      content="Personal website and blog of Hakim Jonas Ghoula showcasing projects, skills, and thoughts on technology."
     />
-    <meta name="keywords" content="developer, portfolio, blog, projects, technology" />
-    <title>My Personal Blog & Portfolio</title>
+    <meta name="keywords" content="developer, portfolio, blog, projects, technology, Data Engineer" />
+    <title>Hakim Jonas Ghoula - Blog & Portfolio</title>
     <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/nerd-fonts.css">
-    <link rel="stylesheet" href="css/nerd-icons.css">
-    <!-- The head module will be loaded by modules.js -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="img/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="img/icon-512.png">
+    <link rel="apple-touch-icon" href="img/icon-192.png">
   </head>
   <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
 
-    <div id="header-placeholder"></div>
+    <!-- Common header with navigation -->
+    <header>
+      <div class="container">
+        <a href="index.html" class="logo">
+          <h1>Hakim Jonas Ghoula</h1>
+        </a>
+        <nav aria-label="Main navigation">
+          <ul>
+            <li><a href="cv.html">CV</a></li>
+            <li><a href="projects.html">Personal Projects</a></li>
+            <li><a href="index.html">Blog</a></li>
+          </ul>
+          <div class="theme-switch-wrapper">
+            <label class="theme-switch" title="Toggle dark/light theme">
+              <input type="checkbox" id="checkbox">
+              <span class="slider round"></span>
+            </label>
+            <i class="nf nf-sun theme-icon light-icon"></i>
+            <i class="nf nf-moon theme-icon dark-icon"></i>
+          </div>
+        </nav>
+      </div>
+    </header>
 
     <main id="main-content">
       <section class="intro-section" id="introduction">
@@ -41,15 +68,7 @@
         <div class="container">
           <div class="about-content">
             <h2 class="section-title">About Me</h2>
-            <p>
-              This section will be populated with information from your CV data. It will include a
-              brief biography, professional interests, and personal details that help visitors
-              connect with you on a more personal level.
-            </p>
-            <p>
-              In addition to my professional work, I enjoy contributing to open source projects,
-              mentoring junior developers, and writing about technology topics on this blog.
-            </p>
+            <p>Data Engineer with 3+ years of experience designing, optimizing, and managing large-scale data pipelines using Scala, Spark, and Python. Skilled in building robust ETL processes, implementing test-driven development, and leveraging AWS cloud services. Key projects at LiveIntent (acquired by Zeta Global) include Dormant Email Reactivation and PersonID/offline graph pipelines. Currently exploring compiler and language design through a personal functional programming language project in Rust, focusing on type systems and parsing techniques.</p>
           </div>
         </div>
       </section>
@@ -84,30 +103,115 @@
           <h2 class="section-title">Get In Touch</h2>
           <p>
             Feel free to reach out to me at
-            <a href="mailto:your.email@example.com" id="email">your.email@example.com</a>
+            <a href="mailto:hakim@walkthisway.dk" id="email">hakim@walkthisway.dk</a>
           </p>
           <div class="social-links" id="social-links">
-            <a href="#" class="social-link" aria-label="LinkedIn Profile"
+            <a href="https://linkedin.com/in/hakimghoula" class="social-link" target="_blank" rel="noopener" aria-label="LinkedIn Profile"
               ><i class="nf nf-linkedin"></i
             ></a>
-            <a href="#" class="social-link" aria-label="GitHub Profile"
+            <a href="https://github.com/hakimjonas" class="social-link" target="_blank" rel="noopener" aria-label="GitHub Profile"
               ><i class="nf nf-github"></i
-            ></a>
-            <a href="#" class="social-link" aria-label="Twitter Profile"
-              ><i class="nf nf-twitter"></i
             ></a>
           </div>
         </div>
       </section>
     </main>
 
-    <div id="footer-placeholder"></div>
+    <!-- Common footer -->
+    <footer>
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-nav">
+            <h3>Navigation</h3>
+            <ul>
+              <li><a href="index.html">Home</a></li>
+              <li><a href="cv.html">CV</a></li>
+              <li><a href="#blog">Blog</a></li>
+              <li><a href="#projects">Personal Projects</a></li>
+              <li><a href="#contact">Contact</a></li>
+            </ul>
+          </div>
+          <div class="footer-social">
+            <h3>Connect</h3>
+            <div class="social-links">
+              <a href="https://linkedin.com/in/hakimghoula" class="social-link" target="_blank" rel="noopener" aria-label="LinkedIn profile">
+                <i class="nf nf-linkedin"></i>
+              </a>
+              <a href="https://github.com/hakimjonas" class="social-link" target="_blank" rel="noopener" aria-label="GitHub profile">
+                <i class="nf nf-github"></i>
+              </a>
+            </div>
+          </div>
+          <div class="footer-tech">
+            <h3>Built With</h3>
+            <ul class="tech-list">
+              <li>
+                <i class="nf nf-rust"></i>
+                <a href="https://www.rust-lang.org/" target="_blank" rel="noopener">Rust</a> - Static
+                site generation
+              </li>
+              <li>
+                <i class="nf nf-file-pdf"></i>
+                <a href="https://typst.app/" target="_blank" rel="noopener">Typst</a> - PDF resume
+                creation
+              </li>
+              <li>
+                <div class="accordion-header">
+                  <i class="nf nf-box"></i> Dependencies
+                  <i class="nf nf-chevron-down accordion-icon"></i>
+                </div>
+                <ul class="accordion-content accordion-collapsed">
+                  <li>
+                    <i class="nf nf-cube"></i>
+                    <a href="https://serde.rs/" target="_blank" rel="noopener">serde</a> (v1.0) -
+                    Serialization framework
+                  </li>
+                  <li>
+                    <i class="nf nf-cube"></i>
+                    <a href="https://github.com/serde-rs/json" target="_blank" rel="noopener">serde_json</a>
+                    (v1.0) - JSON support
+                  </li>
+                  <li>
+                    <i class="nf nf-cube"></i>
+                    <a href="https://github.com/djc/askama" target="_blank" rel="noopener">askama</a>
+                    (v0.14.0) - Templating engine
+                  </li>
+                  <li>
+                    <i class="nf nf-cube"></i>
+                    <a href="https://github.com/bodil/im-rs" target="_blank" rel="noopener">im</a>
+                    (v15.1) - Immutable data structures
+                  </li>
+                  <li>
+                    <i class="nf nf-cube"></i>
+                    <a href="https://github.com/dtolnay/anyhow" target="_blank" rel="noopener">anyhow</a>
+                    (v1.0) - Error handling
+                  </li>
+                  <li>
+                    <i class="nf nf-cube"></i>
+                    <a href="https://github.com/seanmonstar/reqwest" target="_blank" rel="noopener">reqwest</a>
+                    (v0.12.15) - HTTP client
+                  </li>
+                  <li>
+                    <i class="nf nf-cube"></i>
+                    <a href="https://tokio.rs/" target="_blank" rel="noopener">tokio</a> (v1) - Async
+                    runtime
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>
+            &copy; <span id="current-year">2023</span> Hakim Jonas Ghoula. All rights reserved.
+          </p>
+        </div>
+      </div>
+    </footer>
 
     <!-- Load scripts.js for common functionality -->
     <script src="js/scripts.js"></script>
 
-    <!-- Load modules.js for dynamic module loading -->
-    <script src="js/modules.js"></script>
 
     <!-- Load API client for blog functionality -->
     <script src="js/api-client.js"></script>
@@ -116,6 +220,9 @@
     <script src="js/blog-integration.js"></script>
 
     <script>
+      // Update the current year
+      document.getElementById("current-year").textContent = new Date().getFullYear();
+
       // Format blog dates
       document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll(".blog-date[data-date]").forEach(dateElement => {
@@ -127,6 +234,59 @@
 
         // GitHub API integration
         fetchGitHubRepos();
+      });
+
+      // Theme switcher functionality
+      const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+
+      // Function to set a theme
+      function setTheme(theme) {
+        document.documentElement.className = theme;
+        localStorage.setItem("theme", theme);
+
+        if (theme === "theme-dark") {
+          toggleSwitch.checked = true;
+        } else {
+          toggleSwitch.checked = false;
+        }
+      }
+
+      // Check for saved theme preference or use system preference
+      const currentTheme =
+        localStorage.getItem("theme") ||
+        (window.matchMedia("(prefers-color-scheme: dark)").matches ? "theme-dark" : "theme-light");
+
+      // Apply the theme
+      setTheme(currentTheme);
+
+      // Listen for theme toggle
+      toggleSwitch.addEventListener("change", function (e) {
+        if (e.target.checked) {
+          setTheme("theme-dark");
+        } else {
+          setTheme("theme-light");
+        }
+      });
+
+      // Initialize accordion functionality
+      document.addEventListener("DOMContentLoaded", function () {
+        const accordionHeader = document.querySelector(".accordion-header");
+        if (accordionHeader) {
+          // Toggle accordion on click
+          accordionHeader.addEventListener("click", function () {
+            this.classList.toggle("active");
+            const content = this.nextElementSibling;
+            content.classList.toggle("active");
+
+            if (content.classList.contains("active")) {
+              // Open the accordion
+              content.style.maxHeight = content.scrollHeight + "px";
+            } else {
+              // Close the accordion
+              content.style.maxHeight = "0";
+            }
+          });
+        }
       });
 
       // GitHub API integration
@@ -167,6 +327,22 @@
         } catch (error) {
           console.error("Error fetching GitHub repositories:", error);
         }
+      }
+    </script>
+
+    <!-- Service Worker Registration -->
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("/service-worker.js")
+            .then(registration => {
+              console.log("Service Worker registered with scope:", registration.scope);
+            })
+            .catch(error => {
+              console.error("Service Worker registration failed:", error);
+            });
+        });
       }
     </script>
   </body>

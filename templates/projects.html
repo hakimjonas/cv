@@ -1,15 +1,10 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <title>{{ cv.personal_info.name }} - Personal Projects</title>
-    {% include "partials/head.html" %}
-  </head>
-  <body>
-    <a href="#main-content" class="skip-link">Skip to main content</a>
+{% extends "base.html" %}
 
-    <div id="header-placeholder"></div>
+{% block title %}{{ cv.personal_info.name }} - Personal Projects{% endblock %}
+{% block description %}Personal projects by {{ cv.personal_info.name }}, {{ cv.personal_info.title }}{% endblock %}
+{% block keywords %}projects, portfolio, {{ cv.personal_info.title }}, developer{% endblock %}
 
-    <main id="main-content">
+{% block content %}
       <section class="featured-projects" id="projects">
         <div class="container">
           <h2 class="section-title">Featured Personal Projects</h2>
@@ -21,11 +16,4 @@
           </div>
         </div>
       </section>
-    </main>
-
-    <div id="footer-placeholder"></div>
-
-    <!-- Module Loader for dynamic header and footer -->
-    <script src="js/modules.js"></script>
-  </body>
-</html>
+{% endblock %}

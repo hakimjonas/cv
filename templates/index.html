@@ -1,31 +1,10 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="Personal website and blog of {{ cv.personal_info.name }} showcasing projects, skills, and thoughts on technology."
-    />
-    <meta
-      name="keywords"
-      content="developer, portfolio, blog, projects, technology, {{ cv.personal_info.title }}"
-    />
-    <meta name="author" content="{{ cv.personal_info.name }}" />
-    <meta name="theme-color" content="#286983" />
-    <title>{{ cv.personal_info.name }} - Blog & Portfolio</title>
-    <link rel="stylesheet" href="css/main.css" />
-    <link rel="manifest" href="manifest.json" />
-    <link rel="icon" type="image/png" sizes="192x192" href="img/icon-192.png" />
-    <link rel="icon" type="image/png" sizes="512x512" href="img/icon-512.png" />
-    <link rel="apple-touch-icon" href="img/icon-192.png" />
-  </head>
-  <body>
-    <a href="#main-content" class="skip-link">Skip to main content</a>
+{% extends "base.html" %}
 
-    <div id="header-placeholder"></div>
+{% block title %}{{ cv.personal_info.name }} - Blog & Portfolio{% endblock %}
+{% block description %}Personal website and blog of {{ cv.personal_info.name }} showcasing projects, skills, and thoughts on technology.{% endblock %}
+{% block keywords %}developer, portfolio, blog, projects, technology, {{ cv.personal_info.title }}{% endblock %}
 
-    <main id="main-content">
+{% block content %}
       <section class="intro-section" id="introduction">
         <div class="container">
           <article class="blog-card intro">
@@ -147,10 +126,9 @@
           </div>
         </div>
       </section>
-    </main>
+{% endblock %}
 
-    <div id="footer-placeholder"></div>
-
+{% block scripts %}
     <script>
       // Update the current year
       document.getElementById("current-year").textContent = new Date().getFullYear();
@@ -217,9 +195,6 @@
       });
     </script>
 
-    <!-- Module Loader for dynamic header and footer -->
-    <script src="js/modules.js"></script>
-
     <!-- Service Worker Registration -->
     <script>
       if ("serviceWorker" in navigator) {
@@ -235,5 +210,4 @@
         });
       }
     </script>
-  </body>
-</html>
+{% endblock %}

@@ -336,16 +336,16 @@ function addBlogStyles() {
     .blog-posts {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: var(--spacing-lg, 20px);
-      margin-top: var(--spacing-lg, 20px);
+      gap: var(--spacing-lg);
+      margin-top: var(--spacing-lg);
     }
 
     /* Blog card with modern styling */
     .blog-card {
-      --card-padding: var(--spacing-md, 20px);
-      background-color: var(--color-card-background, var(--color-background-light));
-      border-radius: var(--border-radius-lg, 8px);
-      box-shadow: var(--color-card-shadow, 0 4px 8px rgba(0,0,0,0.1));
+      --card-padding: var(--spacing-md);
+      background-color: var(--color-card-background);
+      border-radius: var(--border-radius-lg);
+      box-shadow: var(--color-card-shadow);
       padding: var(--card-padding);
       transition: transform 0.3s ease, box-shadow 0.3s ease;
       height: auto;
@@ -359,7 +359,7 @@ function addBlogStyles() {
     .blog-card:hover,
     .blog-card:focus-within {
       transform: translateY(-5px);
-      box-shadow: var(--color-card-shadow, 0 8px 16px rgba(0,0,0,0.15));
+      box-shadow: var(--color-card-shadow);
     }
 
     /* Expanded state styling with grid span */
@@ -373,21 +373,21 @@ function addBlogStyles() {
     /* Blog title with proper spacing */
     .blog-title {
       margin-top: 0;
-      margin-bottom: var(--spacing-sm, 10px);
-      color: var(--color-text, var(--color-primary));
-      font-size: var(--font-size-lg, 1.5rem);
+      margin-bottom: var(--spacing-sm);
+      color: var(--color-text);
+      font-size: var(--font-size-lg);
       line-height: 1.3;
     }
 
     /* Post metadata styling */
     .post-meta {
       color: var(--color-text-light);
-      font-size: var(--font-size-sm, 0.9rem);
-      margin-bottom: var(--spacing-sm, 15px);
+      font-size: var(--font-size-sm);
+      margin-bottom: var(--spacing-sm);
       display: flex;
       align-items: center;
       flex-wrap: wrap;
-      gap: var(--spacing-xs, 8px);
+      gap: var(--spacing-xs);
     }
 
     /* Featured badge styling */
@@ -400,8 +400,8 @@ function addBlogStyles() {
     .post-tags {
       display: flex;
       flex-wrap: wrap;
-      gap: var(--spacing-xs, 5px);
-      margin-bottom: var(--spacing-sm, 15px);
+      gap: var(--spacing-xs);
+      margin-bottom: var(--spacing-sm);
     }
 
     /* Individual tag styling */
@@ -410,14 +410,14 @@ function addBlogStyles() {
       background-color: var(--color-secondary);
       color: white;
       padding: 3px 8px;
-      border-radius: var(--border-radius-sm, 4px);
-      font-size: var(--font-size-xs, 0.8rem);
+      border-radius: var(--border-radius-sm);
+      font-size: var(--font-size-xs);
       line-height: 1.4;
     }
 
     /* Blog content container */
     .blog-content {
-      margin-top: var(--spacing-sm, 15px);
+      margin-top: var(--spacing-sm);
       line-height: 1.6;
       flex-grow: 1; /* Take up available space */
       color: var(--color-text);
@@ -425,7 +425,7 @@ function addBlogStyles() {
 
     /* Blog excerpt styling */
     .blog-excerpt {
-      margin-bottom: var(--spacing-sm, 15px);
+      margin-bottom: var(--spacing-sm);
     }
 
     /* Full content animation */
@@ -438,12 +438,12 @@ function addBlogStyles() {
     .read-more {
       display: inline-flex;
       align-items: center;
-      margin-top: var(--spacing-sm, 15px);
+      margin-top: var(--spacing-sm);
       color: var(--color-primary);
       font-weight: 600;
       text-decoration: none;
       padding: 8px 16px;
-      border-radius: var(--border-radius-sm, 4px);
+      border-radius: var(--border-radius-sm);
       background-color: var(--color-background-light);
       border: none;
       cursor: pointer;
@@ -459,7 +459,7 @@ function addBlogStyles() {
     }
 
     .read-more:focus {
-      box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb, 44, 62, 80), 0.3);
+      box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.3);
     }
 
     .read-more:active {
@@ -471,11 +471,11 @@ function addBlogStyles() {
     .error,
     .no-posts {
       grid-column: 1 / -1;
-      padding: var(--spacing-md, 20px);
+      padding: var(--spacing-md);
       text-align: center;
       background-color: var(--color-background-light);
-      border-radius: var(--border-radius-md, 6px);
-      margin: var(--spacing-md, 20px) 0;
+      border-radius: var(--border-radius-md);
+      margin: var(--spacing-md) 0;
     }
 
     .error {
@@ -488,12 +488,12 @@ function addBlogStyles() {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      margin-top: var(--spacing-sm, 15px);
+      margin-top: var(--spacing-sm);
       padding: 8px 16px;
       background-color: var(--color-primary);
       color: white;
       border: none;
-      border-radius: var(--border-radius-sm, 4px);
+      border-radius: var(--border-radius-sm);
       cursor: pointer;
       transition: background-color 0.3s ease;
     }
@@ -534,6 +534,7 @@ function addBlogStyles() {
 
 // Initialize when the DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
+  // No need to check if nerdfonts are loaded since they're loaded directly in the HTML
   // Check if the API client is available
   if (typeof BlogAPI === 'undefined') {
     // Load the API client script

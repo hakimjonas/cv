@@ -204,7 +204,7 @@ function initializeLanguageIcons() {
     });
 }
 
-// Theme switching is now handled by the ThemeManager in modules.js
+// Theme switching is now handled directly in each page's script
 // This ensures consistent theme handling across all pages
 
 // Service Worker Registration

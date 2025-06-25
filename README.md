@@ -1,18 +1,21 @@
-# Personal Website with Dynamic CV Generator
+# Personal Website with Dynamic CV Generator and Blog
 
 [![Rust CI](https://github.com/yourusername/personal-website/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/personal-website/actions/workflows/ci.yml)
 [![Deploy CV](https://github.com/yourusername/personal-website/actions/workflows/deploy.yml/badge.svg)](https://github.com/yourusername/personal-website/actions/workflows/deploy.yml)
 [![Deploy Blog API](https://github.com/yourusername/personal-website/actions/workflows/deploy-blog-api.yml/badge.svg)](https://github.com/yourusername/personal-website/actions/workflows/deploy-blog-api.yml)
 
-This project generates a personal website with a dynamically generated CV in both HTML and PDF formats from a single Rust data source. It leverages Rust for content generation, HTML/CSS for the web interface, and Typst for PDF output.
+This project is a comprehensive personal website solution that includes a dynamically generated CV and a full-featured blog system. It's built with Rust using functional programming principles and modern web technologies. The CV is generated in both HTML and PDF formats from a single data source, and the blog system provides a RESTful API for content management.
 
 ## Features
 
-- **Single Source of Truth**: All CV data is stored in a single JSON file
-- **Multiple Output Formats**: Generates both HTML and PDF versions of your CV
-- **Responsive Design**: The website works on all devices
-- **Customizable**: Easy to customize the design and content
-- **Functional Programming**: Uses immutable data structures and functional programming principles
+- **Dynamic CV Generation**: Creates both HTML and PDF versions of your CV from a single JSON data source
+- **Blog System**: Full-featured blog with a RESTful API for content management
+- **GitHub Integration**: Automatically fetches and displays your GitHub repositories
+- **Responsive Design**: Mobile-friendly interface that works on all devices
+- **Dark/Light Theme**: User-selectable theme with automatic system preference detection
+- **Functional Programming**: Built with immutable data structures and functional programming principles
+- **Docker Support**: Easy deployment with Docker and Docker Compose
+- **CI/CD Pipeline**: Automated testing and deployment with GitHub Actions
 
 > **Project Roadmap**: See [PROJECT_ROADMAP.md](PROJECT_ROADMAP.md) for the current project status, completed work, and the plan for future development with a focus on deployment.
 
@@ -20,151 +23,253 @@ This project generates a personal website with a dynamically generated CV in bot
 
 ```
 .
-├── .github/             # GitHub configuration
-│   └── workflows/       # GitHub Actions workflows
-│       ├── ci.yml       # CI workflow for testing and linting
-│       ├── deploy.yml   # Workflow for deploying CV to GitHub Pages
-│       └── deploy-blog-api.yml # Workflow for deploying blog API
 ├── Cargo.toml           # Rust project configuration
+├── Cargo.lock           # Rust dependency lock file
+├── blog_api_server.rs   # Blog API server entry point
+├── blog_tester.rs       # Blog testing utility
+├── blog.db              # SQLite database for blog content
 ├── DEPLOYMENT.md        # Deployment documentation
+├── deploy.sh            # Deployment script for blog API
+├── deploy-local.sh      # Local deployment script
 ├── Dockerfile           # Docker configuration for blog API
+├── Dockerfile.local     # Docker configuration for local development
+├── docker-compose.yml   # Docker Compose configuration for production
+├── docker-compose.local.yml # Docker Compose configuration for local development
 ├── PROJECT_ROADMAP.md   # Project roadmap and status
 ├── README-dev.md        # Development guidelines
 ├── README.md            # This file
-├── data/
+├── test.sh              # Test runner script
+├── data/                # Data files
 │   └── cv_data.json     # CV data in JSON format
-├── deploy.sh            # Deployment script for blog API
-├── dist/                # Generated output files
-│   ├── cv.html          # Generated HTML CV
-│   ├── cv.pdf           # Generated PDF CV
-│   ├── index.html       # Copied from static/
-│   └── style.css        # Copied from static/
-├── docker-compose.yml   # Docker Compose configuration
-├── src/
+├── src/                 # Rust source code
 │   ├── main.rs          # Main application entry point
 │   ├── cv_data.rs       # CV data model
 │   ├── html_generator.rs # HTML generation logic
 │   ├── typst_generator.rs # PDF generation logic
-│   ├── blog_api.rs      # Blog API server
+│   ├── blog_api.rs      # Blog API server logic
 │   ├── blog_data.rs     # Blog data model
 │   └── db/              # Database access layer
 │       ├── mod.rs       # Database module entry point
 │       ├── repository.rs # Repository pattern implementation
 │       ├── migrations.rs # Database schema migrations
 │       └── error.rs     # Custom error types for database operations
-├── static/
-│   ├── index.html       # Static landing page
-│   ├── style.css        # CSS styles for the website
+├── static/              # Static web assets
+│   ├── index.html       # Landing page/blog frontend
+│   ├── cv.html          # CV page
+│   ├── projects.html    # Projects page
 │   ├── blog-client.html # Blog client interface
-│   └── js/              # JavaScript files
-│       └── blog-debug.js # Debug tool for blog API
-└── templates/
-    └── cv.html          # Askama template for CV HTML
+│   ├── style.css        # Main CSS styles
+│   ├── css/             # CSS files
+│   │   └── components/  # Component-specific CSS
+│   │       └── header.css # Header component styles
+│   ├── js/              # JavaScript files
+│   │   ├── scripts.js   # Main JavaScript functionality
+│   │   └── blog-debug.js # Debug tool for blog API
+│   └── img/             # Image assets
+├── templates/           # Askama HTML templates
+│   ├── base.html        # Base template with common structure
+│   ├── index.html       # Template for landing page
+│   ├── cv.html          # Template for CV page
+│   ├── projects.html    # Template for projects page
+│   └── partials/        # Partial templates
+│       ├── header.html  # Header partial
+│       ├── footer.html  # Footer partial
+│       └── project-card.html # Project card partial
+├── tests/               # Test files
+└── test_data/           # Test data files
 ```
 
 ## Installation
 
-1. Install Rust and Cargo:
-   ```bash
-   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-   ```
+### Prerequisites
 
-2. Install Typst CLI:
-   ```bash
-   cargo install typst-cli
-   ```
+- **Rust and Cargo** (version 1.70.0 or higher)
+- **SQLite3** (for the blog database)
+- **Node.js and npm** (for frontend development tools)
+- **Docker and Docker Compose** (optional, for containerized deployment)
 
-3. Clone this repository:
-   ```bash
-   git clone https://github.com/yourusername/personal-website.git
-   cd personal-website
-   ```
+### Step 1: Install Rust and Cargo
 
-4. Build the project:
-   ```bash
-   cargo build --release
-   ```
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source $HOME/.cargo/env
+```
+
+### Step 2: Clone the Repository
+
+```bash
+git clone https://github.com/yourusername/personal-website.git
+cd personal-website
+```
+
+### Step 3: Install Dependencies
+
+```bash
+# Install Rust dependencies
+cargo build
+
+# Install Node.js dependencies (for frontend tools)
+npm install
+```
+
+### Step 4: Set Up the Database
+
+The blog system uses SQLite for data storage. The database will be created automatically when you first run the application, but you can also initialize it manually:
+
+```bash
+# Initialize the database with schema
+cargo run --bin blog_api_server -- --init-db
+```
 
 > **For Developers**: See [README-dev.md](README-dev.md) for detailed development guidelines, including functional programming principles and best practices.
 
 ## Usage
 
-1. Customize your CV data in `data/cv_data.json`
+The project consists of two main components:
+1. The CV generator and static website
+2. The blog API server
 
-2. Generate your website:
+### CV and Website
 
-   For development:
+1. **Customize your CV data**:
+
+   Edit the `data/cv_data.json` file to include your personal information, experiences, education, skills, projects, and more.
+
+2. **Generate the website**:
+
    ```bash
+   # For development
    cargo run
-   ```
 
-   For production:
-   ```bash
+   # For production (with optimizations)
    cargo run --release
    ```
 
-3. The generated files will be in:
-   - Development build: `dist/` directory
-   - Production build: `dist/` directory
+3. **View the generated files**:
 
-   Each directory contains:
-   - `index.html`: The landing page
+   The generated files will be in the `static/` directory:
+   - `index.html`: The landing page/blog frontend
    - `cv.html`: The HTML version of your CV
-   - `cv.pdf`: The PDF version of your CV
-   - `style.css`: The CSS styles for the website
-   - Additional optimized assets and configuration files (in production build)
+   - `projects.html`: The projects page
+   - CSS, JavaScript, and image assets
 
-4. Deploy the contents of the `dist/` directory to your web server or hosting service
+### Blog API Server
 
-## Deployment
+1. **Start the blog API server**:
 
-> **Detailed Deployment Guide**: For comprehensive deployment instructions, including local development setup, CI/CD pipeline configuration, Docker configuration, and troubleshooting, see [DEPLOYMENT.md](DEPLOYMENT.md).
+   ```bash
+   # Start the server in development mode
+   cargo run --bin blog_api_server
 
-### Local Development and Testing
+   # Start the server in production mode
+   cargo run --bin blog_api_server --release
+   ```
 
-Before deploying to production, it's recommended to test your changes in a local development environment:
+   The server will start on port 3000 by default.
+
+2. **Access the blog API**:
+
+   - API Endpoints: http://localhost:3000/api/blog
+   - Blog Client: http://localhost:3000/static/blog-client.html
+   - Debug Tool: http://localhost:3000/static/blog-debug.html
+
+3. **Test the blog functionality**:
+
+   ```bash
+   # Run the blog tester utility
+   cargo run --bin blog_tester
+   ```
+
+### Local Development Environment
+
+For a complete local development environment with hot reloading:
 
 ```bash
 # Make the script executable
 chmod +x deploy-local.sh
 
-# Copy necessary files from dist to static directory
-cp dist/cv.html dist/cv.pdf dist/projects.html static/
-
 # Start the local development environment
 ./deploy-local.sh start
 ```
 
-This will start a development environment with hot reloading, making it easy to test changes before deployment. The copy step ensures that all pages (including CV and Projects) are available in the local environment.
+This will start a development server on port 3002 with the CV website and blog API.
 
-> **Note**: The first time you start the local environment, it may take up to 10 minutes for the Rust application to compile, depending on your system's performance. The script will wait for the application to be ready and provide appropriate feedback. Subsequent starts will be faster as the compiled artifacts are cached.
+## Deployment
 
-For more details, see [DEPLOYMENT.md](DEPLOYMENT.md#local-development-and-testing).
+> **Detailed Deployment Guide**: For comprehensive deployment instructions, including local development setup, CI/CD pipeline configuration, Docker configuration, and troubleshooting, see [DEPLOYMENT.md](DEPLOYMENT.md).
 
-### Production Deployment
+The project supports multiple deployment options for both the CV website and the blog API server.
 
-The production build (created with `cargo run --release`) includes several optimizations and server configuration files:
+### CV Website Deployment
 
-1. **Minified HTML, CSS, and JavaScript**: All text-based assets are minified to reduce file size
-2. **Gzipped versions**: Pre-compressed versions of files are created for faster delivery
-3. **Server configuration files**:
-   - `.htaccess` for Apache servers
-   - `web.config` for IIS servers
-   - `_headers` and `_redirects` for Netlify
-   - `robots.txt` for search engines
-   - `manifest.json` and `service-worker.js` for Progressive Web App (PWA) support
+The CV website is a static site that can be deployed to any web hosting service:
 
-### Deployment Options
+1. **GitHub Pages** (Recommended):
+   ```bash
+   # Build the project
+   cargo run --release
 
-This project supports multiple deployment options:
+   # Deploy to GitHub Pages using the provided script
+   ./deploy.sh
+   ```
 
-1. **CI/CD Pipeline**: Automated deployment using GitHub Actions
-2. **Traditional Web Hosting**: Manual deployment to any web server
-3. **GitHub Pages**: Automated or manual deployment to GitHub Pages
-4. **Netlify**: Automated deployment to Netlify
-5. **Docker**: Containerized deployment for the blog API
+2. **Traditional Web Hosting**:
+   ```bash
+   # Build the project
+   cargo run --release
 
-For detailed instructions on each deployment option, see [DEPLOYMENT.md](DEPLOYMENT.md).
+   # Upload the contents of the static/ directory to your web server
+   ```
+
+3. **Netlify**:
+   - Connect your GitHub repository to Netlify
+   - Set the build command to `cargo run --release`
+   - Set the publish directory to `static/`
+
+### Blog API Server Deployment
+
+The blog API server can be deployed using Docker for easy setup and management:
+
+1. **Docker Deployment** (Recommended):
+   ```bash
+   # Deploy using Docker Compose
+   docker-compose up -d
+   ```
+
+2. **Manual Deployment**:
+   ```bash
+   # Build the server
+   cargo build --release --bin blog_api_server
+
+   # Run the server
+   ./target/release/blog_api_server
+   ```
+
+### Local Development Environment
+
+For local development and testing:
+
+```bash
+# Start the local development environment
+./deploy-local.sh start
+
+# Stop the local development environment
+./deploy-local.sh stop
+```
+
+This will start a development server on port 3002 with hot reloading, making it easy to test changes before deployment.
+
+> **Note**: The first time you start the local environment, it may take several minutes for the Rust application to compile. Subsequent starts will be faster as the compiled artifacts are cached.
+
+### CI/CD Pipeline
+
+The project includes GitHub Actions workflows for automated testing and deployment:
+
+- **CI Workflow**: Runs tests and linting on every push and pull request
+- **Deploy CV Workflow**: Deploys the CV website to GitHub Pages on pushes to the main branch
+- **Deploy Blog API Workflow**: Deploys the blog API server to a production server on pushes to the main branch
+
+For detailed instructions on setting up and customizing the CI/CD pipeline, see [DEPLOYMENT.md](DEPLOYMENT.md#cicd-pipeline).
 
 ## Customization
 
@@ -385,25 +490,47 @@ If you encounter any issues:
 3. Verify you're using the correct port (3002) for local development
 4. Refer to the troubleshooting section in [DEPLOYMENT.md](DEPLOYMENT.md)
 
-## License
+## Technologies
 
-MIT
+This project is built with modern technologies and follows functional programming principles:
 
-## Dependencies
+### Backend
 
-- [serde](https://serde.rs/): For JSON serialization/deserialization
-- [askama](https://github.com/djc/askama): For HTML templating
-- [im](https://docs.rs/im/): For immutable data structures
-- [anyhow](https://docs.rs/anyhow/): For error handling
-- [reqwest](https://github.com/seanmonstar/reqwest): For HTTP requests
-- [tokio](https://tokio.rs/): For async runtime
-- [git2](https://github.com/rust-lang/git2-rs): For Git configuration access
-- [flate2](https://github.com/rust-lang/flate2-rs): For Gzip compression
-- [minify-html](https://github.com/wilsonzlin/minify-html): For HTML minification
-- [regex](https://github.com/rust-lang/regex): For CSS minification
-- [axum](https://github.com/tokio-rs/axum): For the web server and API
-- [rusqlite](https://github.com/rusqlite/rusqlite): For SQLite database interactions
-- [typst-cli](https://github.com/typst/typst): For PDF generation (external dependency)
+- **[Rust](https://www.rust-lang.org/)**: A systems programming language focused on safety, speed, and concurrency
+- **[Axum](https://github.com/tokio-rs/axum)**: A web framework built on top of Tokio, hyper, and tower
+- **[Tokio](https://tokio.rs/)**: An asynchronous runtime for Rust
+- **[SQLite](https://www.sqlite.org/)**: A self-contained, serverless database engine
+- **[Askama](https://github.com/djc/askama)**: A type-safe, compiled templating engine for Rust
+
+### Frontend
+
+- **HTML5/CSS3**: Modern web standards for structure and styling
+- **JavaScript**: For interactive elements and theme switching
+- **[Nerdfont Icons](https://www.nerdfonts.com/)**: Icon font for UI elements
+
+### Data Management
+
+- **[Serde](https://serde.rs/)**: A framework for serializing and deserializing Rust data structures
+- **[im](https://docs.rs/im/)**: Immutable data structures for Rust
+- **[Rusqlite](https://github.com/rusqlite/rusqlite)**: SQLite bindings for Rust
+- **[R2D2](https://github.com/sfackler/r2d2)**: A connection pool for Rust
+
+### Error Handling and Logging
+
+- **[Thiserror](https://github.com/dtolnay/thiserror)**: For defining custom error types
+- **[Anyhow](https://github.com/dtolnay/anyhow)**: For flexible error handling
+- **[Tracing](https://github.com/tokio-rs/tracing)**: A framework for structured, contextual logging
+
+### Testing
+
+- **[Proptest](https://github.com/AltSysrq/proptest)**: Property-based testing for Rust
+- **Rust's built-in testing framework**: For unit and integration tests
+
+### Deployment and Infrastructure
+
+- **[Docker](https://www.docker.com/)**: For containerization
+- **[GitHub Actions](https://github.com/features/actions)**: For CI/CD pipelines
+- **[GitHub Pages](https://pages.github.com/)**: For hosting the static website
 
 ## License
 

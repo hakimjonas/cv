@@ -198,56 +198,5 @@
 {% endblock %}
 
 {% block scripts %}
-    <script>
-      // Update the current year
-      document.getElementById("current-year").textContent = new Date().getFullYear();
-
-      // Theme switcher functionality
-      const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
-
-      // Function to set a theme
-      function setTheme(theme) {
-        document.documentElement.className = theme;
-        localStorage.setItem("theme", theme);
-
-        if (theme === "theme-dark") {
-          toggleSwitch.checked = true;
-        } else {
-          toggleSwitch.checked = false;
-        }
-      }
-
-      // Check for saved theme preference or use system preference
-      const currentTheme =
-        localStorage.getItem("theme") ||
-        (window.matchMedia("(prefers-color-scheme: dark)").matches ? "theme-dark" : "theme-light");
-
-      // Apply the theme
-      setTheme(currentTheme);
-
-      // Listen for theme toggle
-      toggleSwitch.addEventListener("change", function (e) {
-        if (e.target.checked) {
-          setTheme("theme-dark");
-        } else {
-          setTheme("theme-light");
-        }
-      });
-    </script>
-
-    <!-- Service Worker Registration -->
-    <script>
-      if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
-          navigator.serviceWorker
-            .register("/service-worker.js")
-            .then(registration => {
-              console.log("Service Worker registered with scope:", registration.scope);
-            })
-            .catch(error => {
-              console.error("Service Worker registration failed:", error);
-            });
-        });
-      }
-    </script>
+    <!-- No additional scripts needed - all functionality is now in scripts.js -->
 {% endblock %}

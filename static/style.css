@@ -339,6 +339,7 @@ nav ul li a.active {
     border: none;
     background: none;
     padding: 0;
+    transition: all 0.3s ease;
 }
 
 .slider {
@@ -390,23 +391,28 @@ nav ul li a.active {
     color: var(--light-text);
     margin-left: 8px;
     cursor: pointer;
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
+/* In light mode, show moon icon (indicating switch to dark) */
 .light-icon {
-    display: inline-block;
+    display: none;
 }
 
 .dark-icon {
-    display: none;
+    display: inline-block;
 }
 
-/* Icon visibility based on theme */
+/* In dark mode, show sun icon (indicating switch to light) */
 .theme-dark .light-icon {
-    display: none;
+    display: inline-block;
 }
 
 .theme-dark .dark-icon {
-    display: inline-block;
+    display: none;
 }
 
 /* Ensure proper contrast in both themes */

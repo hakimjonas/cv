@@ -11,13 +11,64 @@
         <li><a href="index.html">Blog</a></li>
       </ul>
       <div class="theme-switch-wrapper">
-        <label class="theme-switch" title="Toggle dark/light theme">
-          <input type="checkbox" id="checkbox">
+        <button class="theme-switch" title="Toggle dark/light theme" aria-pressed="false" aria-label="Toggle dark/light theme" role="switch">
           <span class="slider round"></span>
-        </label>
-        <i class="nf nf-sun theme-icon light-icon"></i>
-        <i class="nf nf-moon theme-icon dark-icon"></i>
+          <i class="nf nf-sun theme-icon light-icon" aria-hidden="true" title="Switch to light theme"></i>
+          <i class="nf nf-moon theme-icon dark-icon" aria-hidden="true" title="Switch to dark theme"></i>
+        </button>
       </div>
     </nav>
   </div>
 </header>
+
+<script>
+  // Theme switcher functionality
+  document.addEventListener('DOMContentLoaded', function() {
+    const themeToggle = document.querySelector('.theme-switch');
+    if (themeToggle) {
+      // Function to set a theme
+      function setTheme(theme) {
+        document.documentElement.className = theme;
+        localStorage.setItem("theme", theme);
+
+        if (theme === "theme-dark") {
+          themeToggle.setAttribute('aria-pressed', 'true');
+          themeToggle.classList.add('active');
+          // Update tooltip to indicate what will happen on next click
+          themeToggle.querySelector('.light-icon').setAttribute('title', 'Switch to light theme');
+        } else {
+          themeToggle.setAttribute('aria-pressed', 'false');
+          themeToggle.classList.remove('active');
+          // Update tooltip to indicate what will happen on next click
+          themeToggle.querySelector('.dark-icon').setAttribute('title', 'Switch to dark theme');
+        }
+      }
+
+      // Check for saved theme preference or use system preference
+      const currentTheme =
+        localStorage.getItem("theme") ||
+        (window.matchMedia("(prefers-color-scheme: dark)").matches ? "theme-dark" : "theme-light");
+
+      // Apply the theme
+      setTheme(currentTheme);
+
+      // Listen for theme toggle
+      themeToggle.addEventListener("click", function () {
+        if (this.getAttribute('aria-pressed') === 'false') {
+          setTheme("theme-dark");
+        } else {
+          setTheme("theme-light");
+        }
+      });
+
+      // Add keyboard support for better accessibility
+      themeToggle.addEventListener("keydown", function(e) {
+        // Toggle on Space or Enter key
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault();
+          this.click();
+        }
+      });
+    }
+  });
+</script>

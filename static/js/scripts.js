@@ -100,7 +100,7 @@ function getLanguageIcon(language) {
     return '';
 }
 
-// Update the current year in the footer
+// Main initialization function
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize the menu module
     const currentPath = window.location.pathname;
@@ -119,6 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize the menu with the configuration
     MenuModule.init(menuConfig);
 
+    // Update the current year in the footer
     const currentYearElement = document.getElementById('current-year');
     if (currentYearElement) {
         currentYearElement.textContent = new Date().getFullYear();
@@ -153,6 +154,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Theme switcher is now handled in header.html
 });
 
 // Function to initialize language icons for GitHub cards
@@ -203,9 +206,6 @@ function initializeLanguageIcons() {
         }
     });
 }
-
-// Theme switching is now handled directly in each page's script
-// This ensures consistent theme handling across all pages
 
 // Service Worker Registration
 if ('serviceWorker' in navigator) {

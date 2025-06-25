@@ -54,9 +54,6 @@ This project is a comprehensive personal website solution that includes a dynami
 │       ├── migrations.rs # Database schema migrations
 │       └── error.rs     # Custom error types for database operations
 ├── static/              # Static web assets
-│   ├── index.html       # Landing page/blog frontend
-│   ├── cv.html          # CV page
-│   ├── projects.html    # Projects page
 │   ├── blog-client.html # Blog client interface
 │   ├── style.css        # Main CSS styles
 │   ├── css/             # CSS files
@@ -147,11 +144,13 @@ The project consists of two main components:
 
 3. **View the generated files**:
 
-   The generated files will be in the `static/` directory:
+   The generated files will be in the `dist/` directory:
    - `index.html`: The landing page/blog frontend
    - `cv.html`: The HTML version of your CV
    - `projects.html`: The projects page
-   - CSS, JavaScript, and image assets
+   - `cv.pdf`: The PDF version of your CV
+
+   Static assets (CSS, JavaScript, images) remain in the `static/` directory.
 
 ### Blog API Server
 
@@ -279,8 +278,11 @@ Edit the `data/cv_data.json` file to update your personal information, experienc
 
 ### HTML Templates
 
+- `templates/base.html`: Modify this file to change the common structure of all pages
 - `templates/cv.html`: Modify this file to change the structure of the HTML CV
-- `static/index.html`: Modify this file to change the landing page
+- `templates/index.html`: Modify this file to change the landing page
+- `templates/projects.html`: Modify this file to change the projects page
+- `templates/partials/`: Modify files in this directory to change reusable components
 - `static/style.css`: Modify this file to change the styling of the website
 
 ### PDF Template
@@ -450,11 +452,27 @@ This script will:
 
 The website consists of three main pages:
 
-1. **Home Page (index.html)**: The main landing page that serves as the blog frontend, displaying recent blog posts and personal information.
-2. **CV Page (cv.html)**: Displays the HTML version of the CV with a link to download the PDF version.
-3. **Projects Page (projects.html)**: Displays GitHub projects with details fetched from the GitHub API.
+1. **Home Page**: The main landing page that serves as the blog frontend, displaying recent blog posts and personal information.
+2. **CV Page**: Displays the HTML version of the CV with a link to download the PDF version.
+3. **Projects Page**: Displays GitHub projects with details fetched from the GitHub API.
 
-All pages share a consistent header and footer, loaded dynamically via JavaScript, ensuring a unified user experience across the site. The header and footer are implemented as HTML modules in the `static/modules/` directory and are loaded by the `modules.js` script, which ensures that all necessary CSS files (including nerdfont icons) are fully loaded before rendering the modules. Blog posts are designed to use the full width of their container for optimal readability.
+### Server-Side vs. Client-Side Processing
+
+The website uses a modern template-based architecture with server-side rendering:
+
+1. **Server-Side Processing**:
+   - HTML pages are generated server-side using Askama templates
+   - Templates are located in the `templates/` directory
+   - The base template (`templates/base.html`) provides the common structure for all pages
+   - Partial templates in `templates/partials/` provide reusable components like header and footer
+   - The Rust application processes these templates and generates the final HTML
+
+2. **Client-Side Processing**:
+   - JavaScript is used only for interactive elements like theme switching and accordion functionality
+   - The `scripts.js` file handles common functionality across all pages
+   - Blog-specific JavaScript is contained in separate files
+
+This approach ensures a consistent user experience across all pages while minimizing client-side JavaScript dependencies. Blog posts are designed to use the full width of their container for optimal readability.
 
 ## Frontend Access
 
@@ -471,7 +489,7 @@ You can access the frontend of the application at the following URLs:
   - Debug Tool: http://your-server-ip:3000/static/blog-debug.html
 
 - **Local Development**:
-  - Home/Blog: http://localhost:3002/static/index.html
+  - Home/Blog: http://localhost:3002/
   - Blog Client: http://localhost:3002/static/blog-client.html
   - Debug Tool: http://localhost:3002/static/blog-debug.html
 

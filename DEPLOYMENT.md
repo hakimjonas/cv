@@ -51,12 +51,12 @@ Before deploying to production, it's recommended to test your changes in a local
    chmod +x deploy-local.sh
    ```
 
-3. Copy necessary files from the dist directory to the static directory:
+3. Ensure the dist directory exists for generated files:
    ```bash
-   cp dist/cv.html dist/cv.pdf dist/projects.html static/
+   mkdir -p dist
    ```
 
-   This ensures that all pages are available in the local development environment.
+   This ensures that the application has a place to store generated files.
 
 4. Start the local development environment:
    ```bash
@@ -71,7 +71,7 @@ Before deploying to production, it's recommended to test your changes in a local
 
 4. Access the application:
    - Blog API: http://localhost:3002
-   - Main Frontend: http://localhost:3002/static/index.html
+   - Main Frontend: http://localhost:3002/
    - Blog Client: http://localhost:3002/static/blog-client.html
    - Debug Tool: http://localhost:3002/static/blog-debug.html
 

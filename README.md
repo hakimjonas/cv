@@ -135,7 +135,11 @@ cp dist/cv.html dist/cv.pdf dist/projects.html static/
 ./deploy-local.sh start
 ```
 
-This will start a development environment with hot reloading, making it easy to test changes before deployment. The copy step ensures that all pages (including CV and Projects) are available in the local environment. For more details, see [DEPLOYMENT.md](DEPLOYMENT.md#local-development-and-testing).
+This will start a development environment with hot reloading, making it easy to test changes before deployment. The copy step ensures that all pages (including CV and Projects) are available in the local environment.
+
+> **Note**: The first time you start the local environment, it may take up to 10 minutes for the Rust application to compile, depending on your system's performance. The script will wait for the application to be ready and provide appropriate feedback. Subsequent starts will be faster as the compiled artifacts are cached.
+
+For more details, see [DEPLOYMENT.md](DEPLOYMENT.md#local-development-and-testing).
 
 ### Production Deployment
 
@@ -345,7 +349,7 @@ The website consists of three main pages:
 2. **CV Page (cv.html)**: Displays the HTML version of the CV with a link to download the PDF version.
 3. **Projects Page (projects.html)**: Displays GitHub projects with details fetched from the GitHub API.
 
-All pages share a consistent header and footer, loaded dynamically via JavaScript, ensuring a unified user experience across the site. The header and footer are implemented as HTML modules in the `static/modules/` directory and are loaded by the `modules.js` script, which ensures that all necessary CSS files are loaded before rendering the modules.
+All pages share a consistent header and footer, loaded dynamically via JavaScript, ensuring a unified user experience across the site. The header and footer are implemented as HTML modules in the `static/modules/` directory and are loaded by the `modules.js` script, which ensures that all necessary CSS files (including nerdfont icons) are fully loaded before rendering the modules. Blog posts are designed to use the full width of their container for optimal readability.
 
 ## Frontend Access
 

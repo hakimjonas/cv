@@ -203,6 +203,52 @@
   }
 }
 
+/* Profile header and image */
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.profile-info {
+  text-align: left;
+  flex: 1;
+}
+
+.profile-info h1 {
+  font-size: 2.8rem;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.profile-info .tagline {
+  font-size: 1.4rem;
+  color: var(--color-primary);
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.profile-info p {
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+.profile-image {
+  margin-left: 2.5rem;
+}
+
+.profile-image img {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--color-primary);
+  transition: border-color 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
 /* Projects grid */
 
 .projects-grid {

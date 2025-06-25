@@ -2,12 +2,67 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="__AUTHOR_NAME__">
+<meta name="description" content="__PAGE_DESCRIPTION__">
+<meta name="keywords" content="__PAGE_KEYWORDS__">
 <meta name="theme-color" content="#286983">
-<link rel="stylesheet" href="style.css">
+
+<!-- Immediate theme application to prevent flashing -->
+<script>
+  (function() {
+    // Theme constants
+    var THEME_DARK = 'theme-dark';
+    var THEME_LIGHT = 'theme-light';
+    var STORAGE_KEY = 'theme';
+
+    // Get saved theme or use system preference
+    var savedTheme = localStorage.getItem(STORAGE_KEY);
+    var systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var theme = savedTheme || (systemPrefersDark ? THEME_DARK : THEME_LIGHT);
+
+    // Apply theme immediately to prevent flashing
+    document.documentElement.classList.remove(THEME_DARK, THEME_LIGHT);
+    document.documentElement.classList.add(theme);
+
+    // For older browsers that don't support classList on documentElement
+    document.documentElement.className = 
+      document.documentElement.className
+        .replace(THEME_DARK, '')
+        .replace(THEME_LIGHT, '')
+        .trim() + ' ' + theme;
+  })();
+</script>
+
+<!-- Preload critical assets -->
+<link rel="preload" href="css/main.css" as="style">
+<link rel="preload" href="css/nerd-fonts.css" as="style">
+<link rel="preload" href="css/nerd-icons.css" as="style">
+<link rel="preload" href="js/modules.js" as="script">
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="__PAGE_URL__">
+<meta property="og:title" content="__PAGE_TITLE__">
+<meta property="og:description" content="__PAGE_DESCRIPTION__">
+<meta property="og:image" content="__PAGE_IMAGE__">
+
+<!-- Twitter -->
+<meta property="twitter:card" content="summary_large_image">
+<meta property="twitter:url" content="__PAGE_URL__">
+<meta property="twitter:title" content="__PAGE_TITLE__">
+<meta property="twitter:description" content="__PAGE_DESCRIPTION__">
+<meta property="twitter:image" content="__PAGE_IMAGE__">
+
+<!-- Stylesheets -->
 <link rel="stylesheet" href="css/main.css">
 <link rel="stylesheet" href="css/nerd-fonts.css">
 <link rel="stylesheet" href="css/nerd-icons.css">
+
+<!-- PWA support -->
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="192x192" href="img/icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="img/icon-512.png">
 <link rel="apple-touch-icon" href="img/icon-192.png">
+
+<!-- DNS prefetch for external resources -->
+<link rel="dns-prefetch" href="https://fonts.googleapis.com">
+<link rel="dns-prefetch" href="https://fonts.gstatic.com">

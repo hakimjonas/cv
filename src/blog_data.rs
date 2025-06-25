@@ -120,42 +120,27 @@ impl BlogPost {
 
     /// Returns a new blog post with updated image
     pub fn with_updated_image(self, image: Option<String>) -> Self {
-        Self {
-            image,
-            ..self
-        }
+        Self { image, ..self }
     }
 
     /// Returns a new blog post with updated published state
     pub fn with_updated_published(self, published: bool) -> Self {
-        Self {
-            published,
-            ..self
-        }
+        Self { published, ..self }
     }
 
     /// Returns a new blog post with updated featured state
     pub fn with_updated_featured(self, featured: bool) -> Self {
-        Self {
-            featured,
-            ..self
-        }
+        Self { featured, ..self }
     }
 
     /// Returns a new blog post with updated tags
     pub fn with_updated_tags(self, tags: Vector<Tag>) -> Self {
-        Self {
-            tags,
-            ..self
-        }
+        Self { tags, ..self }
     }
 
     /// Returns a new blog post with updated metadata
     pub fn with_updated_metadata(self, metadata: im::HashMap<String, String>) -> Self {
-        Self {
-            metadata,
-            ..self
-        }
+        Self { metadata, ..self }
     }
 
     /// Returns a new blog post with added tag
@@ -172,7 +157,11 @@ impl BlogPost {
     /// Returns a new blog post with removed tag
     pub fn with_removed_tag(self, tag_name: &str) -> Self {
         Self {
-            tags: self.tags.into_iter().filter(|tag| tag.name != tag_name).collect(),
+            tags: self
+                .tags
+                .into_iter()
+                .filter(|tag| tag.name != tag_name)
+                .collect(),
             ..self
         }
     }
@@ -214,8 +203,7 @@ pub struct BlogManager {
 impl BlogManager {
     /// Creates a new BlogManager with the given SQLite database path
     pub fn new(db_path: &Path) -> Result<Self> {
-        let conn = Connection::open(db_path)
-            .map_err(|e| BlogError::Database(e.into()))?;
+        let conn = Connection::open(db_path).map_err(|e| BlogError::Database(e.into()))?;
 
         // Create tables if they don't exist
         Self::initialize_db(&conn)?;
@@ -837,7 +825,10 @@ impl BlogManager {
             Err(e) => {
                 // If it's not a locking error, just return the error
                 if !e.to_string().contains("locked") {
-                    return Err(BlogError::Internal(format!("Failed to commit transaction: {}", e)));
+                    return Err(BlogError::Internal(format!(
+                        "Failed to commit transaction: {}",
+                        e
+                    )));
                 }
 
                 // If it is a locking error, we can't retry with the same transaction
@@ -862,8 +853,7 @@ impl BlogManager {
         tx.execute("DELETE FROM blog_posts WHERE id = ?", params![post_id])?;
 
         println!("Committing transaction to database");
-        tx.commit()
-            .map_err(|e| BlogError::Database(e.into()))?;
+        tx.commit().map_err(|e| BlogError::Database(e.into()))?;
         println!("Transaction committed successfully");
         Ok(())
     }

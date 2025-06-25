@@ -29,6 +29,9 @@
 .nf-arrow-right::before {
   content: "→";
 }
+.nf-arrow-up::before {
+  content: "↑";
+}
 .nf-download::before {
   content: "󰇚";
 }
@@ -53,26 +56,29 @@
 .nf-chevron-down::before {
   content: "󰅀";
 }
+.nf-refresh::before {
+  content: "󰑐";
+}
 
 /* Social media icons */
 .nf-linkedin::before {
   content: "󰌻";
 }
 .nf-twitter::before {
-  content: "";
+  content: "󰕄";
 }
 .nf-facebook::before {
-  content: "";
+  content: "󰈌";
 }
 .nf-instagram::before {
-  content: "";
+  content: "󰋾";
 }
 .nf-youtube::before {
-  content: "";
+  content: "󰗃";
 }
 .nf-gitlab::before {
-  content: "";
+  content: "󰮠";
 }
 .nf-bitbucket::before {
-  content: "";
+  content: "󰂨";
 }

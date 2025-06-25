@@ -96,7 +96,8 @@ impl BlogRepository {
                 .map(|post_result| -> Result<BlogPost> {
                     let post = post_result?;
                     let post_with_tags = Self::load_tags_for_post(&conn, post)?;
-                    let post_with_tags_and_metadata = Self::load_metadata_for_post(&conn, post_with_tags)?;
+                    let post_with_tags_and_metadata =
+                        Self::load_metadata_for_post(&conn, post_with_tags)?;
                     Ok(post_with_tags_and_metadata)
                 })
                 .collect::<Result<Vector<_>>>()?;
@@ -447,7 +448,8 @@ impl BlogRepository {
                 .map(|post_result| -> Result<BlogPost> {
                     let post = post_result?;
                     let post_with_tags = Self::load_tags_for_post(&conn, post)?;
-                    let post_with_tags_and_metadata = Self::load_metadata_for_post(&conn, post_with_tags)?;
+                    let post_with_tags_and_metadata =
+                        Self::load_metadata_for_post(&conn, post_with_tags)?;
                     Ok(post_with_tags_and_metadata)
                 })
                 .collect::<Result<Vector<_>>>()?;
@@ -598,7 +600,8 @@ impl BlogRepository {
             .collect::<Result<Vector<(String, String)>>>()?;
 
         // Convert Vector of pairs to HashMap using functional approach
-        let metadata = metadata_pairs.into_iter()
+        let metadata = metadata_pairs
+            .into_iter()
             .fold(HashMap::new(), |acc, (key, value)| acc.update(key, value));
 
         Ok(BlogPost { metadata, ..post })

@@ -31,7 +31,7 @@ show_usage() {
 # Function to start the local development environment
 start_local_env() {
     echo "Building and starting local development environment..."
-    docker-compose -f docker-compose.local.yml up -d --build
+    docker-compose -f docker-compose.local.yml up -d --build --remove-orphans
 
     echo "Waiting for services to start..."
 
@@ -53,7 +53,7 @@ start_local_env() {
 
     # Wait for the application to be healthy
     echo "Waiting for application to be ready..."
-    for i in {1..20}; do
+    for i in {1..40}; do
         HEALTH_STATUS=$(docker inspect --format='{{.State.Health.Status}}' $(docker-compose -f docker-compose.local.yml ps -q blog-api) 2>/dev/null)
         if [ "$HEALTH_STATUS" = "healthy" ]; then
             echo "Application is ready!"
@@ -64,8 +64,8 @@ start_local_env() {
             echo "You can access the debug tool at http://localhost:3002/static/blog-debug.html"
             return 0
         fi
-        echo "Waiting for application to be ready... (attempt $i/20, status: ${HEALTH_STATUS:-unknown})"
-        sleep 5
+        echo "Waiting for application to be ready... (attempt $i/40, status: ${HEALTH_STATUS:-unknown})"
+        sleep 10
     done
 
     echo "Application failed to become ready in the expected time."
@@ -85,7 +85,7 @@ start_local_env() {
 # Function to stop the local development environment
 stop_local_env() {
     echo "Stopping local development environment..."
-    docker-compose -f docker-compose.local.yml down
+    docker-compose -f docker-compose.local.yml down --remove-orphans
     echo "Local development environment stopped."
 }
 

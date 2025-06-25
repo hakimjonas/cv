@@ -76,6 +76,8 @@ Before deploying to production, it's recommended to test your changes in a local
    - Debug Tool: http://localhost:3002/static/blog-debug.html
 
    > **Note**: The first time you start the local environment, it may take several minutes for the blog-api service to compile and start up. The script will wait for the service to be ready and provide appropriate feedback. If the service takes longer than expected to start, the script will provide instructions on how to check the status and view the logs.
+   >
+   > The compilation process can take up to 10 minutes on the first run, depending on your system's performance and internet connection. Subsequent starts will be faster as the compiled artifacts are cached.
 
 ### Managing the Local Environment
 
@@ -85,16 +87,19 @@ The `deploy-local.sh` script provides several commands for managing the local en
   ```bash
   ./deploy-local.sh start
   ```
+  This command builds and starts the containers, automatically removing any orphaned containers.
 
 - **Stop the environment**:
   ```bash
   ./deploy-local.sh stop
   ```
+  This command stops and removes the containers, including any orphaned containers.
 
 - **Restart the environment**:
   ```bash
   ./deploy-local.sh restart
   ```
+  This command stops and then starts the environment, cleaning up orphaned containers.
 
 - **View logs**:
   ```bash
@@ -110,6 +115,8 @@ The `deploy-local.sh` script provides several commands for managing the local en
   ```bash
   ./deploy-local.sh help
   ```
+
+> **Note**: The script automatically handles orphaned containers (containers that were part of the project but are no longer defined in the docker-compose file) by removing them during start and stop operations.
 
 ### Development Workflow
 

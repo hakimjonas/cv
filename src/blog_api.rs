@@ -114,7 +114,9 @@ impl From<BlogError> for ApiError {
             BlogError::NotFound(msg) => ApiError::NotFound(msg),
             BlogError::Validation(msg) => ApiError::ValidationError(msg),
             BlogError::Database(e) => ApiError::DatabaseError(format!("Database error: {}", e)),
-            BlogError::MutexLock(msg) => ApiError::DatabaseError(format!("Database lock error: {}", msg)),
+            BlogError::MutexLock(msg) => {
+                ApiError::DatabaseError(format!("Database lock error: {}", msg))
+            }
             _ => ApiError::InternalError(format!("Internal error: {}", error)),
         }
     }
@@ -129,9 +131,7 @@ pub struct ApiState {
 /// Gets all blog posts
 #[axum::debug_handler]
 #[instrument(skip(state), err)]
-async fn get_all_posts(
-    State(state): State<Arc<ApiState>>,
-) -> ApiResult<Json<Vector<BlogPost>>> {
+async fn get_all_posts(State(state): State<Arc<ApiState>>) -> ApiResult<Json<Vector<BlogPost>>> {
     match state.blog_repo.get_all_posts().await {
         Ok(repo_posts) => {
             let posts: Vector<BlogPost> = repo_posts.into_iter().map(repo_to_api_post).collect();

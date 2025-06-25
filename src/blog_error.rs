@@ -3,9 +3,9 @@
  */
 
 use crate::db::error::DatabaseError;
-use thiserror::Error;
-use std::sync::{PoisonError, MutexGuard};
 use rusqlite::Connection;
+use std::sync::{MutexGuard, PoisonError};
+use thiserror::Error;
 use tokio::task::JoinError;
 
 /// Blog error types

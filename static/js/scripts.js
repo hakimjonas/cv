@@ -204,56 +204,8 @@ function initializeLanguageIcons() {
     });
 }
 
-// Theme switcher functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
-    if (!toggleSwitch) return;
-
-    // Function to set a theme
-    function setTheme(theme) {
-        document.documentElement.className = theme;
-        localStorage.setItem('theme', theme);
-
-        if (theme === 'theme-dark') {
-            toggleSwitch.checked = true;
-        } else {
-            toggleSwitch.checked = false;
-        }
-    }
-
-    // Function to get system preference
-    function getSystemPreference() {
-        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'theme-dark' : 'theme-light';
-    }
-
-    // Check for saved theme preference or use system preference
-    const savedTheme = localStorage.getItem('theme');
-    const systemPreference = getSystemPreference();
-
-    // Apply the theme (prioritize user's saved preference)
-    if (savedTheme) {
-        setTheme(savedTheme);
-    } else {
-        setTheme(systemPreference);
-    }
-
-    // Listen for theme toggle
-    toggleSwitch.addEventListener('change', function(e) {
-        if (e.target.checked) {
-            setTheme('theme-dark');
-        } else {
-            setTheme('theme-light');
-        }
-    });
-
-    // Listen for system preference changes
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
-        // Only update if user hasn't set a preference
-        if (!localStorage.getItem('theme')) {
-            setTheme(e.matches ? 'theme-dark' : 'theme-light');
-        }
-    });
-});
+// Theme switching is now handled by the ThemeManager in modules.js
+// This ensures consistent theme handling across all pages
 
 // Service Worker Registration
 if ('serviceWorker' in navigator) {

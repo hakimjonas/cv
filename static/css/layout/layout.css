@@ -101,6 +101,13 @@
   gap: var(--spacing-lg);
 }
 
+/* Main content spacing */
+
+main {
+  padding: var(--spacing-xxl) 0;
+  min-height: calc(100vh - 200px); /* Ensure proper spacing from header/footer */
+}
+
 /* Section layouts */
 
 .section {
@@ -116,16 +123,16 @@
 .cv-container {
   width: 90%;
   max-width: 1200px;
-  margin: 2rem auto;
-  padding: var(--spacing-xxl);
+  margin: var(--spacing-xxl) auto;
+  padding: var(--spacing-xxl) var(--spacing-xxl);
   background-color: var(--color-card-background);
   box-shadow: var(--color-card-shadow);
   border-radius: var(--border-radius-md);
 }
 
 .cv-section {
-  margin-bottom: var(--spacing-xl);
-  padding-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-xxl);
+  padding-bottom: var(--spacing-xl);
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -254,8 +261,9 @@
 .projects-grid {
   display: grid;
   grid-template-columns: repeat(1, 1fr);
-  gap: var(--spacing-lg);
+  gap: var(--spacing-xxl);
   grid-auto-rows: 1fr;
+  padding: var(--spacing-xl) 0;
 }
 
 /* Full-width projects grid for projects.html */

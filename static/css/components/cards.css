@@ -27,7 +27,7 @@
   align-items: center;
   background-color: var(--color-primary); /* Default language color */
   color: white;
-  padding: 16px 20px;
+  padding: 20px 24px;
   border-radius: 12px 12px 0 0;
 }
 
@@ -133,7 +133,7 @@
 
 /* Repository description */
 .repo-description {
-  padding: 16px 20px;
+  padding: 24px;
   margin: 0;
   color: var(--color-text);
   flex-grow: 1;
@@ -141,7 +141,7 @@
 
 /* Project details */
 .project-details {
-  padding: 0 20px 16px;
+  padding: 0 24px 20px;
   margin: 0;
   color: var(--color-text);
   line-height: 1.5;
@@ -149,7 +149,7 @@
 
 /* Project highlights */
 .project-highlights {
-  padding: 0 20px 16px;
+  padding: 0 24px 20px;
   flex-grow: 0;
 }
 
@@ -169,10 +169,10 @@
 
 /* Technologies */
 .technologies {
-  padding: 0 20px 16px;
+  padding: 0 24px 20px;
   display: flex;
   flex-wrap: wrap;
-  gap: var(--spacing-xs);
+  gap: var(--spacing-sm);
   flex-grow: 0;
 }
 
@@ -202,7 +202,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
+  padding: 20px 24px;
   border-top: 1px solid var(--color-border);
   margin-top: auto;
 }

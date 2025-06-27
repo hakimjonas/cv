@@ -8,9 +8,14 @@ RUN apt-get update && apt-get install -y pkg-config libssl-dev
 COPY Cargo.toml Cargo.lock ./
 COPY src ./src/
 COPY static ./static/
+COPY templates ./templates/
+COPY data ./data/
+
+# Generate the website files first
+RUN cargo run --bin cv
 
 # Build the application
-RUN cargo build --release
+RUN cargo build --release --bin blog_api_server
 
 # Runtime stage
 FROM debian:bullseye-slim
@@ -23,8 +28,10 @@ RUN apt-get update && apt-get install -y ca-certificates libssl1.1 curl && rm -r
 
 # Copy the binary from the builder stage
 COPY --from=builder /usr/src/app/target/release/blog_api_server /app/blog_api_server
-# Copy static assets
+# Copy static assets and generated website files
 COPY --from=builder /usr/src/app/static /app/static
+COPY --from=builder /usr/src/app/dist /app/dist
+COPY --from=builder /usr/src/app/templates /app/templates
 
 # Create data directory with proper permissions
 RUN mkdir -p /app/data && chmod 777 /app/data

@@ -624,6 +624,15 @@ pub fn create_blog_api_router(db_path: PathBuf) -> std::result::Result<Router, B
         Json(test_data)
     }
 
+    // Health check endpoint
+    async fn health_handler() -> impl axum::response::IntoResponse {
+        let health_data = serde_json::json!({
+            "status": "healthy",
+            "timestamp": chrono::Local::now().to_rfc3339()
+        });
+        Json(health_data)
+    }
+
     // Handler to serve the main index.html from dist
     async fn main_index_handler() -> impl axum::response::IntoResponse {
         match tokio::fs::read_to_string("dist/index.html").await {
@@ -667,6 +676,8 @@ pub fn create_blog_api_router(db_path: PathBuf) -> std::result::Result<Router, B
     // Route order matters! More specific routes need to come before less specific ones
     // to avoid route conflicts, especially with path parameters
     let router = Router::new()
+        // Health check endpoint
+        .route("/health", get(health_handler))
         // Main website routes - serve the proper frontend from dist/
         .route("/", get(main_index_handler))
         .route("/index.html", get(main_index_handler))

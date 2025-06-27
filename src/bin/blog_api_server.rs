@@ -74,7 +74,7 @@ async fn main() -> Result<()> {
     info!("Attempting to start server on ports {}-{}", port, max_port);
 
     while port <= max_port {
-        let addr = SocketAddr::from(([127, 0, 0, 1], port));
+        let addr = SocketAddr::from(([0, 0, 0, 0], port));
         match TcpListener::bind(addr).await {
             Ok(l) => {
                 info!("Blog API server running at http://{}", addr);

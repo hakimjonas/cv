@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}{{ cv.personal_info.name }} - Blog{% endblock %}
+{% block description %}Personal blog of {{ cv.personal_info.name }} featuring articles on technology, programming, and software development.{% endblock %}
+{% block keywords %}blog, articles, technology, programming, software development, {{ cv.personal_info.title }}{% endblock %}
+
+{% block content %}
+<section class="blog-hero" id="blog-hero">
+  <div class="container">
+    <h1 class="page-title">Blog</h1>
+    <p class="page-subtitle">
+      Thoughts, insights, and experiences in software development and technology.
+    </p>
+  </div>
+</section>
+
+<section class="blog-content" id="blog-content">
+  <div class="container">
+    <div id="blog-posts-container" class="blog-posts" role="feed" aria-busy="true" aria-live="polite">
+      <div class="loading" role="status">Loading posts...</div>
+    </div>
+    
+    <div id="blog-tags-container" class="blog-tags-section" style="display: none;">
+      <h2 class="section-title">Tags</h2>
+      <div id="blog-tags-list" class="tags-list"></div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<!-- Include scripts for blog functionality -->
+<script src="/static/js/api-client.js"></script>
+<script src="/static/js/blog-integration.js"></script>
+
+<script>
+// Blog page specific functionality
+document.addEventListener('DOMContentLoaded', function() {
+  // Load blog posts for the dedicated blog page
+  if (typeof loadBlogPosts === 'function') {
+    loadBlogPosts(true).catch(error => {
+      console.error('Failed to load blog posts:', error);
+      const postsContainer = document.getElementById('blog-posts-container');
+      if (postsContainer) {
+        postsContainer.innerHTML = `
+          <div class="error" role="alert">
+            <p>Error loading posts. Please try again later.</p>
+            <button class="retry-button" onclick="loadBlogPosts(true)">
+              <i class="nf nf-refresh" aria-hidden="true"></i> Retry
+            </button>
+          </div>
+        `;
+      }
+    });
+  }
+  
+  // Load tags
+  if (typeof BlogAPI !== 'undefined') {
+    BlogAPI.getTags().then(tags => {
+      if (tags && tags.length > 0) {
+        const tagsContainer = document.getElementById('blog-tags-container');
+        const tagsList = document.getElementById('blog-tags-list');
+        
+        if (tagsContainer && tagsList) {
+          tagsList.innerHTML = tags.map(tag => 
+            `<a href="/blog/tag/${tag.slug}" class="tag">${tag.name}</a>`
+          ).join('');
+          tagsContainer.style.display = 'block';
+        }
+      }
+    }).catch(error => {
+      console.warn('Failed to load tags:', error);
+    });
+  }
+});
+</script>
+{% endblock %}

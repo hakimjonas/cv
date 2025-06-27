@@ -13,7 +13,6 @@ services:
       - ./src:/app/src
       - ./static:/app/static
       - ./templates:/app/templates
-      - ./blog_api_server.rs:/app/blog_api_server.rs
       - ./blog_tester.rs:/app/blog_tester.rs
       - ./Cargo.toml:/app/Cargo.toml
       - ./Cargo.lock:/app/Cargo.lock

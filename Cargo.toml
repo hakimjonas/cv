@@ -37,9 +37,6 @@ proptest = "1.4.0"
 
 
 
-[[bin]]
-name = "blog_api_server"
-path = "blog_api_server.rs"
 
 [[bin]]
 name = "blog_tester"

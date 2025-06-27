@@ -31,6 +31,13 @@ struct ProjectsTemplate<'a> {
     cv: &'a Cv,
 }
 
+/// Template for the blog HTML page
+#[derive(Template)]
+#[template(path = "blog.html")]
+struct BlogTemplate<'a> {
+    cv: &'a Cv,
+}
+
 /// Generate HTML from CV data and save it to the specified path
 ///
 /// # Arguments
@@ -67,6 +74,15 @@ pub fn generate_html(cv: &Cv, output_path: &str) -> Result<()> {
         .to_string();
 
     generate_projects_html(cv, &projects_path)?;
+
+    // Generate blog HTML
+    let blog_path = parent_dir
+        .join("blog.html")
+        .to_str()
+        .context("Failed to convert path to string")?
+        .to_string();
+
+    generate_blog_html(cv, &blog_path)?;
 
     // In release mode, generate server configuration files
     if !cfg!(debug_assertions) {
@@ -204,6 +220,32 @@ fn generate_projects_html(cv: &Cv, output_path: &str) -> Result<()> {
     let html = template
         .render()
         .context("Failed to render projects HTML template")?;
+
+    // Ensure the output directory exists and write the HTML
+    ensure_parent_dir_exists(output_path)?;
+    write_file(output_path, &html)?;
+
+    Ok(())
+}
+
+/// Generate blog HTML from CV data and save it to the specified path
+///
+/// # Arguments
+///
+/// * `cv` - The CV data to generate HTML from
+/// * `output_path` - Path where the HTML will be written
+///
+/// # Returns
+///
+/// A Result indicating success or failure
+fn generate_blog_html(cv: &Cv, output_path: &str) -> Result<()> {
+    // Create the template with the CV data
+    let template = BlogTemplate { cv };
+
+    // Render the template to HTML
+    let html = template
+        .render()
+        .context("Failed to render blog HTML template")?;
 
     // Ensure the output directory exists and write the HTML
     ensure_parent_dir_exists(output_path)?;

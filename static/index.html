@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Frontend</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/blog.css">
+    <link rel="stylesheet" href="/static/prism.css">
+    <link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body>
+    <div class="container">
+        <header class="blog-header py-3">
+            <div class="row flex-nowrap justify-content-between align-items-center">
+                <div class="col-4 pt-1">
+                    <a class="text-muted" href="/static/blog-client.html">Blog Client</a>
+                </div>
+                <div class="col-4 text-center">
+                    <a class="blog-header-logo text-dark" href="#">Blog Frontend</a>
+                </div>
+                <div class="col-4 d-flex justify-content-end align-items-center">
+                    <a class="text-muted" href="/static/blog-debug.html">Debug Tool</a>
+                </div>
+            </div>
+        </header>
+
+        <div class="jumbotron p-3 p-md-5 text-white rounded bg-dark">
+            <div class="col-md-6 px-0">
+                <h1 class="display-4 font-italic">Welcome to the Blog Frontend</h1>
+                <p class="lead my-3">This is the main frontend for the blog API. You can use this page to navigate to other parts of the application.</p>
+                <p class="lead mb-0"><a href="/api/blog" class="text-white font-weight-bold">View all blog posts</a></p>
+            </div>
+        </div>
+
+        <div class="row mb-2">
+            <div class="col-md-6">
+                <div class="card flex-md-row mb-4 box-shadow h-md-250">
+                    <div class="card-body d-flex flex-column align-items-start">
+                        <strong class="d-inline-block mb-2 text-primary">Client</strong>
+                        <h3 class="mb-0">
+                            <a class="text-dark" href="/static/blog-client.html">Blog Client</a>
+                        </h3>
+                        <p class="card-text mb-auto">Use the blog client to view and interact with blog posts in a user-friendly interface.</p>
+                        <a href="/static/blog-client.html">Go to Blog Client</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card flex-md-row mb-4 box-shadow h-md-250">
+                    <div class="card-body d-flex flex-column align-items-start">
+                        <strong class="d-inline-block mb-2 text-success">Debug</strong>
+                        <h3 class="mb-0">
+                            <a class="text-dark" href="/static/blog-debug.html">Debug Tool</a>
+                        </h3>
+                        <p class="card-text mb-auto">Use the debug tool to diagnose issues with the blog API.</p>
+                        <a href="/static/blog-debug.html">Go to Debug Tool</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="featured-posts" class="row mb-2">
+            <div class="col-md-12">
+                <h2 class="mb-4">Featured Posts</h2>
+                <div id="featured-posts-container" class="row">
+                    <p>Loading featured posts...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="blog-footer">
+        <p>Blog Frontend for the Blog API Server</p>
+        <p>
+            <a href="#">Back to top</a>
+        </p>
+    </footer>
+
+    <script src="/static/prism.js"></script>
+    <script src="/static/js/scripts.js"></script>
+    <script src="/static/js/blog-integration.js"></script>
+    <script src="/static/js/api-client.js"></script>
+    <script>
+        // Fetch featured posts when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchFeaturedPosts();
+        });
+
+        // Function to fetch featured posts from the API
+        async function fetchFeaturedPosts() {
+            try {
+                // Use the BlogAPI client to fetch featured posts
+                const posts = await BlogAPI.getFeaturedPosts();
+                displayFeaturedPosts(posts);
+            } catch (error) {
+                console.error('Error fetching featured posts:', error);
+                document.getElementById('featured-posts-container').innerHTML = 
+                    `<div class="col-md-12"><p>Error loading featured posts: ${error.message}</p></div>`;
+            }
+        }
+
+        // Function to display featured posts
+        function displayFeaturedPosts(posts) {
+            const container = document.getElementById('featured-posts-container');
+
+            if (!posts || posts.length === 0) {
+                container.innerHTML = '<div class="col-md-12"><p>No featured posts available.</p></div>';
+                return;
+            }
+
+            let html = '';
+            posts.forEach(post => {
+                html += `
+                <div class="col-md-4">
+                    <div class="card mb-4 box-shadow">
+                        ${post.image ? `<img class="card-img-top" src="${post.image}" alt="${post.title}">` : ''}
+                        <div class="card-body">
+                            <h5 class="card-title">${post.title}</h5>
+                            <p class="card-text">${post.excerpt}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="btn-group">
+                                    <a href="/static/blog-client.html?slug=${post.slug}" class="btn btn-sm btn-outline-secondary">View</a>
+                                </div>
+                                <small class="text-muted">${post.date}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

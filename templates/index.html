@@ -25,72 +25,7 @@
       </section>
 
 
-      <section class="featured-post" id="blog">
-        <div class="container">
-          <h2 class="section-title">Latest Posts</h2>
-          <article class="blog-card featured">
-            <div class="blog-card-content">
-              <div class="blog-meta">
-                <span class="blog-date" data-date="2023-06-15">June 15, 2023</span>
-                <span class="blog-category">Technology</span>
-              </div>
-              <h3 class="blog-title">Getting Started with Rust and Functional Programming</h3>
-              <p class="blog-excerpt">
-                Rust combines the performance of low-level languages with the safety of high-level
-                ones. In this post, I explore how to apply functional programming principles in
-                Rust...
-              </p>
-              <a href="#" class="read-more">Read More <i class="nf nf-arrow-right"></i></a>
-            </div>
-            <!-- Blog image section removed to avoid placeholder images -->
-          </article>
-        </div>
-      </section>
-
-      <section class="blog-posts">
-        <div class="container">
-          <div class="blog-grid">
-            <article class="blog-card">
-              <div class="blog-meta">
-                <span class="blog-date" data-date="2023-05-28">May 28, 2023</span>
-                <span class="blog-category">Development</span>
-              </div>
-              <h3 class="blog-title">Building Responsive Web Applications</h3>
-              <p class="blog-excerpt">
-                Modern web applications need to work on devices of all sizes. Here's my approach to
-                creating truly responsive experiences...
-              </p>
-              <a href="#" class="read-more">Read More <i class="nf nf-arrow-right"></i></a>
-            </article>
-
-            <article class="blog-card">
-              <div class="blog-meta">
-                <span class="blog-date" data-date="2023-04-12">April 12, 2023</span>
-                <span class="blog-category">Career</span>
-              </div>
-              <h3 class="blog-title">Transitioning from Data Science to Engineering</h3>
-              <p class="blog-excerpt">
-                My journey from analyzing data to building the systems that process it. Lessons
-                learned and skills that transferred...
-              </p>
-              <a href="#" class="read-more">Read More <i class="nf nf-arrow-right"></i></a>
-            </article>
-
-            <article class="blog-card">
-              <div class="blog-meta">
-                <span class="blog-date" data-date="2023-03-05">March 5, 2023</span>
-                <span class="blog-category">Tools</span>
-              </div>
-              <h3 class="blog-title">My Development Environment Setup</h3>
-              <p class="blog-excerpt">
-                A detailed look at the tools, extensions, and configurations I use to maximize
-                productivity in my daily work...
-              </p>
-              <a href="#" class="read-more">Read More <i class="nf nf-arrow-right"></i></a>
-            </article>
-          </div>
-        </div>
-      </section>
+      {% include "partials/blog-section.html" %}
 
 
       <section class="about" id="about">
@@ -129,5 +64,7 @@
 {% endblock %}
 
 {% block scripts %}
-    <!-- No additional scripts needed - all functionality is now in scripts.js -->
+    <!-- Include scripts for blog functionality -->
+    <script src="/static/js/api-client.js"></script>
+    <script src="/static/js/blog-integration.js"></script>
 {% endblock %}

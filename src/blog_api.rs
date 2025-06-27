@@ -604,7 +604,7 @@ pub fn create_blog_api_router(db_path: PathBuf) -> std::result::Result<Router, B
     let blog_repo = db.blog_repository();
     let state = Arc::new(ApiState { blog_repo, db });
 
-    // Create a static file service for the static directory
+    // Create a static file service for the static directory (blog tools)
     let static_service = ServeDir::new("static");
 
     // Configure CORS to allow all origins
@@ -624,13 +624,56 @@ pub fn create_blog_api_router(db_path: PathBuf) -> std::result::Result<Router, B
         Json(test_data)
     }
 
+    // Handler to serve the main index.html from dist
+    async fn main_index_handler() -> impl axum::response::IntoResponse {
+        match tokio::fs::read_to_string("dist/index.html").await {
+            Ok(content) => axum::response::Html(content),
+            Err(_) => axum::response::Html(
+                r#"<html><body><h1>Main website not found</h1><p>Please run <code>cargo run --bin cv</code> to generate the website files.</p></body></html>"#.to_string()
+            )
+        }
+    }
+
+    // Handler to serve blog.html from dist
+    async fn blog_page_handler() -> impl axum::response::IntoResponse {
+        match tokio::fs::read_to_string("dist/blog.html").await {
+            Ok(content) => axum::response::Html(content),
+            Err(_) => axum::response::Html(
+                r#"<html><body><h1>Blog page not found</h1><p>Please run <code>cargo run --bin cv</code> to generate the website files.</p></body></html>"#.to_string()
+            )
+        }
+    }
+
+    // Handler to serve cv.html from dist
+    async fn cv_page_handler() -> impl axum::response::IntoResponse {
+        match tokio::fs::read_to_string("dist/cv.html").await {
+            Ok(content) => axum::response::Html(content),
+            Err(_) => axum::response::Html(
+                r#"<html><body><h1>CV page not found</h1><p>Please run <code>cargo run --bin cv</code> to generate the website files.</p></body></html>"#.to_string()
+            )
+        }
+    }
+
+    // Handler to serve projects.html from dist
+    async fn projects_page_handler() -> impl axum::response::IntoResponse {
+        match tokio::fs::read_to_string("dist/projects.html").await {
+            Ok(content) => axum::response::Html(content),
+            Err(_) => axum::response::Html(
+                r#"<html><body><h1>Projects page not found</h1><p>Please run <code>cargo run --bin cv</code> to generate the website files.</p></body></html>"#.to_string()
+            )
+        }
+    }
+
     // Route order matters! More specific routes need to come before less specific ones
     // to avoid route conflicts, especially with path parameters
     let router = Router::new()
-        // Root route
-        .route("/", get(root_handler))
-        // Diagnostic endpoint
+        // Main website routes - serve the proper frontend from dist/
+        .route("/", get(main_index_handler))
+        .route("/index.html", get(main_index_handler))
+        // API diagnostic endpoint
         .route("/api/blog/test", get(diagnostic_handler))
+        // Admin/API documentation route
+        .route("/admin", get(root_handler))
         // Blog specific routes need to come before routes with parameters
         .route("/api/blog/tags", get(get_all_tags))
         .route("/api/blog/published", get(get_published_posts))
@@ -642,8 +685,22 @@ pub fn create_blog_api_router(db_path: PathBuf) -> std::result::Result<Router, B
         .route("/api/blog/{slug}", get(get_post_by_slug))
         .route("/api/blog/{slug}", put(update_post))
         .route("/api/blog/{slug}", delete(delete_post))
-        // Serve static files
+        // Serve static files (blog tools)
         .nest_service("/static", static_service)
+        // Serve main website pages
+        .route("/blog.html", get(blog_page_handler))
+        .route("/cv.html", get(cv_page_handler))
+        .route("/projects.html", get(projects_page_handler))
+        // Serve main website files from dist (CSS, JS, images, other assets)
+        .nest_service("/css", ServeDir::new("dist/css"))
+        .nest_service("/js", ServeDir::new("dist/js"))
+        .nest_service("/img", ServeDir::new("dist/img"))
+        .nest_service("/fonts", ServeDir::new("dist/fonts"))
+        // Serve other static assets from dist
+        .nest_service("/manifest.json", ServeDir::new("dist"))
+        .nest_service("/robots.txt", ServeDir::new("dist"))
+        .nest_service("/_headers", ServeDir::new("dist"))
+        .nest_service("/_redirects", ServeDir::new("dist"))
         // Apply CORS middleware
         .layer(cors)
         // Add request timeout middleware - increased to 120 seconds for database operations

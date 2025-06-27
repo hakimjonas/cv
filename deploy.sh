@@ -4,6 +4,16 @@ set -e
 
 echo "Starting blog application deployment"
 
+# Generate CV and website files
+echo "Generating CV and website files..."
+if ! command -v cargo &> /dev/null; then
+    echo "Cargo is not installed. Please install Rust and Cargo before proceeding."
+    exit 1
+fi
+
+cargo run --bin cv
+echo "CV and website files generated successfully in dist/ directory"
+
 # Check if Docker is installed
 if ! command -v docker &> /dev/null; then
     echo "Docker is not installed. Please install Docker before proceeding."

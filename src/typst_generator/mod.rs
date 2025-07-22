@@ -36,7 +36,7 @@ pub fn generate_pdf(cv: &Cv, temp_path: &str, output_path: &str) -> Result<()> {
 
     // Write Typst markup to temporary file
     fs::write(temp_path, typst_markup)
-        .with_context(|| format!("Failed to write Typst markup to {}", temp_path))?;
+        .with_context(|| format!("Failed to write Typst markup to {temp_path}"))?;
 
     // Compile Typst to PDF
     let status = Command::new("typst")
@@ -55,7 +55,7 @@ pub fn generate_pdf(cv: &Cv, temp_path: &str, output_path: &str) -> Result<()> {
 
     // Optionally, clean up the temporary file
     fs::remove_file(temp_path)
-        .with_context(|| format!("Failed to remove temporary file: {}", temp_path))?;
+        .with_context(|| format!("Failed to remove temporary file: {temp_path}"))?;
 
     Ok(())
 }

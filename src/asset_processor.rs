@@ -79,7 +79,7 @@ pub fn minify_css_content(content: &str) -> Result<String> {
 pub fn write_gzipped_file(path: &str, content: &[u8]) -> Result<()> {
     // Create the file
     let file = fs::File::create(path)
-        .with_context(|| format!("Failed to create gzipped file: {}", path))?;
+        .with_context(|| format!("Failed to create gzipped file: {path}"))?;
 
     // Create a gzip encoder
     let mut encoder = GzEncoder::new(file, Compression::best());
@@ -87,12 +87,12 @@ pub fn write_gzipped_file(path: &str, content: &[u8]) -> Result<()> {
     // Write the content
     encoder
         .write_all(content)
-        .with_context(|| format!("Failed to write gzipped content to {}", path))?;
+        .with_context(|| format!("Failed to write gzipped content to {path}"))?;
 
     // Finish the compression
     encoder
         .finish()
-        .with_context(|| format!("Failed to finish gzip compression for {}", path))?;
+        .with_context(|| format!("Failed to finish gzip compression for {path}"))?;
 
     Ok(())
 }
@@ -110,7 +110,7 @@ pub fn write_gzipped_file(path: &str, content: &[u8]) -> Result<()> {
 pub fn write_file(path: &str, content: &str) -> Result<()> {
     // In debug mode, just write the file as is
     if cfg!(debug_assertions) {
-        return fs::write(path, content).with_context(|| format!("Failed to write to {}", path));
+        return fs::write(path, content).with_context(|| format!("Failed to write to {path}"));
     }
 
     // In release mode, apply optimizations based on file extension
@@ -127,10 +127,10 @@ pub fn write_file(path: &str, content: &str) -> Result<()> {
 
             // Write minified HTML
             fs::write(path, &minified)
-                .with_context(|| format!("Failed to write minified HTML to {}", path))?;
+                .with_context(|| format!("Failed to write minified HTML to {path}"))?;
 
             // Also create a gzipped version
-            write_gzipped_file(&format!("{}.gz", path), minified.as_slice())?;
+            write_gzipped_file(&format!("{path}.gz"), minified.as_slice())?;
         }
         "css" => {
             // Minify CSS content
@@ -138,22 +138,22 @@ pub fn write_file(path: &str, content: &str) -> Result<()> {
 
             // Write minified CSS
             fs::write(path, &minified)
-                .with_context(|| format!("Failed to write minified CSS to {}", path))?;
+                .with_context(|| format!("Failed to write minified CSS to {path}"))?;
 
             // Also create a gzipped version
-            write_gzipped_file(&format!("{}.gz", path), minified.as_bytes())?;
+            write_gzipped_file(&format!("{path}.gz"), minified.as_bytes())?;
         }
         "js" => {
             // For JS files, we'll just compress them without minification for now
             // (could add JS minification in the future)
-            fs::write(path, content).with_context(|| format!("Failed to write to {}", path))?;
+            fs::write(path, content).with_context(|| format!("Failed to write to {path}"))?;
 
             // Create a gzipped version
-            write_gzipped_file(&format!("{}.gz", path), content.as_bytes())?;
+            write_gzipped_file(&format!("{path}.gz"), content.as_bytes())?;
         }
         _ => {
             // For other file types, just write as is
-            fs::write(path, content).with_context(|| format!("Failed to write to {}", path))?;
+            fs::write(path, content).with_context(|| format!("Failed to write to {path}"))?;
         }
     }
 
@@ -264,7 +264,7 @@ pub fn generate_htaccess(path: &str) -> Result<()> {
 
     // Write the .htaccess file
     fs::write(path, htaccess_content)
-        .with_context(|| format!("Failed to write .htaccess file to {}", path))?;
+        .with_context(|| format!("Failed to write .htaccess file to {path}"))?;
 
     println!("Generated .htaccess file with performance optimizations");
 
@@ -386,7 +386,7 @@ pub fn generate_web_config(path: &str) -> Result<()> {
 
     // Write the web.config file
     fs::write(path, web_config_content)
-        .with_context(|| format!("Failed to write web.config file to {}", path))?;
+        .with_context(|| format!("Failed to write web.config file to {path}"))?;
 
     println!("Generated web.config file with performance optimizations");
 
@@ -452,7 +452,7 @@ pub fn generate_netlify_headers(path: &str) -> Result<()> {
 
     // Write the _headers file
     fs::write(path, headers_content)
-        .with_context(|| format!("Failed to write _headers file to {}", path))?;
+        .with_context(|| format!("Failed to write _headers file to {path}"))?;
 
     println!("Generated _headers file for Netlify with performance optimizations");
 
@@ -481,7 +481,7 @@ https://www.:hostname/* https://:hostname/:splat 301!
 
     // Write the _redirects file
     fs::write(path, redirects_content)
-        .with_context(|| format!("Failed to write _redirects file to {}", path))?;
+        .with_context(|| format!("Failed to write _redirects file to {path}"))?;
 
     println!("Generated _redirects file for Netlify with common redirects");
 
@@ -512,7 +512,7 @@ Allow: /
 
     // Write the robots.txt file
     fs::write(path, robots_content)
-        .with_context(|| format!("Failed to write robots.txt file to {}", path))?;
+        .with_context(|| format!("Failed to write robots.txt file to {path}"))?;
 
     println!("Generated robots.txt file with SEO-friendly rules");
 
@@ -555,7 +555,7 @@ pub fn generate_manifest_json(path: &str) -> Result<()> {
 
     // Write the manifest.json file
     fs::write(path, manifest_content)
-        .with_context(|| format!("Failed to write manifest.json file to {}", path))?;
+        .with_context(|| format!("Failed to write manifest.json file to {path}"))?;
 
     println!("Generated manifest.json file for PWA support ");
 
@@ -659,7 +659,7 @@ self.addEventListener("fetch", (event) => {
 
     // Write the service-worker.js file
     fs::write(path, sw_content)
-        .with_context(|| format!("Failed to write service-worker.js file to {}", path))?;
+        .with_context(|| format!("Failed to write service-worker.js file to {path}"))?;
 
     println!("Generated service-worker.js file for offline support");
 
@@ -789,7 +789,7 @@ fn copy_dir_recursively(src: &str, dst: &str, exclude: &[&str]) -> Result<()> {
                 .context("Failed to convert file name to string")?;
 
             if exclude.contains(&file_name) {
-                println!("Skipping excluded file: {}", file_name);
+                println!("Skipping excluded file: {file_name}");
                 Ok(())
             } else {
                 copy_file(path, dst)
@@ -810,7 +810,7 @@ fn copy_dir_recursively(src: &str, dst: &str, exclude: &[&str]) -> Result<()> {
 /// A Result containing a Vector of FsEntry or an error
 fn list_directory_entries(dir_path: &str) -> Result<Vector<FsEntry>> {
     let entries = fs::read_dir(dir_path)
-        .with_context(|| format!("Failed to read directory: {}", dir_path))?;
+        .with_context(|| format!("Failed to read directory: {dir_path}"))?;
 
     // Convert DirEntry stream to Vector<FsEntry> using functional patterns
     let result = entries
@@ -889,9 +889,9 @@ fn copy_file(src_path: &Path, dst_dir: &str) -> Result<()> {
             })?;
 
             // Also create a gzipped version
-            write_gzipped_file(&format!("{}.gz", dst_path_str), minified.as_bytes())?;
+            write_gzipped_file(&format!("{dst_path_str}.gz"), minified.as_bytes())?;
 
-            println!("Optimized CSS file: {}", file_name);
+            println!("Optimized CSS file: {file_name}");
         }
         "js" => {
             // Read the JS file
@@ -904,9 +904,9 @@ fn copy_file(src_path: &Path, dst_dir: &str) -> Result<()> {
                 .with_context(|| format!("Failed to write JS to {}", dst_path.display()))?;
 
             // Also create a gzipped version
-            write_gzipped_file(&format!("{}.gz", dst_path_str), content.as_bytes())?;
+            write_gzipped_file(&format!("{dst_path_str}.gz"), content.as_bytes())?;
 
-            println!("Compressed JS file: {}", file_name);
+            println!("Compressed JS file: {file_name}");
         }
         _ => {
             // For other file types, just copy as is

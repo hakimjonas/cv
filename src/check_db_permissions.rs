@@ -7,7 +7,7 @@ use std::path::Path;
 
 /// Checks if a database file is accessible and writable
 pub fn check_db_permissions(db_path: &Path) -> Result<()> {
-    println!("Checking database permissions for: {:?}", db_path);
+    println!("Checking database permissions for: {db_path:?}");
 
     // Check if the parent directory exists and is writable
     if let Some(parent_dir) = db_path.parent() {
@@ -32,7 +32,7 @@ pub fn check_db_permissions(db_path: &Path) -> Result<()> {
             Ok(())
         }
         Err(e) => {
-            println!("❌ Failed to open database in read-write mode: {}", e);
+            println!("❌ Failed to open database in read-write mode: {e}");
             Err(anyhow::anyhow!(
                 "Cannot open database in read-write mode: {}",
                 e
@@ -43,15 +43,15 @@ pub fn check_db_permissions(db_path: &Path) -> Result<()> {
 
 /// Checks if a directory exists and is writable
 pub fn check_directory_permissions(dir_path: &Path) -> Result<()> {
-    println!("Checking directory permissions for: {:?}", dir_path);
+    println!("Checking directory permissions for: {dir_path:?}");
 
     if !dir_path.exists() {
-        println!("❌ Directory doesn't exist: {:?}", dir_path);
+        println!("❌ Directory doesn't exist: {dir_path:?}");
         return Err(anyhow::anyhow!("Directory doesn't exist: {:?}", dir_path));
     }
 
     if !dir_path.is_dir() {
-        println!("❌ Path is not a directory: {:?}", dir_path);
+        println!("❌ Path is not a directory: {dir_path:?}");
         return Err(anyhow::anyhow!("Path is not a directory: {:?}", dir_path));
     }
 
@@ -59,15 +59,15 @@ pub fn check_directory_permissions(dir_path: &Path) -> Result<()> {
     let test_file_path = dir_path.join(format!("write_test_{}.tmp", std::process::id()));
     match std::fs::File::create(&test_file_path) {
         Ok(_) => {
-            println!("✅ Directory is writable: {:?}", dir_path);
+            println!("✅ Directory is writable: {dir_path:?}");
             // Clean up test file
             if let Err(e) = std::fs::remove_file(&test_file_path) {
-                println!("⚠️ Warning: Could not remove test file: {}", e);
+                println!("⚠️ Warning: Could not remove test file: {e}");
             }
             Ok(())
         }
         Err(e) => {
-            println!("❌ Directory is not writable: {}", e);
+            println!("❌ Directory is not writable: {e}");
             Err(anyhow::anyhow!("Directory is not writable: {}", e))
         }
     }
@@ -75,26 +75,26 @@ pub fn check_directory_permissions(dir_path: &Path) -> Result<()> {
 
 /// Checks if a file exists and is writable
 pub fn check_file_permissions(file_path: &Path) -> Result<()> {
-    println!("Checking file permissions for: {:?}", file_path);
+    println!("Checking file permissions for: {file_path:?}");
 
     if !file_path.exists() {
-        println!("❌ File doesn't exist: {:?}", file_path);
+        println!("❌ File doesn't exist: {file_path:?}");
         return Err(anyhow::anyhow!("File doesn't exist: {:?}", file_path));
     }
 
     if !file_path.is_file() {
-        println!("❌ Path is not a file: {:?}", file_path);
+        println!("❌ Path is not a file: {file_path:?}");
         return Err(anyhow::anyhow!("Path is not a file: {:?}", file_path));
     }
 
     // Check if the file is writable
     match std::fs::OpenOptions::new().write(true).open(file_path) {
         Ok(_) => {
-            println!("✅ File is writable: {:?}", file_path);
+            println!("✅ File is writable: {file_path:?}");
             Ok(())
         }
         Err(e) => {
-            println!("❌ File is not writable: {}", e);
+            println!("❌ File is not writable: {e}");
             Err(anyhow::anyhow!("File is not writable: {}", e))
         }
     }

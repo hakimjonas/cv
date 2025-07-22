@@ -19,7 +19,7 @@ impl LanguageIcons {
     /// A Result containing the parsed language icons or an error
     pub fn from_json(path: &str) -> Result<Self> {
         let data = fs::read_to_string(path)
-            .with_context(|| format!("Failed to read language icons from {}", path))?;
+            .with_context(|| format!("Failed to read language icons from {path}"))?;
 
         Self::from_json_str(&data, path)
     }
@@ -36,7 +36,7 @@ impl LanguageIcons {
     /// A Result containing the parsed language icons or an error
     pub fn from_json_str(json_str: &str, source: &str) -> Result<Self> {
         serde_json::from_str(json_str)
-            .with_context(|| format!("Failed to parse language icons from {}", source))
+            .with_context(|| format!("Failed to parse language icons from {source}"))
     }
 
     /// Get the icon for a language
@@ -94,8 +94,7 @@ impl LanguageIcons {
             // Check if the language name is part of a compound word
             // Only match if it's a word boundary or part of a compound word with hyphens/underscores
             let lang_pattern = format!(
-                "\\b{}\\b|\\b{}-|-{}\\b|\\b{}_|_{}\\b",
-                lang, lang, lang, lang, lang
+                "\\b{lang}\\b|\\b{lang}-|-{lang}\\b|\\b{lang}_|_{lang}\\b"
             );
             if regex::Regex::new(&lang_pattern)
                 .ok()
@@ -118,8 +117,7 @@ impl LanguageIcons {
             // Check if the technology contains a language name at word boundaries
             for lang in &lang_keys {
                 let lang_pattern = format!(
-                    "\\b{}\\b|\\b{}-|-{}\\b|\\b{}_|_{}\\b",
-                    lang, lang, lang, lang, lang
+                    "\\b{lang}\\b|\\b{lang}-|-{lang}\\b|\\b{lang}_|_{lang}\\b"
                 );
                 if regex::Regex::new(&lang_pattern)
                     .ok()

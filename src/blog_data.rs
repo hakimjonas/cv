@@ -338,7 +338,7 @@ impl BlogManager {
             let tags = match self.get_tags_for_post_with_conn(&conn, post_id) {
                 Ok(t) => t,
                 Err(e) => {
-                    println!("Error fetching tags for post {}: {:?}", post_id, e);
+                    println!("Error fetching tags for post {post_id}: {e:?}");
                     Vector::new()
                 }
             };
@@ -347,7 +347,7 @@ impl BlogManager {
             let metadata = match self.get_metadata_for_post_with_conn(&conn, post_id) {
                 Ok(m) => m,
                 Err(e) => {
-                    println!("Error fetching metadata for post {}: {:?}", post_id, e);
+                    println!("Error fetching metadata for post {post_id}: {e:?}");
                     im::HashMap::new()
                 }
             };
@@ -372,7 +372,7 @@ impl BlogManager {
             Ok(post) => Ok(Some(post)),
             Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
             Err(e) => {
-                println!("Error retrieving post with ID {}: {:?}", post_id, e);
+                println!("Error retrieving post with ID {post_id}: {e:?}");
                 Err(BlogError::Database(e.into()))
             }
         }
@@ -494,7 +494,7 @@ impl BlogManager {
         let conn = self
             .conn
             .lock()
-            .map_err(|e| BlogError::MutexLock(format!("Mutex lock error: {}", e)))?;
+            .map_err(|e| BlogError::MutexLock(format!("Mutex lock error: {e}")))?;
         let mut stmt = conn.prepare("SELECT id, name, slug FROM tags ORDER BY name")?;
 
         let tag_iter = stmt.query_map([], |row| {
@@ -532,7 +532,7 @@ impl BlogManager {
         let existing_tag_result = self
             .conn
             .lock()
-            .map_err(|e| BlogError::MutexLock(format!("Mutex lock error: {}", e)))?
+            .map_err(|e| BlogError::MutexLock(format!("Mutex lock error: {e}")))?
             .query_row(
                 "SELECT id FROM tags WHERE name = ? OR slug = ?",
                 params![tag.name, tag.slug],
@@ -545,7 +545,7 @@ impl BlogManager {
                 // Insert new tag
                 self.conn
                     .lock()
-                    .map_err(|e| BlogError::MutexLock(format!("Mutex lock error: {}", e)))?
+                    .map_err(|e| BlogError::MutexLock(format!("Mutex lock error: {e}")))?
                     .execute(
                         "INSERT INTO tags (name, slug) VALUES (?, ?)",
                         params![tag.name, tag.slug],
@@ -554,7 +554,7 @@ impl BlogManager {
                 Ok(self
                     .conn
                     .lock()
-                    .map_err(|e| BlogError::MutexLock(format!("Mutex lock error: {}", e)))?
+                    .map_err(|e| BlogError::MutexLock(format!("Mutex lock error: {e}")))?
                     .last_insert_rowid())
             }
             Err(e) => Err(e.into()),
@@ -619,7 +619,7 @@ impl BlogManager {
             let conn = self
                 .conn
                 .lock()
-                .map_err(|e| BlogError::MutexLock(format!("Mutex lock error: {}", e)))?;
+                .map_err(|e| BlogError::MutexLock(format!("Mutex lock error: {e}")))?;
 
             // Test if connection is still good with a simple query
             match conn.query_row("SELECT 1", [], |_| Ok(())) {
@@ -643,7 +643,7 @@ impl BlogManager {
                     );
                 }
                 Err(e) => {
-                    println!("Connection test failed: {}, reconfiguring...", e);
+                    println!("Connection test failed: {e}, reconfiguring...");
                     // Connection might be stale, try to reconfigure
                     conn.execute_batch(
                         "
@@ -680,7 +680,7 @@ impl BlogManager {
         let mut conn = self
             .conn
             .lock()
-            .map_err(|e| BlogError::MutexLock(format!("Mutex lock error: {}", e)))?;
+            .map_err(|e| BlogError::MutexLock(format!("Mutex lock error: {e}")))?;
 
         // Update last_used timestamp
         self.last_used.store(
@@ -713,7 +713,7 @@ impl BlogManager {
             .map_err(|e| BlogError::Database(e.into()))?;
 
         let post_id = if let Some(id) = post.id {
-            println!("Updating existing post with ID: {}", id);
+            println!("Updating existing post with ID: {id}");
             // Update existing post
             tx.execute(
                 "UPDATE blog_posts 
@@ -764,7 +764,7 @@ impl BlogManager {
             .map_err(|e| BlogError::Database(e.into()))?;
 
             let id = tx.last_insert_rowid();
-            println!("Created new post with ID: {}", id);
+            println!("Created new post with ID: {id}");
             id
         };
 
@@ -807,7 +807,7 @@ impl BlogManager {
             ) {
                 Ok(_) => {}
                 Err(e) => {
-                    println!("Warning: Failed to add metadata '{}' to post: {}", key, e);
+                    println!("Warning: Failed to add metadata '{key}' to post: {e}");
                     // Continue processing other metadata
                 }
             }
@@ -826,8 +826,7 @@ impl BlogManager {
                 // If it's not a locking error, just return the error
                 if !e.to_string().contains("locked") {
                     return Err(BlogError::Internal(format!(
-                        "Failed to commit transaction: {}",
-                        e
+                        "Failed to commit transaction: {e}"
                     )));
                 }
 
@@ -847,7 +846,7 @@ impl BlogManager {
         let mut conn = self
             .conn
             .lock()
-            .map_err(|e| BlogError::MutexLock(format!("Mutex lock error: {}", e)))?;
+            .map_err(|e| BlogError::MutexLock(format!("Mutex lock error: {e}")))?;
         let tx = conn.transaction()?;
 
         tx.execute("DELETE FROM blog_posts WHERE id = ?", params![post_id])?;

@@ -57,9 +57,9 @@ pub fn store_credential(key: &str, value: &str) -> Result<()> {
     match keyring::Entry::new(CREDENTIAL_SERVICE, key) {
         Ok(entry) => match entry.set_password(value) {
             Ok(_) => return Ok(()),
-            Err(e) => println!("Warning: Failed to store credential in keyring: {}", e),
+            Err(e) => println!("Warning: Failed to store credential in keyring: {e}"),
         },
-        Err(e) => println!("Warning: Failed to access keyring: {}", e),
+        Err(e) => println!("Warning: Failed to access keyring: {e}"),
     }
 
     // Fall back to encrypted file storage
@@ -101,10 +101,10 @@ pub fn get_credential(key: &str) -> Result<Option<String>> {
                     return Ok(Some(value));
                 }
                 Err(keyring::Error::NoEntry) => (),
-                Err(e) => println!("Warning: Failed to retrieve credential from keyring: {}", e),
+                Err(e) => println!("Warning: Failed to retrieve credential from keyring: {e}"),
             }
         }
-        Err(e) => println!("Warning: Failed to access keyring: {}", e),
+        Err(e) => println!("Warning: Failed to access keyring: {e}"),
     }
 
     // Fall back to encrypted file storage
@@ -135,9 +135,9 @@ pub fn remove_credential(key: &str) -> Result<()> {
         Ok(entry) => match entry.delete_credential() {
             Ok(_) => (),
             Err(keyring::Error::NoEntry) => (),
-            Err(e) => println!("Warning: Failed to remove credential from keyring: {}", e),
+            Err(e) => println!("Warning: Failed to remove credential from keyring: {e}"),
         },
-        Err(e) => println!("Warning: Failed to access keyring: {}", e),
+        Err(e) => println!("Warning: Failed to access keyring: {e}"),
     }
 
     // Remove from the fallback file
@@ -346,7 +346,7 @@ fn get_machine_key() -> Result<Vec<u8>> {
 
     let username = whoami::username().unwrap_or_else(|_| "unknown_user".to_string());
 
-    let combined = format!("{}:{}", hostname, username);
+    let combined = format!("{hostname}:{username}");
     let mut key = Vec::with_capacity(32);
 
     // Create a 32-byte key from the combined string

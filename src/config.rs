@@ -126,7 +126,7 @@ impl Config {
     pub fn path_to_string(&self, path: &Path) -> Result<String> {
         path.to_str()
             .map(String::from)
-            .context(format!("Failed to convert path to string: {:?}", path))
+            .context(format!("Failed to convert path to string: {path:?}"))
     }
 
     /// Gets the HTML output path as a string

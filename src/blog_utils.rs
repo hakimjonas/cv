@@ -56,7 +56,7 @@ pub fn create_test_database() -> Result<PathBuf> {
             let _ = std::fs::remove_file(test_file_path);
         }
         Err(e) => {
-            println!("❌ Directory is not writable: {}", e);
+            println!("❌ Directory is not writable: {e}");
             return Err(anyhow::anyhow!("Test directory is not writable: {}", e));
         }
     }
@@ -66,7 +66,7 @@ pub fn create_test_database() -> Result<PathBuf> {
         match std::fs::OpenOptions::new().write(true).open(&db_path) {
             Ok(_) => println!("✅ Existing database file is writable"),
             Err(e) => {
-                println!("❌ Existing database file is not writable: {}", e);
+                println!("❌ Existing database file is not writable: {e}");
                 return Err(anyhow::anyhow!("Database file is not writable: {}", e));
             }
         }
@@ -101,7 +101,7 @@ pub fn create_test_blog_post() -> BlogPost {
 
 /// Run core blog functionality tests
 pub fn run_blog_core_tests(db_path: &Path) -> Result<()> {
-    println!("Running blog core tests with database at: {:?}", db_path);
+    println!("Running blog core tests with database at: {db_path:?}");
 
     // Verify we can open the database in read-write mode before proceeding
     match rusqlite::Connection::open_with_flags(
@@ -117,7 +117,7 @@ pub fn run_blog_core_tests(db_path: &Path) -> Result<()> {
             ) {
                 Ok(_) => println!("✅ Successfully created test table - database is writable"),
                 Err(e) => {
-                    println!("❌ Failed to create test table: {}", e);
+                    println!("❌ Failed to create test table: {e}");
                     return Err(anyhow::anyhow!("Database is not writable: {}", e));
                 }
             }
@@ -127,7 +127,7 @@ pub fn run_blog_core_tests(db_path: &Path) -> Result<()> {
             drop(conn);
         }
         Err(e) => {
-            println!("❌ Failed to open database in read-write mode: {}", e);
+            println!("❌ Failed to open database in read-write mode: {e}");
             return Err(anyhow::anyhow!(
                 "Cannot open database in read-write mode: {}",
                 e
@@ -149,7 +149,7 @@ pub fn run_blog_core_tests(db_path: &Path) -> Result<()> {
     let post_id = blog_manager
         .create_or_update_post(&test_post)
         .context("Failed to create test post")?;
-    println!("Created test post with ID: {}", post_id);
+    println!("Created test post with ID: {post_id}");
 
     // Add a longer delay before retrieving posts
     println!("Waiting before retrieving all posts...");
@@ -193,11 +193,11 @@ pub fn run_blog_core_tests(db_path: &Path) -> Result<()> {
         ..test_post.clone()
     };
 
-    println!("Updating post with ID: {}", post_id);
+    println!("Updating post with ID: {post_id}");
     let updated_id = blog_manager
         .create_or_update_post(&updated_post)
         .context("Failed to update post")?;
-    println!("Updated post, returned ID: {}", updated_id);
+    println!("Updated post, returned ID: {updated_id}");
     assert_eq!(updated_id, post_id, "Updated post should have the same ID");
 
     // Add a longer delay before retrieving the updated post
@@ -233,11 +233,11 @@ pub fn run_blog_core_tests(db_path: &Path) -> Result<()> {
     std::thread::sleep(std::time::Duration::from_millis(500));
 
     // Test deleting a post
-    println!("Deleting post with ID: {}", post_id);
+    println!("Deleting post with ID: {post_id}");
     blog_manager
         .delete_post(post_id)
         .context("Failed to delete post")?;
-    println!("Deleted post with ID: {}", post_id);
+    println!("Deleted post with ID: {post_id}");
 
     // Add a longer delay before verifying deletion
     println!("Waiting before verifying deletion...");

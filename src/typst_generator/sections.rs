@@ -169,14 +169,14 @@ fn append_project_entry(markup: String, project: &Project) -> String {
         let with_url = project
             .url
             .as_ref()
-            .map(|url| format!("{} #link(\"{}\")[Link]", base_name, url))
+            .map(|url| format!("{base_name} #link(\"{url}\")[Link]"))
             .unwrap_or(base_name);
 
         // Add repository link if available
         project
             .repository
             .as_ref()
-            .map(|repo| format!("{} #link(\"{}\")[Repository]", with_url, repo))
+            .map(|repo| format!("{with_url} #link(\"{repo}\")[Repository]"))
             .unwrap_or(with_url)
     };
 
@@ -267,7 +267,7 @@ pub fn generate_languages_section(cv: &Cv) -> String {
         cv.languages
             .iter()
             .fold(base, |acc, (language, proficiency)| {
-                append_lines(acc, &format!("*{}:* {}", language, proficiency))
+                append_lines(acc, &format!("*{language}:* {proficiency}"))
             })
     } else {
         String::new()
@@ -310,7 +310,7 @@ pub fn generate_education_section(cv: &Cv) -> String {
             .certifications
             .iter()
             .fold(with_cert_header, |acc, certification| {
-                append_line(acc, &format!("- *{}*", certification))
+                append_line(acc, &format!("- *{certification}*"))
             });
 
         // Add an empty line after certifications
@@ -339,7 +339,7 @@ fn append_education_entry(markup: String, edu: &Education) -> String {
     let institution_line = {
         let base = format!("{} {}", edu.institution, edu.start_date);
         if let Some(end_date) = &edu.end_date {
-            format!("{}-{}", base, end_date)
+            format!("{base}-{end_date}")
         } else {
             base
         }
@@ -349,7 +349,7 @@ fn append_education_entry(markup: String, edu: &Education) -> String {
 
     // GPA
     let with_gpa = if let Some(gpa) = &edu.gpa {
-        with_institution.pipe(|s| append_lines(s, &format!("GPA: {}", gpa)))
+        with_institution.pipe(|s| append_lines(s, &format!("GPA: {gpa}")))
     } else {
         with_institution
     };

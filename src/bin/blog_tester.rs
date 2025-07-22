@@ -21,7 +21,7 @@ fn create_test_post() -> BlogPost {
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap_or_default()
         .as_secs();
-    let unique_slug = format!("test-post-{}", timestamp);
+    let unique_slug = format!("test-post-{timestamp}");
 
     // Create a simple metadata map
     let mut metadata = HashMap::new();
@@ -29,7 +29,7 @@ fn create_test_post() -> BlogPost {
 
     BlogPost {
         id: None,
-        title: format!("Test Post {}", timestamp),
+        title: format!("Test Post {timestamp}"),
         slug: unique_slug,
         date: chrono::Local::now().format("%Y-%m-%d").to_string(),
         author: "Test Author".to_string(),

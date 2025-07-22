@@ -1,28 +1,32 @@
-# Development-focused Dockerfile for local testing
-FROM rust:1.87.0-slim-bullseye
+FROM rust:1.88.0-slim-bullseye
 
-# Create app directory
 WORKDIR /app
 
-# Install development dependencies
+# Install dependencies in a single layer
 RUN apt-get update && apt-get install -y \
     pkg-config \
     libssl-dev \
     curl \
     libdbus-1-dev \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
-# Copy everything needed for the build
-# Note: We're relying on .dockerignore to exclude unnecessary files
-COPY . .
+# Copy dependency files first for better caching
+COPY Cargo.toml Cargo.lock ./
 
-# Set the environment variables
+# Pre-build dependencies (creates better Docker layer caching)
+RUN mkdir src && echo "fn main() {}" > src/main.rs && \
+    cargo build --release && \
+    rm -rf src target/release/deps/cv*
+
+# Copy source code
+COPY src/ ./src/
+COPY templates/ ./templates/
+COPY static/ ./static/
+
 ENV RUST_LOG=debug
 ENV RUST_BACKTRACE=1
 
-# Expose the port
 EXPOSE 3000
 
-# Command to run the application
-# Note: We're not using cargo-watch due to potential network issues
 CMD ["cargo", "run", "--bin", "blog_api_server"]

@@ -109,7 +109,7 @@ impl Cv {
     /// ```
     pub fn from_json(path: &str) -> Result<Self> {
         let data = fs::read_to_string(path)
-            .with_context(|| format!("Failed to read CV data from {}", path))?;
+            .with_context(|| format!("Failed to read CV data from {path}"))?;
 
         Self::from_json_str(&data, path)
     }
@@ -126,6 +126,6 @@ impl Cv {
     /// A Result containing the parsed CV data or an error
     pub fn from_json_str(json_str: &str, source: &str) -> Result<Self> {
         serde_json::from_str(json_str)
-            .with_context(|| format!("Failed to parse CV data from {}", source))
+            .with_context(|| format!("Failed to parse CV data from {source}"))
     }
 }

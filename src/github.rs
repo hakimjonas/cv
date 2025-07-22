@@ -32,7 +32,7 @@ fn create_github_headers(token: Option<&str>) -> Result<HeaderMap> {
 
     // Add authorization header if token is provided
     if let Some(token_str) = token {
-        let auth_value = format!("token {}", token_str);
+        let auth_value = format!("token {token_str}");
         headers.insert(
             AUTHORIZATION,
             HeaderValue::from_str(&auth_value).context("Invalid token format")?,
@@ -88,8 +88,7 @@ pub async fn fetch_github_projects(username: &str, token: Option<&str>) -> Resul
 
     // Fetch repositories from GitHub API
     let url = format!(
-        "https://api.github.com/users/{}/repos?sort=updated&per_page=10",
-        username
+        "https://api.github.com/users/{username}/repos?sort=updated&per_page=10"
     );
 
     // Make the request
@@ -146,8 +145,7 @@ pub async fn fetch_github_org_projects(
 
     // Fetch repositories from GitHub API
     let url = format!(
-        "https://api.github.com/orgs/{}/repos?sort=updated&per_page=10",
-        org_name
+        "https://api.github.com/orgs/{org_name}/repos?sort=updated&per_page=10"
     );
 
     // Make the request
@@ -271,7 +269,7 @@ fn convert_repos_to_projects(repos: Vec<GitHubRepo>) -> Vector<Project> {
 
             // Add primary language to the name if available
             let name = if let Some(lang) = &repo.language {
-                format!("{} - {}", base_name, lang)
+                format!("{base_name} - {lang}")
             } else {
                 base_name
             };
@@ -421,8 +419,7 @@ pub async fn fetch_projects_from_sources(
                 }
                 Err(e) => {
                     println!(
-                        "Warning: Failed to fetch GitHub projects for user {}: {}",
-                        username, e
+                        "Warning: Failed to fetch GitHub projects for user {username}: {e}"
                     );
                 }
             }
@@ -438,8 +435,7 @@ pub async fn fetch_projects_from_sources(
                 }
                 Err(e) => {
                     println!(
-                        "Warning: Failed to fetch GitHub projects for organization {}: {}",
-                        org_name, e
+                        "Warning: Failed to fetch GitHub projects for organization {org_name}: {e}"
                     );
                 }
             }
@@ -547,7 +543,7 @@ pub fn fetch_projects_from_sources_sync(
             return Ok(projects);
         }
         Err(e) => {
-            println!("GitHub cache not available: {}", e);
+            println!("GitHub cache not available: {e}");
             println!("Fetching projects from GitHub API...");
         }
     }
@@ -557,7 +553,7 @@ pub fn fetch_projects_from_sources_sync(
 
     // Write the results to the cache
     if let Err(e) = write_github_cache(cache_path, &projects) {
-        println!("Warning: Failed to write GitHub cache: {}", e);
+        println!("Warning: Failed to write GitHub cache: {e}");
     } else {
         println!("GitHub projects cached to {}", cache_path.display());
     }

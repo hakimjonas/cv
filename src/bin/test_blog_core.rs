@@ -7,7 +7,7 @@ fn main() -> Result<()> {
 
     // Create database path
     let db_path = create_test_database()?;
-    println!("Using database at: {:?}\n", db_path);
+    println!("Using database at: {db_path:?}\n");
 
     // Run core blog functionality tests
     run_blog_core_tests(&db_path).context("Blog core tests failed")?;

@@ -132,20 +132,20 @@ fn generate_personal_info(cv: &Cv) -> String {
     // Start building the markup
     let base = String::new()
         .pipe(|s| append_line(s, "#let personal_info = ("))
-        .pipe(|s| append_markup(s, &format!("first_name: \"{}\", ", first_name)))
-        .pipe(|s| append_markup(s, &format!("last_name: \"{}\", ", last_name)))
-        .pipe(|s| append_markup(s, &format!("email: \"{}\", ", email_display)));
+        .pipe(|s| append_markup(s, &format!("first_name: \"{first_name}\", ")))
+        .pipe(|s| append_markup(s, &format!("last_name: \"{last_name}\", ")))
+        .pipe(|s| append_markup(s, &format!("email: \"{email_display}\", ")));
 
     // Phone
     let with_phone = if let Some(phone) = &cv.personal_info.phone {
-        base.pipe(|s| append_markup(s, &format!("telephone: \"{}\", ", phone)))
+        base.pipe(|s| append_markup(s, &format!("telephone: \"{phone}\", ")))
     } else {
         base
     };
 
     // Location
     let with_location = if let Some(location) = &cv.personal_info.location {
-        with_phone.pipe(|s| append_markup(s, &format!("address: \"{}\", ", location)))
+        with_phone.pipe(|s| append_markup(s, &format!("address: \"{location}\", ")))
     } else {
         with_phone
     };
@@ -267,8 +267,7 @@ fn generate_meta_variable(cv: &Cv) -> String {
         let base = cv.personal_info.title.clone();
         if !cv.personal_info.summary.is_empty() {
             format!(
-                "{} with a focus on functional programming and scalable solutions",
-                base
+                "{base} with a focus on functional programming and scalable solutions"
             )
         } else {
             base
@@ -306,25 +305,25 @@ fn generate_meta_variable(cv: &Cv) -> String {
         // Personal section
         .pipe(|s| append_line(s, "  personal: ("))
         // Name
-        .pipe(|s| append_line(s, &format!("    first_name: \"{}\",", first_name)))
-        .pipe(|s| append_line(s, &format!("    last_name: \"{}\",", last_name)))
+        .pipe(|s| append_line(s, &format!("    first_name: \"{first_name}\",")))
+        .pipe(|s| append_line(s, &format!("    last_name: \"{last_name}\",")))
         .pipe(|s| append_line(s, "    language: \"en\","))
         .pipe(|s| append_line(s, "    include_icons: true,"))
         .pipe(|s| append_line(s, "    profile_image: \"static/img/profile_picture.jpg\","))
         // Subtitle
-        .pipe(|s| append_line(s, &format!("    subtitle: \"{}\",", subtitle)))
+        .pipe(|s| append_line(s, &format!("    subtitle: \"{subtitle}\",")))
         // Info section
         .pipe(|s| append_line(s, "    info: ("));
 
     // Address
     let address_value = cv.personal_info.location.as_deref().unwrap_or("");
     let with_address =
-        base.pipe(|s| append_line(s, &format!("      address: \"{}\",", address_value)));
+        base.pipe(|s| append_line(s, &format!("      address: \"{address_value}\",")));
 
     // Telephone
     let phone_value = cv.personal_info.phone.as_deref().unwrap_or("");
     let with_phone =
-        with_address.pipe(|s| append_line(s, &format!("      telephone: \"{}\",", phone_value)));
+        with_address.pipe(|s| append_line(s, &format!("      telephone: \"{phone_value}\",")));
 
     // Email
     let with_email = with_phone

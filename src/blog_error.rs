@@ -88,7 +88,7 @@ impl From<&str> for BlogError {
 
 impl<'a> From<PoisonError<MutexGuard<'a, Connection>>> for BlogError {
     fn from(error: PoisonError<MutexGuard<'a, Connection>>) -> Self {
-        BlogError::MutexLock(format!("Mutex lock error: {}", error))
+        BlogError::MutexLock(format!("Mutex lock error: {error}"))
     }
 }
 
@@ -100,6 +100,6 @@ impl From<anyhow::Error> for BlogError {
 
 impl From<JoinError> for BlogError {
     fn from(error: JoinError) -> Self {
-        BlogError::Internal(format!("Task join error: {}", error))
+        BlogError::Internal(format!("Task join error: {error}"))
     }
 }

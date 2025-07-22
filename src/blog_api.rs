@@ -113,11 +113,11 @@ impl From<BlogError> for ApiError {
         match error {
             BlogError::NotFound(msg) => ApiError::NotFound(msg),
             BlogError::Validation(msg) => ApiError::ValidationError(msg),
-            BlogError::Database(e) => ApiError::DatabaseError(format!("Database error: {}", e)),
+            BlogError::Database(e) => ApiError::DatabaseError(format!("Database error: {e}")),
             BlogError::MutexLock(msg) => {
-                ApiError::DatabaseError(format!("Database lock error: {}", msg))
+                ApiError::DatabaseError(format!("Database lock error: {msg}"))
             }
-            _ => ApiError::InternalError(format!("Internal error: {}", error)),
+            _ => ApiError::InternalError(format!("Internal error: {error}")),
         }
     }
 }
@@ -161,8 +161,7 @@ async fn get_post_by_slug(
         Ok(None) => {
             warn!("Blog post with slug '{}' not found", slug);
             Err(ApiError::NotFound(format!(
-                "Blog post with slug '{}' not found",
-                slug
+                "Blog post with slug '{slug}' not found"
             )))
         }
         Err(e) => {
@@ -252,8 +251,7 @@ async fn create_post(
                     _ => {
                         error!("Failed to create post due to database lock: {}", e);
                         return Err(ApiError::DatabaseError(format!(
-                            "Failed to create post: {}",
-                            e
+                            "Failed to create post: {e}"
                         )));
                     }
                 }
@@ -261,8 +259,7 @@ async fn create_post(
 
             error!("Failed to create post: {}", e);
             Err(ApiError::DatabaseError(format!(
-                "Failed to create post: {}",
-                e
+                "Failed to create post: {e}"
             )))
         }
     }
@@ -301,15 +298,13 @@ async fn update_post(
         Ok(None) => {
             warn!("Post with slug '{}' not found for update", slug);
             return Err(ApiError::NotFound(format!(
-                "Post with slug '{}' not found",
-                slug
+                "Post with slug '{slug}' not found"
             )));
         }
         Err(e) => {
             error!("Error getting post with slug {}: {}", slug, e);
             return Err(ApiError::DatabaseError(format!(
-                "Failed to retrieve post: {}",
-                e
+                "Failed to retrieve post: {e}"
             )));
         }
     };
@@ -331,8 +326,7 @@ async fn update_post(
         Err(e) => {
             error!("Error updating post: {}", e);
             return Err(ApiError::DatabaseError(format!(
-                "Failed to update post: {}",
-                e
+                "Failed to update post: {e}"
             )));
         }
     };
@@ -353,8 +347,7 @@ async fn update_post(
         Err(e) => {
             error!("Error retrieving updated post: {}", e);
             Err(ApiError::DatabaseError(format!(
-                "Failed to retrieve updated post: {}",
-                e
+                "Failed to retrieve updated post: {e}"
             )))
         }
     }
@@ -373,8 +366,7 @@ async fn delete_post(
         Ok(None) => {
             warn!("Blog post with slug '{}' not found for deletion", slug);
             return Err(ApiError::NotFound(format!(
-                "Blog post with slug '{}' not found",
-                slug
+                "Blog post with slug '{slug}' not found"
             )));
         }
         Err(e) => {

@@ -19,6 +19,24 @@ pub const GITHUB_CACHE_KEY: &str = "github_cache";
 /// Default path for the GitHub cache file
 pub const DEFAULT_GITHUB_CACHE_PATH: &str = "data/github_cache.json";
 
+/// Configuration key for the GitHub cache TTL (Time To Live) in seconds
+pub const GITHUB_CACHE_TTL_KEY: &str = "github_cache_ttl";
+
+/// Default TTL for GitHub cache in seconds (1 hour)
+pub const DEFAULT_GITHUB_CACHE_TTL: u64 = 3600;
+
+/// Configuration key for the GitHub cache refresh strategy
+pub const GITHUB_CACHE_REFRESH_STRATEGY_KEY: &str = "github_cache_refresh_strategy";
+
+/// Default refresh strategy for GitHub cache
+pub const DEFAULT_GITHUB_CACHE_REFRESH_STRATEGY: &str = "lazy";
+
+/// Configuration key for the GitHub API rate limit handling strategy
+pub const GITHUB_RATE_LIMIT_STRATEGY_KEY: &str = "github_rate_limit_strategy";
+
+/// Default strategy for handling GitHub API rate limits
+pub const DEFAULT_GITHUB_RATE_LIMIT_STRATEGY: &str = "backoff";
+
 /// Default path for the SQLite database file
 pub const DEFAULT_DB_PATH: &str = "data/cv.db";
 
@@ -83,6 +101,18 @@ pub struct AppConfig {
     #[serde(default)]
     pub github_token: Option<String>,
 
+    /// Time To Live for GitHub cache in seconds
+    #[serde(default = "default_github_cache_ttl")]
+    pub github_cache_ttl: u64,
+
+    /// Refresh strategy for GitHub cache ("lazy", "background", "eager")
+    #[serde(default = "default_github_cache_refresh_strategy")]
+    pub github_cache_refresh_strategy: String,
+
+    /// Strategy for handling GitHub API rate limits ("backoff", "wait", "error")
+    #[serde(default = "default_github_rate_limit_strategy")]
+    pub github_rate_limit_strategy: String,
+
     /// Fields that should be publicly visible (comma-separated)
     #[serde(default = "default_public_data")]
     pub public_data: String,
@@ -145,6 +175,18 @@ fn default_api_max_port() -> u16 {
     DEFAULT_API_MAX_PORT
 }
 
+fn default_github_cache_ttl() -> u64 {
+    DEFAULT_GITHUB_CACHE_TTL
+}
+
+fn default_github_cache_refresh_strategy() -> String {
+    DEFAULT_GITHUB_CACHE_REFRESH_STRATEGY.to_string()
+}
+
+fn default_github_rate_limit_strategy() -> String {
+    DEFAULT_GITHUB_RATE_LIMIT_STRATEGY.to_string()
+}
+
 impl Default for AppConfig {
     /// Creates a default configuration
     fn default() -> Self {
@@ -162,6 +204,9 @@ impl Default for AppConfig {
             github_cache_path: default_github_cache_path(),
             db_path: default_db_path(),
             github_token: None,
+            github_cache_ttl: default_github_cache_ttl(),
+            github_cache_refresh_strategy: default_github_cache_refresh_strategy(),
+            github_rate_limit_strategy: default_github_rate_limit_strategy(),
             public_data: default_public_data(),
             db_storage: default_db_storage(),
             api_port: default_api_port(),
@@ -471,7 +516,7 @@ impl AppConfig {
     /// Gets the GitHub API token, if available
     pub fn github_token(&self) -> Option<&str> {
         let result = self.github_token.as_deref();
-        if let Some(_) = result {
+        if result.is_some() {
             debug!("GitHub token is available");
         } else {
             debug!("No GitHub token available, API requests may be rate limited");

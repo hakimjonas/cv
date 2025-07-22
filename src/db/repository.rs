@@ -56,53 +56,11 @@ impl BlogRepository {
 
         task::spawn_blocking(move || {
             let conn = pool.get()?;
-            let mut stmt = conn.prepare(
-                "
-                SELECT id, title, slug, date, author, excerpt, content, 
-                       published, featured, image FROM posts
-            ",
-            )?;
-
-            let post_iter = stmt.query_map([], |row| {
-                let id = row.get(0)?;
-                let title = row.get(1)?;
-                let slug = row.get(2)?;
-                let date = row.get(3)?;
-                let author = row.get(4)?;
-                let excerpt = row.get(5)?;
-                let content = row.get(6)?;
-                let published = row.get(7)?;
-                let featured = row.get(8)?;
-                let image: Option<String> = row.get(9)?;
-
-                Ok(BlogPost {
-                    id: Some(id),
-                    title,
-                    slug,
-                    date,
-                    author,
-                    excerpt,
-                    content,
-                    published,
-                    featured,
-                    image,
-                    tags: Vector::new(),      // Will be populated later
-                    metadata: HashMap::new(), // Will be populated later
-                })
-            })?;
-
-            // Use functional approach to collect and process posts
-            let posts = post_iter
-                .map(|post_result| -> Result<BlogPost> {
-                    let post = post_result?;
-                    let post_with_tags = Self::load_tags_for_post(&conn, post)?;
-                    let post_with_tags_and_metadata =
-                        Self::load_metadata_for_post(&conn, post_with_tags)?;
-                    Ok(post_with_tags_and_metadata)
-                })
-                .collect::<Result<Vector<_>>>()?;
-
-            debug!("Loaded {} blog posts", posts.len());
+            
+            // Use the optimized query function
+            let posts = super::optimized_queries::get_all_posts_optimized(&conn)?;
+            
+            debug!("Loaded {} blog posts using optimized query", posts.len());
             Ok(posts)
         })
         .await?
@@ -116,57 +74,17 @@ impl BlogRepository {
 
         task::spawn_blocking(move || {
             let conn = pool.get()?;
-
-            let post_result = conn
-                .query_row(
-                    "
-                SELECT id, title, slug, date, author, excerpt, content, 
-                       published, featured, image FROM posts WHERE slug = ?1
-            ",
-                    [&slug],
-                    |row| {
-                        let id = row.get(0)?;
-                        let title = row.get(1)?;
-                        let slug = row.get(2)?;
-                        let date = row.get(3)?;
-                        let author = row.get(4)?;
-                        let excerpt = row.get(5)?;
-                        let content = row.get(6)?;
-                        let published = row.get(7)?;
-                        let featured = row.get(8)?;
-                        let image: Option<String> = row.get(9)?;
-
-                        Ok(BlogPost {
-                            id: Some(id),
-                            title,
-                            slug,
-                            date,
-                            author,
-                            excerpt,
-                            content,
-                            published,
-                            featured,
-                            image,
-                            tags: Vector::new(),      // Will be populated later
-                            metadata: HashMap::new(), // Will be populated later
-                        })
-                    },
-                )
-                .optional()?;
-
-            match post_result {
-                Some(post) => {
-                    let post_with_tags = Self::load_tags_for_post(&conn, post)?;
-                    let post_with_tags_and_metadata =
-                        Self::load_metadata_for_post(&conn, post_with_tags)?;
-                    debug!("Loaded blog post with slug: {}", slug);
-                    Ok(Some(post_with_tags_and_metadata))
-                }
-                None => {
-                    debug!("No blog post found with slug: {}", slug);
-                    Ok(None)
-                }
+            
+            // Use the optimized query function
+            let post = super::optimized_queries::get_post_by_slug_optimized(&conn, &slug)?;
+            
+            if post.is_some() {
+                debug!("Loaded blog post with slug: {} using optimized query", slug);
+            } else {
+                debug!("No blog post found with slug: {}", slug);
             }
+            
+            Ok(post)
         })
         .await?
     }
@@ -406,55 +324,11 @@ impl BlogRepository {
 
         task::spawn_blocking(move || {
             let conn = pool.get()?;
-            let mut stmt = conn.prepare(
-                "
-                SELECT id, title, slug, date, author, excerpt, content, 
-                       published, featured, image FROM posts
-                WHERE published = 1
-                ORDER BY date DESC
-            ",
-            )?;
-
-            let post_iter = stmt.query_map([], |row| {
-                let id = row.get(0)?;
-                let title = row.get(1)?;
-                let slug = row.get(2)?;
-                let date = row.get(3)?;
-                let author = row.get(4)?;
-                let excerpt = row.get(5)?;
-                let content = row.get(6)?;
-                let published = row.get(7)?;
-                let featured = row.get(8)?;
-                let image: Option<String> = row.get(9)?;
-
-                Ok(BlogPost {
-                    id: Some(id),
-                    title,
-                    slug,
-                    date,
-                    author,
-                    excerpt,
-                    content,
-                    published,
-                    featured,
-                    image,
-                    tags: Vector::new(),      // Will be populated later
-                    metadata: HashMap::new(), // Will be populated later
-                })
-            })?;
-
-            // Use functional approach to collect and process posts
-            let posts = post_iter
-                .map(|post_result| -> Result<BlogPost> {
-                    let post = post_result?;
-                    let post_with_tags = Self::load_tags_for_post(&conn, post)?;
-                    let post_with_tags_and_metadata =
-                        Self::load_metadata_for_post(&conn, post_with_tags)?;
-                    Ok(post_with_tags_and_metadata)
-                })
-                .collect::<Result<Vector<_>>>()?;
-
-            debug!("Loaded {} published blog posts", posts.len());
+            
+            // Use the optimized query function
+            let posts = super::optimized_queries::get_published_posts_optimized(&conn)?;
+            
+            debug!("Loaded {} published blog posts using optimized query", posts.len());
             Ok(posts)
         })
         .await?

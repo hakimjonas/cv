@@ -1,5 +1,6 @@
 #[allow(dead_code)]
 mod asset_processor;
+mod bundler;
 mod config;
 mod credentials;
 mod cv_data;
@@ -211,7 +212,10 @@ fn get_github_token_app(config: AppConfig) -> AppConfig {
 /// - `--set-token <token>`: Set the GitHub API token in git config
 /// - `--remove-token`: Remove the GitHub API token from git config
 /// - `--cache-path <path>`: Set a custom path for the GitHub cache file
-fn main() -> Result<()> {
+/// - `--migrate-to-db`: Migrate CV data from JSON to SQLite database
+/// - `--use-db`: Load CV data from SQLite database instead of JSON
+#[tokio::main]
+async fn main() -> Result<()> {
     // Initialize logging
     init_logging();
 
@@ -252,11 +256,11 @@ fn main() -> Result<()> {
     // Check for --migrate-to-db argument
     if args.len() >= 2 && args[1] == "--migrate-to-db" {
         let config = config::Config::default();
-        info!("Migrating CV data from JSON to SQLite database...");
-        return match migrate::migrate_json_to_sqlite(
+        info!("Migrating CV data from JSON to SQLite database asynchronously...");
+        return match migrate::migrate_json_to_sqlite_async(
             &config.data_path_str()?,
             &config.db_path_str()?,
-        ) {
+        ).await {
             Ok(_) => {
                 info!(
                     "CV data migrated successfully to database: {}",
@@ -307,10 +311,10 @@ fn main() -> Result<()> {
     // Load CV data
     let mut cv = if use_db {
         info!(
-            "Loading CV data from database: {}",
+            "Loading CV data from database asynchronously: {}",
             config.db_path.display()
         );
-        migrate::load_cv_from_sqlite(&config.db_path_str()?)
+        migrate::load_cv_from_sqlite_async(&config.db_path_str()?).await
             .context("Failed to load CV data from database")?
     } else {
         info!("Loading CV data from JSON: {}", config.data_path.display());
@@ -322,11 +326,11 @@ fn main() -> Result<()> {
     let config_with_token = get_github_token_app(config);
 
     // Fetch GitHub projects from sources defined in CV data
-    info!("Fetching GitHub projects from sources defined in CV data");
-    match github::fetch_projects_from_sources_sync(
+    info!("Fetching GitHub projects from sources defined in CV data asynchronously");
+    match github::fetch_projects_from_sources(
         &cv.github_sources,
         config_with_token.github_token(),
-    ) {
+    ).await {
         Ok(github_projects) => {
             info!("Found {} GitHub projects", github_projects.len());
 
@@ -423,6 +427,14 @@ fn main() -> Result<()> {
     )
     .context("Failed to generate PDF CV")?;
 
+    // Process and bundle assets
+    info!("Processing and bundling assets");
+    bundler::process_assets(
+        "bundle.toml",
+        &config_with_token.static_dir_str()?,
+    )
+    .context("Failed to process and bundle assets")?;
+
     // Print summary
     info!("Done! Output files:");
     info!("  - HTML CV: {}", config_with_token.html_output.display());
@@ -431,6 +443,7 @@ fn main() -> Result<()> {
         "  - Static assets: {}",
         config_with_token.output_dir.display()
     );
+    info!("  - Bundled assets: {}/[bundle_name].bundle.[css|js]", config_with_token.output_dir.display());
 
     Ok(())
 }

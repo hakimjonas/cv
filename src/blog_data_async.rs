@@ -193,35 +193,28 @@ impl Default for BlogPost {
 /// Manages blog posts using a repository pattern
 use crate::blog_converters;
 use crate::db::{BlogRepository, Database};
-use tokio::runtime::Runtime;
 
 pub struct BlogManager {
     repository: BlogRepository,
-    runtime: Runtime,
 }
 
 #[allow(dead_code)]
 impl BlogManager {
     /// Creates a new BlogManager with the given SQLite database path
-    pub fn new(db_path: &Path) -> Result<Self> {
+    pub async fn new(db_path: &Path) -> Result<Self> {
         // Create a database instance
         let db = Database::new(db_path)?;
-
+        
         // Get a repository from the database
         let repository = db.blog_repository();
-
-        // Create a runtime for executing async code in a synchronous context
-        let runtime = Runtime::new()
-            .map_err(|e| BlogError::Internal(format!("Failed to create runtime: {e}")))?;
-
+        
         Ok(Self {
             repository,
-            runtime,
         })
     }
 
     /// Initializes the database with required tables
-    fn initialize_db(conn: &Connection) -> Result<()> {
+    async fn initialize_db(conn: &Connection) -> Result<()> {
         conn.execute(
             "CREATE TABLE IF NOT EXISTS blog_posts (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -273,11 +266,10 @@ impl BlogManager {
     }
 
     /// Gets all blog posts
-    pub fn get_all_posts(&self) -> Result<Vector<BlogPost>> {
-        // Use the runtime to execute the async method synchronously
-        let repo_posts = self
-            .runtime
-            .block_on(self.repository.get_all_posts())
+    pub async fn get_all_posts(&self) -> Result<Vector<BlogPost>> {
+        // Directly await the repository operation
+        let repo_posts = self.repository.get_all_posts()
+            .await
             .map_err(|e| BlogError::Internal(format!("Failed to get posts: {e}")))?;
 
         // Convert repository posts to blog_data posts
@@ -287,11 +279,10 @@ impl BlogManager {
     }
 
     /// Gets a blog post by ID
-    pub fn get_post_by_id(&self, post_id: i64) -> Result<Option<BlogPost>> {
-        // Use the runtime to execute the async method synchronously
-        let repo_post = self
-            .runtime
-            .block_on(self.repository.get_post_by_id(post_id))
+    pub async fn get_post_by_id(&self, post_id: i64) -> Result<Option<BlogPost>> {
+        // Directly await the repository operation
+        let repo_post = self.repository.get_post_by_id(post_id)
+            .await
             .map_err(|e| {
                 BlogError::Internal(format!("Failed to get post by ID {post_id}: {e}"))
             })?;
@@ -300,11 +291,11 @@ impl BlogManager {
         Ok(repo_post.map(|post| blog_converters::repo_to_data(&post)))
     }
 
-    pub fn get_post_by_slug(&self, slug: &str) -> Result<Option<BlogPost>> {
-        // Use the runtime to execute the async method synchronously
-        let repo_post = self
-            .runtime
-            .block_on(self.repository.get_post_by_slug(slug))
+    /// Gets a blog post by slug
+    pub async fn get_post_by_slug(&self, slug: &str) -> Result<Option<BlogPost>> {
+        // Directly await the repository operation
+        let repo_post = self.repository.get_post_by_slug(slug)
+            .await
             .map_err(|e| {
                 BlogError::Internal(format!("Failed to get post by slug '{slug}': {e}"))
             })?;
@@ -314,11 +305,10 @@ impl BlogManager {
     }
 
     /// Gets all tags
-    pub fn get_all_tags(&self) -> Result<Vector<Tag>> {
-        // Use the runtime to execute the async method synchronously
-        let repo_tags = self
-            .runtime
-            .block_on(self.repository.get_all_tags())
+    pub async fn get_all_tags(&self) -> Result<Vector<Tag>> {
+        // Directly await the repository operation
+        let repo_tags = self.repository.get_all_tags()
+            .await
             .map_err(|e| BlogError::Internal(format!("Failed to get all tags: {e}")))?;
 
         // Convert repository tags to blog_data tags
@@ -328,16 +318,15 @@ impl BlogManager {
     }
 
     /// Creates or updates a blog post
-    pub fn create_or_update_post(&self, post: &BlogPost) -> Result<i64> {
+    pub async fn create_or_update_post(&self, post: &BlogPost) -> Result<i64> {
         println!("Starting create_or_update_post operation...");
 
         // Convert blog_data post to repository post
         let repo_post = blog_converters::data_to_repo(post);
 
-        // Use the runtime to execute the async method synchronously
-        let post_id = self
-            .runtime
-            .block_on(self.repository.create_or_update_post(&repo_post))
+        // Directly await the repository operation
+        let post_id = self.repository.create_or_update_post(&repo_post)
+            .await
             .map_err(|e| BlogError::Internal(format!("Failed to create or update post: {e}")))?;
 
         println!("Post operation completed with ID: {post_id}");
@@ -345,10 +334,10 @@ impl BlogManager {
     }
 
     /// Deletes a blog post
-    pub fn delete_post(&self, post_id: i64) -> Result<()> {
-        // Use the runtime to execute the async method synchronously
-        self.runtime
-            .block_on(self.repository.delete_post(post_id))
+    pub async fn delete_post(&self, post_id: i64) -> Result<()> {
+        // Directly await the repository operation
+        self.repository.delete_post(post_id)
+            .await
             .map_err(|e| {
                 BlogError::Internal(format!("Failed to delete post with ID {post_id}: {e}"))
             })?;
@@ -358,11 +347,10 @@ impl BlogManager {
     }
 
     /// Gets all published blog posts
-    pub fn get_published_posts(&self) -> Result<Vector<BlogPost>> {
-        // Use the runtime to execute the async method synchronously
-        let repo_posts = self
-            .runtime
-            .block_on(self.repository.get_published_posts())
+    pub async fn get_published_posts(&self) -> Result<Vector<BlogPost>> {
+        // Directly await the repository operation
+        let repo_posts = self.repository.get_published_posts()
+            .await
             .map_err(|e| BlogError::Internal(format!("Failed to get published posts: {e}")))?;
 
         // Convert repository posts to blog_data posts
@@ -372,11 +360,10 @@ impl BlogManager {
     }
 
     /// Gets all featured blog posts
-    pub fn get_featured_posts(&self) -> Result<Vector<BlogPost>> {
-        // Use the runtime to execute the async method synchronously
-        let repo_posts = self
-            .runtime
-            .block_on(self.repository.get_featured_posts())
+    pub async fn get_featured_posts(&self) -> Result<Vector<BlogPost>> {
+        // Directly await the repository operation
+        let repo_posts = self.repository.get_featured_posts()
+            .await
             .map_err(|e| BlogError::Internal(format!("Failed to get featured posts: {e}")))?;
 
         // Convert repository posts to blog_data posts
@@ -386,11 +373,10 @@ impl BlogManager {
     }
 
     /// Gets posts by tag
-    pub fn get_posts_by_tag(&self, tag_slug: &str) -> Result<Vector<BlogPost>> {
-        // Use the runtime to execute the async method synchronously
-        let repo_posts = self
-            .runtime
-            .block_on(self.repository.get_posts_by_tag(tag_slug))
+    pub async fn get_posts_by_tag(&self, tag_slug: &str) -> Result<Vector<BlogPost>> {
+        // Directly await the repository operation
+        let repo_posts = self.repository.get_posts_by_tag(tag_slug)
+            .await
             .map_err(|e| {
                 BlogError::Internal(format!("Failed to get posts by tag '{tag_slug}': {e}"))
             })?;

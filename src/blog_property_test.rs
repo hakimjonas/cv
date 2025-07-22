@@ -8,7 +8,6 @@ extern crate cv;
 use anyhow::Result;
 use cv::blog_converters;
 use cv::blog_data;
-use cv::db::repository;
 use cv::logging;
 use im::{HashMap, Vector};
 use proptest::prelude::*;
@@ -29,7 +28,7 @@ fn main() -> Result<()> {
     // Run the tests
     if let Err(e) = run_tests() {
         error!("Tests failed: {}", e);
-        return Err(e.into());
+        return Err(e);
     }
 
     info!("All tests passed!");
@@ -106,18 +105,15 @@ fn test_blog_posts_vector_conversion_manual() -> Result<()> {
     {
         assert_eq!(
             original_post.id, roundtrip_post.id,
-            "Post {} ID mismatch",
-            i
+            "Post {i} ID mismatch"
         );
         assert_eq!(
             original_post.title, roundtrip_post.title,
-            "Post {} title mismatch",
-            i
+            "Post {i} title mismatch"
         );
         assert_eq!(
             original_post.slug, roundtrip_post.slug,
-            "Post {} slug mismatch",
-            i
+            "Post {i} slug mismatch"
         );
     }
 
@@ -156,16 +152,14 @@ fn test_tags_conversion_manual() -> Result<()> {
 
     // Check that each tag is preserved
     for (i, (original_tag, roundtrip_tag)) in tags.iter().zip(roundtrip_tags.iter()).enumerate() {
-        assert_eq!(original_tag.id, roundtrip_tag.id, "Tag {} ID mismatch", i);
+        assert_eq!(original_tag.id, roundtrip_tag.id, "Tag {i} ID mismatch");
         assert_eq!(
             original_tag.name, roundtrip_tag.name,
-            "Tag {} name mismatch",
-            i
+            "Tag {i} name mismatch"
         );
         assert_eq!(
             original_tag.slug, roundtrip_tag.slug,
-            "Tag {} slug mismatch",
-            i
+            "Tag {i} slug mismatch"
         );
     }
 
@@ -194,8 +188,7 @@ fn test_metadata_conversion_manual() -> Result<()> {
         assert_eq!(
             Some(value),
             roundtrip_metadata.get(key),
-            "Metadata key {} value mismatch",
-            key
+            "Metadata key {key} value mismatch"
         );
     }
 
@@ -218,7 +211,6 @@ fn tags_strategy() -> impl Strategy<Value = Vector<blog_data::Tag>> {
 fn metadata_strategy() -> impl Strategy<Value = HashMap<String, String>> {
     prop::collection::hash_map("\\PC*", "\\PC*", 0..5).prop_map(|map| {
         map.into_iter()
-            .map(|(k, v)| (k, v))
             .collect::<HashMap<_, _>>()
     })
 }

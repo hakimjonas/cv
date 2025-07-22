@@ -1,0 +1,58 @@
+# Asset bundling configuration
+# This file defines which CSS and JavaScript files should be bundled together
+
+[bundles]
+# CSS bundles
+[bundles.css]
+# Main CSS bundle for the CV and index pages
+main = [
+    "css/base/reset.css",
+    "css/base/variables.css",
+    "css/layout/layout.css",
+    "css/components/header.css",
+    "css/components/footer.css",
+    "css/components/navigation.css",
+    "css/components/buttons.css",
+    "css/components/cards.css",
+    "css/components/accordion.css",
+    "css/components/social.css",
+    "css/utilities/utilities.css",
+    "css/main.css",
+    "css/nerd-fonts.css",
+    "css/nerd-icons.css"
+]
+
+# Blog-specific CSS bundle
+blog = [
+    "css/base/reset.css",
+    "css/base/variables.css",
+    "css/layout/layout.css",
+    "css/components/header.css",
+    "css/components/footer.css",
+    "css/components/navigation.css",
+    "blog.css"
+]
+
+# Syntax highlighting CSS
+syntax = ["prism.css"]
+
+# JavaScript bundles
+[bundles.js]
+# Main JavaScript bundle for the CV and index pages
+main = ["js/scripts.js"]
+
+# Blog-specific JavaScript bundle
+blog = [
+    "js/api-client.js",
+    "js/blog-integration.js"
+]
+
+# Debug tools JavaScript bundle
+debug = ["js/blog-debug.js"]
+
+# Syntax highlighting JavaScript
+syntax = ["prism.js"]
+
+# Output directory for bundled files
+[output]
+directory = "dist"

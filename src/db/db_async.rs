@@ -11,26 +11,21 @@ use rusqlite::params;
 use std::path::Path;
 use std::sync::Arc;
 use tokio::task;
+use tracing::{debug, info, warn};
 
-pub mod error;
-pub mod migrations;
-pub mod optimized_queries;
-pub mod pool_metrics;
-pub mod repository;
-
-#[allow(unused_imports)]
-pub use migrations::run_migrations;
-pub use repository::BlogRepository;
+use super::error;
+use super::migrations;
+use super::optimized_queries;
+use super::pool_metrics;
+use super::repository::BlogRepository;
 
 /// Run migrations on a database pool
-#[allow(dead_code)]
 pub async fn run_migrations_async(pool: &Pool<SqliteConnectionManager>) -> Result<()> {
     let conn = pool.get()?;
     migrations::run_migrations(&conn)
 }
 
 /// Create a connection pool for the database
-#[allow(dead_code)]
 pub fn create_connection_pool<P: AsRef<Path>>(path: P) -> Result<Pool<SqliteConnectionManager>> {
     let manager = SqliteConnectionManager::file(path);
     let pool = Pool::builder()
@@ -145,15 +140,8 @@ impl Database {
         })
     }
 
-    /// Creates the database schema for CV data
-    pub fn create_schema(&self) -> Result<()> {
-        // Create a runtime for executing async code in a synchronous context
-        let rt = tokio::runtime::Runtime::new().unwrap();
-        rt.block_on(self.create_schema_async())
-    }
-
     /// Creates the database schema for CV data (async version)
-    pub async fn create_schema_async(&self) -> Result<()> {
+    pub async fn create_schema(&self) -> Result<()> {
         self.with_connection(|conn| {
             // Create personal_info table
             conn.execute(
@@ -258,7 +246,7 @@ impl Database {
                 "CREATE TABLE IF NOT EXISTS skills (
                     id INTEGER PRIMARY KEY,
                     category_id INTEGER NOT NULL,
-                    skill TEXT NOT NULL,
+                    name TEXT NOT NULL,
                     FOREIGN KEY (category_id) REFERENCES skill_categories (id)
                 )",
                 [],
@@ -274,7 +262,10 @@ impl Database {
                     repository TEXT,
                     stars INTEGER,
                     owner_username TEXT,
-                    owner_avatar TEXT
+                    owner_avatar TEXT,
+                    language TEXT,
+                    language_icon TEXT,
+                    display_name TEXT
                 )",
                 [],
             )?;
@@ -330,94 +321,144 @@ impl Database {
                 [],
             )?;
 
+            // Create blog_posts table
+            conn.execute(
+                "CREATE TABLE IF NOT EXISTS posts (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    title TEXT NOT NULL,
+                    slug TEXT NOT NULL UNIQUE,
+                    date TEXT NOT NULL,
+                    author TEXT NOT NULL,
+                    excerpt TEXT NOT NULL,
+                    content TEXT NOT NULL,
+                    published BOOLEAN NOT NULL,
+                    featured BOOLEAN NOT NULL,
+                    image TEXT
+                )",
+                [],
+            )?;
+
+            // Create tags table
+            conn.execute(
+                "CREATE TABLE IF NOT EXISTS tags (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL UNIQUE,
+                    slug TEXT NOT NULL UNIQUE
+                )",
+                [],
+            )?;
+
+            // Create post_tags table
+            conn.execute(
+                "CREATE TABLE IF NOT EXISTS post_tags (
+                    post_id INTEGER NOT NULL,
+                    tag_id INTEGER NOT NULL,
+                    PRIMARY KEY (post_id, tag_id),
+                    FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+                    FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
+                )",
+                [],
+            )?;
+
+            // Create post_metadata table
+            conn.execute(
+                "CREATE TABLE IF NOT EXISTS post_metadata (
+                    post_id INTEGER NOT NULL,
+                    key TEXT NOT NULL,
+                    value TEXT NOT NULL,
+                    PRIMARY KEY (post_id, key),
+                    FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
+                )",
+                [],
+            )?;
+
             Ok(())
         })
         .await
     }
 
-    /// Inserts CV data into the database
-    pub fn insert_cv(&self, cv: &crate::cv_data::Cv) -> Result<()> {
-        // Create a runtime for executing async code in a synchronous context
-        let rt = tokio::runtime::Runtime::new().unwrap();
-        rt.block_on(self.insert_cv_async(cv))
-    }
-
-    /// Inserts CV data into the database (async version)
-    pub async fn insert_cv_async(&self, cv: &crate::cv_data::Cv) -> Result<()> {
-        // Clone the CV data to avoid lifetime issues
-        let cv_clone = cv.clone();
-
-        self.with_connection_mut(move |conn| {
+    /// Insert a CV into the database (async version)
+    pub async fn insert_cv(&self, cv: &crate::cv_data::Cv) -> Result<()> {
+        self.with_connection_mut(|conn| {
             // Start a transaction
             let tx = conn.transaction()?;
 
-            // Insert personal_info
+            // Insert personal info
             tx.execute(
-                "INSERT INTO personal_info (name, title, email, phone, website, location, summary)
-                VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+                "INSERT OR REPLACE INTO personal_info (id, name, title, email, phone, website, location, summary)
+                 VALUES (1, ?1, ?2, ?3, ?4, ?5, ?6, ?7)",
                 params![
-                    cv_clone.personal_info.name,
-                    cv_clone.personal_info.title,
-                    cv_clone.personal_info.email,
-                    cv_clone.personal_info.phone,
-                    cv_clone.personal_info.website,
-                    cv_clone.personal_info.location,
-                    cv_clone.personal_info.summary,
+                    cv.personal_info.name,
+                    cv.personal_info.title,
+                    cv.personal_info.email,
+                    cv.personal_info.phone,
+                    cv.personal_info.website,
+                    cv.personal_info.location,
+                    cv.personal_info.summary
                 ],
             )?;
 
-            let personal_info_id = tx.last_insert_rowid();
+            // Clear existing social links
+            tx.execute("DELETE FROM social_links WHERE personal_info_id = 1", [])?;
 
-            // Insert social_links
-            for (platform, url) in &cv_clone.personal_info.social_links {
+            // Insert social links
+            for (platform, url) in cv.personal_info.social_links.iter() {
                 tx.execute(
-                    "INSERT INTO social_links (personal_info_id, platform, url)
-                    VALUES (?1, ?2, ?3)",
-                    params![personal_info_id, platform, url],
+                    "INSERT INTO social_links (personal_info_id, platform, url) VALUES (1, ?1, ?2)",
+                    params![platform, url],
                 )?;
             }
 
+            // Clear existing experiences
+            tx.execute("DELETE FROM experiences", [])?;
+            tx.execute("DELETE FROM experience_achievements", [])?;
+            tx.execute("DELETE FROM experience_technologies", [])?;
+
             // Insert experiences
-            for exp in &cv_clone.experiences {
+            for exp in cv.experiences.iter() {
                 tx.execute(
                     "INSERT INTO experiences (company, position, start_date, end_date, location, description)
-                    VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+                     VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
                     params![
                         exp.company,
                         exp.position,
                         exp.start_date,
                         exp.end_date,
                         exp.location,
-                        exp.description,
+                        exp.description
                     ],
                 )?;
 
-                let experience_id = tx.last_insert_rowid();
+                let exp_id = tx.last_insert_rowid();
 
-                // Insert experience_achievements
-                for achievement in &exp.achievements {
+                // Insert achievements
+                for achievement in exp.achievements.iter() {
                     tx.execute(
                         "INSERT INTO experience_achievements (experience_id, achievement)
-                        VALUES (?1, ?2)",
-                        params![experience_id, achievement],
+                         VALUES (?1, ?2)",
+                        params![exp_id, achievement],
                     )?;
                 }
 
-                // Insert experience_technologies
-                for technology in &exp.technologies {
+                // Insert technologies
+                for tech in exp.technologies.iter() {
                     tx.execute(
                         "INSERT INTO experience_technologies (experience_id, technology)
-                        VALUES (?1, ?2)",
-                        params![experience_id, technology],
+                         VALUES (?1, ?2)",
+                        params![exp_id, tech],
                     )?;
                 }
             }
 
+            // Clear existing education
+            tx.execute("DELETE FROM education", [])?;
+            tx.execute("DELETE FROM education_achievements", [])?;
+
             // Insert education
-            for edu in &cv_clone.education {
+            for edu in cv.education.iter() {
                 tx.execute(
                     "INSERT INTO education (institution, degree, field, start_date, end_date, location, gpa)
-                    VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+                     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
                     params![
                         edu.institution,
                         edu.degree,
@@ -425,103 +466,119 @@ impl Database {
                         edu.start_date,
                         edu.end_date,
                         edu.location,
-                        edu.gpa,
+                        edu.gpa
                     ],
                 )?;
 
-                let education_id = tx.last_insert_rowid();
+                let edu_id = tx.last_insert_rowid();
 
-                // Insert education_achievements
-                for achievement in &edu.achievements {
+                // Insert achievements
+                for achievement in edu.achievements.iter() {
                     tx.execute(
                         "INSERT INTO education_achievements (education_id, achievement)
-                        VALUES (?1, ?2)",
-                        params![education_id, achievement],
+                         VALUES (?1, ?2)",
+                        params![edu_id, achievement],
                     )?;
                 }
             }
 
-            // Insert skill_categories
-            for category in &cv_clone.skill_categories {
+            // Clear existing skill categories and skills
+            tx.execute("DELETE FROM skills", [])?;
+            tx.execute("DELETE FROM skill_categories", [])?;
+
+            // Insert skill categories and skills
+            for cat in cv.skill_categories.iter() {
                 tx.execute(
-                    "INSERT INTO skill_categories (name)
-                    VALUES (?1)",
-                    params![category.name],
+                    "INSERT INTO skill_categories (name) VALUES (?1)",
+                    params![cat.name],
                 )?;
 
-                let category_id = tx.last_insert_rowid();
+                let cat_id = tx.last_insert_rowid();
 
                 // Insert skills
-                for skill in &category.skills {
+                for skill in cat.skills.iter() {
                     tx.execute(
-                        "INSERT INTO skills (category_id, skill)
-                        VALUES (?1, ?2)",
-                        params![category_id, skill],
+                        "INSERT INTO skills (category_id, name) VALUES (?1, ?2)",
+                        params![cat_id, skill],
                     )?;
                 }
             }
 
+            // Clear existing projects
+            tx.execute("DELETE FROM projects", [])?;
+            tx.execute("DELETE FROM project_technologies", [])?;
+            tx.execute("DELETE FROM project_highlights", [])?;
+
             // Insert projects
-            for project in &cv_clone.projects {
+            for proj in cv.projects.iter() {
                 tx.execute(
-                    "INSERT INTO projects (name, description, url, repository, stars, owner_username, owner_avatar)
-                    VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+                    "INSERT INTO projects (name, description, url, repository, stars, owner_username, owner_avatar, language, language_icon, display_name)
+                     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)",
                     params![
-                        project.name,
-                        project.description,
-                        project.url,
-                        project.repository,
-                        project.stars,
-                        project.owner_username,
-                        project.owner_avatar,
+                        proj.name,
+                        proj.description,
+                        proj.url,
+                        proj.repository,
+                        proj.stars,
+                        proj.owner_username,
+                        proj.owner_avatar,
+                        proj.language,
+                        proj.language_icon,
+                        proj.display_name
                     ],
                 )?;
 
-                let project_id = tx.last_insert_rowid();
+                let proj_id = tx.last_insert_rowid();
 
-                // Insert project_technologies
-                for technology in &project.technologies {
+                // Insert technologies
+                for tech in proj.technologies.iter() {
                     tx.execute(
                         "INSERT INTO project_technologies (project_id, technology)
-                        VALUES (?1, ?2)",
-                        params![project_id, technology],
+                         VALUES (?1, ?2)",
+                        params![proj_id, tech],
                     )?;
                 }
 
-                // Insert project_highlights
-                for highlight in &project.highlights {
+                // Insert highlights
+                for highlight in proj.highlights.iter() {
                     tx.execute(
                         "INSERT INTO project_highlights (project_id, highlight)
-                        VALUES (?1, ?2)",
-                        params![project_id, highlight],
+                         VALUES (?1, ?2)",
+                        params![proj_id, highlight],
                     )?;
                 }
             }
 
+            // Clear existing languages
+            tx.execute("DELETE FROM languages", [])?;
+
             // Insert languages
-            for (language, proficiency) in &cv_clone.languages {
+            for (lang, prof) in cv.languages.iter() {
                 tx.execute(
-                    "INSERT INTO languages (language, proficiency)
-                    VALUES (?1, ?2)",
-                    params![language, proficiency],
+                    "INSERT INTO languages (language, proficiency) VALUES (?1, ?2)",
+                    params![lang, prof],
                 )?;
             }
+
+            // Clear existing certifications
+            tx.execute("DELETE FROM certifications", [])?;
 
             // Insert certifications
-            for certification in &cv_clone.certifications {
+            for cert in cv.certifications.iter() {
                 tx.execute(
-                    "INSERT INTO certifications (certification)
-                    VALUES (?1)",
-                    params![certification],
+                    "INSERT INTO certifications (certification) VALUES (?1)",
+                    params![cert],
                 )?;
             }
 
-            // Insert github_sources
-            for source in &cv_clone.github_sources {
+            // Clear existing github sources
+            tx.execute("DELETE FROM github_sources", [])?;
+
+            // Insert github sources
+            for src in cv.github_sources.iter() {
                 tx.execute(
-                    "INSERT INTO github_sources (username, organization)
-                    VALUES (?1, ?2)",
-                    params![source.username, source.organization],
+                    "INSERT INTO github_sources (username, organization) VALUES (?1, ?2)",
+                    params![src.username, src.organization],
                 )?;
             }
 
@@ -529,46 +586,40 @@ impl Database {
             tx.commit()?;
 
             Ok(())
-        }).await
+        })
+        .await
     }
 
-    /// Loads CV data from the database
-    pub fn load_cv(&self) -> Result<crate::cv_data::Cv> {
-        // Create a runtime for executing async code in a synchronous context
-        let rt = tokio::runtime::Runtime::new().unwrap();
-        rt.block_on(self.load_cv_async())
-    }
-
-    /// Loads CV data from the database (async version)
-    pub async fn load_cv_async(&self) -> Result<crate::cv_data::Cv> {
+    /// Load a CV from the database (async version)
+    pub async fn load_cv(&self) -> Result<crate::cv_data::Cv> {
         self.with_connection(|conn| {
-            use im::Vector;
+            // Load personal info
+            let mut personal_info_stmt = conn.prepare(
+                "SELECT name, title, email, phone, website, location, summary FROM personal_info WHERE id = 1",
+            )?;
+            let personal_info_row = personal_info_stmt.query_row([], |row| {
+                let name: String = row.get(0)?;
+                let title: String = row.get(1)?;
+                let email: String = row.get(2)?;
+                let phone: Option<String> = row.get(3)?;
+                let website: Option<String> = row.get(4)?;
+                let location: Option<String> = row.get(5)?;
+                let summary: String = row.get(6)?;
 
-            // Load personal_info
-            let mut stmt = conn.prepare("SELECT id, name, title, email, phone, website, location, summary FROM personal_info LIMIT 1")?;
-            let personal_info_row = stmt.query_row([], |row| {
-                let id: i64 = row.get(0)?;
-                let name: String = row.get(1)?;
-                let title: String = row.get(2)?;
-                let email: String = row.get(3)?;
-                let phone: Option<String> = row.get(4)?;
-                let website: Option<String> = row.get(5)?;
-                let location: Option<String> = row.get(6)?;
-                let summary: String = row.get(7)?;
-
-                // Load social_links
+                // Load social links
                 let mut social_links = im::HashMap::new();
-                let mut social_stmt = conn
-                    .prepare("SELECT platform, url FROM social_links WHERE personal_info_id = ?1")?;
-                let social_rows = social_stmt.query_map(params![id], |row| {
+                let mut social_links_stmt = conn.prepare(
+                    "SELECT platform, url FROM social_links WHERE personal_info_id = 1",
+                )?;
+                let social_links_rows = social_links_stmt.query_map([], |row| {
                     let platform: String = row.get(0)?;
                     let url: String = row.get(1)?;
                     Ok((platform, url))
                 })?;
 
-                for social_row in social_rows {
-                    let (platform, url) = social_row?;
-                    social_links.insert(platform, url);
+                for link_row in social_links_rows {
+                    let (platform, url) = link_row?;
+                    social_links = social_links.update(platform, url);
                 }
 
                 Ok(crate::cv_data::PersonalInfo {
@@ -584,8 +635,10 @@ impl Database {
             })?;
 
             // Load experiences
-            let mut experiences = Vector::new();
-            let mut exp_stmt = conn.prepare("SELECT id, company, position, start_date, end_date, location, description FROM experiences")?;
+            let mut experiences = im::Vector::new();
+            let mut exp_stmt = conn.prepare(
+                "SELECT id, company, position, start_date, end_date, location, description FROM experiences",
+            )?;
             let exp_rows = exp_stmt.query_map([], |row| {
                 let id: i64 = row.get(0)?;
                 let company: String = row.get(1)?;
@@ -596,11 +649,11 @@ impl Database {
                 let description: String = row.get(6)?;
 
                 // Load achievements
-                let mut achievements = Vector::new();
+                let mut achievements = im::Vector::new();
                 let mut ach_stmt = conn.prepare(
                     "SELECT achievement FROM experience_achievements WHERE experience_id = ?1",
                 )?;
-                let ach_rows = ach_stmt.query_map(params![id], |row| {
+                let ach_rows = ach_stmt.query_map([id], |row| {
                     let achievement: String = row.get(0)?;
                     Ok(achievement)
                 })?;
@@ -610,11 +663,11 @@ impl Database {
                 }
 
                 // Load technologies
-                let mut technologies = Vector::new();
+                let mut technologies = im::Vector::new();
                 let mut tech_stmt = conn.prepare(
                     "SELECT technology FROM experience_technologies WHERE experience_id = ?1",
                 )?;
-                let tech_rows = tech_stmt.query_map(params![id], |row| {
+                let tech_rows = tech_stmt.query_map([id], |row| {
                     let technology: String = row.get(0)?;
                     Ok(technology)
                 })?;
@@ -640,8 +693,10 @@ impl Database {
             }
 
             // Load education
-            let mut education = Vector::new();
-            let mut edu_stmt = conn.prepare("SELECT id, institution, degree, field, start_date, end_date, location, gpa FROM education")?;
+            let mut education = im::Vector::new();
+            let mut edu_stmt = conn.prepare(
+                "SELECT id, institution, degree, field, start_date, end_date, location, gpa FROM education",
+            )?;
             let edu_rows = edu_stmt.query_map([], |row| {
                 let id: i64 = row.get(0)?;
                 let institution: String = row.get(1)?;
@@ -653,11 +708,11 @@ impl Database {
                 let gpa: Option<String> = row.get(7)?;
 
                 // Load achievements
-                let mut achievements = Vector::new();
+                let mut achievements = im::Vector::new();
                 let mut ach_stmt = conn.prepare(
                     "SELECT achievement FROM education_achievements WHERE education_id = ?1",
                 )?;
-                let ach_rows = ach_stmt.query_map(params![id], |row| {
+                let ach_rows = ach_stmt.query_map([id], |row| {
                     let achievement: String = row.get(0)?;
                     Ok(achievement)
                 })?;
@@ -682,18 +737,18 @@ impl Database {
                 education.push_back(edu_row?);
             }
 
-            // Load skill_categories
-            let mut skill_categories = Vector::new();
+            // Load skill categories
+            let mut skill_categories = im::Vector::new();
             let mut cat_stmt = conn.prepare("SELECT id, name FROM skill_categories")?;
             let cat_rows = cat_stmt.query_map([], |row| {
                 let id: i64 = row.get(0)?;
                 let name: String = row.get(1)?;
 
                 // Load skills
-                let mut skills = Vector::new();
-                let mut skill_stmt = conn
-                    .prepare("SELECT skill FROM skills WHERE category_id = ?1")?;
-                let skill_rows = skill_stmt.query_map(params![id], |row| {
+                let mut skills = im::Vector::new();
+                let mut skill_stmt =
+                    conn.prepare("SELECT name FROM skills WHERE category_id = ?1")?;
+                let skill_rows = skill_stmt.query_map([id], |row| {
                     let skill: String = row.get(0)?;
                     Ok(skill)
                 })?;
@@ -710,23 +765,29 @@ impl Database {
             }
 
             // Load projects
-            let mut projects = Vector::new();
-            let mut proj_stmt = conn.prepare("SELECT id, name, description, url, repository, stars, owner_username, owner_avatar FROM projects")?;
+            let mut projects = im::Vector::new();
+            let mut proj_stmt = conn.prepare(
+                "SELECT id, name, description, url, repository, stars, owner_username, owner_avatar, language, language_icon, display_name FROM projects",
+            )?;
             let proj_rows = proj_stmt.query_map([], |row| {
                 let id: i64 = row.get(0)?;
                 let name: String = row.get(1)?;
                 let description: String = row.get(2)?;
                 let url: Option<String> = row.get(3)?;
                 let repository: Option<String> = row.get(4)?;
-                let stars: Option<u32> = row.get(5)?;
+                let stars: Option<i64> = row.get(5)?;
                 let owner_username: Option<String> = row.get(6)?;
                 let owner_avatar: Option<String> = row.get(7)?;
+                let language: Option<String> = row.get(8)?;
+                let language_icon: Option<String> = row.get(9)?;
+                let display_name: Option<String> = row.get(10)?;
 
                 // Load technologies
-                let mut technologies = Vector::new();
-                let mut tech_stmt = conn
-                    .prepare("SELECT technology FROM project_technologies WHERE project_id = ?1")?;
-                let tech_rows = tech_stmt.query_map(params![id], |row| {
+                let mut technologies = im::Vector::new();
+                let mut tech_stmt = conn.prepare(
+                    "SELECT technology FROM project_technologies WHERE project_id = ?1",
+                )?;
+                let tech_rows = tech_stmt.query_map([id], |row| {
                     let technology: String = row.get(0)?;
                     Ok(technology)
                 })?;
@@ -736,10 +797,11 @@ impl Database {
                 }
 
                 // Load highlights
-                let mut highlights = Vector::new();
-                let mut high_stmt = conn
-                    .prepare("SELECT highlight FROM project_highlights WHERE project_id = ?1")?;
-                let high_rows = high_stmt.query_map(params![id], |row| {
+                let mut highlights = im::Vector::new();
+                let mut high_stmt = conn.prepare(
+                    "SELECT highlight FROM project_highlights WHERE project_id = ?1",
+                )?;
+                let high_rows = high_stmt.query_map([id], |row| {
                     let highlight: String = row.get(0)?;
                     Ok(highlight)
                 })?;
@@ -758,9 +820,9 @@ impl Database {
                     stars,
                     owner_username,
                     owner_avatar,
-                    language: None,
-                    language_icon: None,
-                    display_name: None,
+                    language,
+                    language_icon,
+                    display_name,
                 })
             })?;
 
@@ -784,7 +846,7 @@ impl Database {
             }
 
             // Load certifications
-            let mut certifications = Vector::new();
+            let mut certifications = im::Vector::new();
             let mut cert_stmt = conn
                 .prepare("SELECT certification FROM certifications")?;
             let cert_rows = cert_stmt.query_map([], |row| {
@@ -797,7 +859,7 @@ impl Database {
             }
 
             // Load github_sources
-            let mut github_sources = Vector::new();
+            let mut github_sources = im::Vector::new();
             let mut src_stmt = conn
                 .prepare("SELECT username, organization FROM github_sources")?;
             let src_rows = src_stmt.query_map([], |row| {
@@ -824,11 +886,11 @@ impl Database {
                 certifications,
                 github_sources,
             })
-        }).await
+        })
+        .await
     }
 
     /// Get a repository for blog operations
-    #[allow(dead_code)]
     pub fn blog_repository(&self) -> BlogRepository {
         BlogRepository::new(Arc::clone(&self.pool))
     }
@@ -925,30 +987,24 @@ impl Database {
     }
 }
 
-/// Test that the database is working properly
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::TempDir;
+    use tempfile::tempdir;
 
     #[tokio::test]
     async fn test_database_creation() -> Result<()> {
-        let temp_dir = TempDir::new()?;
+        let temp_dir = tempdir()?;
         let db_path = temp_dir.path().join("test.db");
-
-        let db = Database::new(db_path)?;
-
-        // Test that we can execute a simple query
-        db.with_connection(|conn| {
-            conn.execute(
-                "CREATE TABLE IF NOT EXISTS test (id INTEGER PRIMARY KEY)",
-                [],
-            )?;
-            conn.execute("INSERT INTO test (id) VALUES (?1)", [1])?;
-            let count: i64 = conn.query_row("SELECT COUNT(*) FROM test", [], |row| row.get(0))?;
-            assert_eq!(count, 1);
-            Ok(())
-        })
-        .await
+        
+        let db = Database::new(&db_path)?;
+        
+        // Create schema
+        db.create_schema().await?;
+        
+        // Check that the database file exists
+        assert!(db_path.exists());
+        
+        Ok(())
     }
 }

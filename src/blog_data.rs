@@ -1,6 +1,6 @@
 use crate::blog_error::{BlogError, Result};
 use im::Vector;
-use rusqlite::{Connection, params};
+use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 
@@ -190,27 +190,33 @@ impl Default for BlogPost {
     }
 }
 
-/// Manages blog posts using a SQLite database
-use std::sync::Mutex;
+/// Manages blog posts using a repository pattern
+use crate::blog_converters;
+use crate::db::{BlogRepository, Database};
+use tokio::runtime::Runtime;
 
 pub struct BlogManager {
-    conn: Mutex<Connection>,
-    // Track when connection was last used to detect stale connections
-    last_used: std::sync::atomic::AtomicU64,
+    repository: BlogRepository,
+    runtime: Runtime,
 }
 
 #[allow(dead_code)]
 impl BlogManager {
     /// Creates a new BlogManager with the given SQLite database path
     pub fn new(db_path: &Path) -> Result<Self> {
-        let conn = Connection::open(db_path).map_err(|e| BlogError::Database(e.into()))?;
+        // Create a database instance
+        let db = Database::new(db_path)?;
 
-        // Create tables if they don't exist
-        Self::initialize_db(&conn)?;
+        // Get a repository from the database
+        let repository = db.blog_repository();
+
+        // Create a runtime for executing async code in a synchronous context
+        let runtime = Runtime::new()
+            .map_err(|e| BlogError::Internal(format!("Failed to create runtime: {}", e)))?;
 
         Ok(Self {
-            conn: std::sync::Mutex::new(conn),
-            last_used: std::sync::atomic::AtomicU64::new(0),
+            repository,
+            runtime,
         })
     }
 
@@ -268,653 +274,129 @@ impl BlogManager {
 
     /// Gets all blog posts
     pub fn get_all_posts(&self) -> Result<Vector<BlogPost>> {
-        let conn = self.conn.lock().unwrap();
-        let mut stmt = conn.prepare(
-            "SELECT id, title, slug, date, author, excerpt, content, published, featured, image 
-             FROM blog_posts 
-             ORDER BY date DESC",
-        )?;
+        // Use the runtime to execute the async method synchronously
+        let repo_posts = self
+            .runtime
+            .block_on(self.repository.get_all_posts())
+            .map_err(|e| BlogError::Internal(format!("Failed to get posts: {}", e)))?;
 
-        let post_iter = stmt.query_map([], |row| {
-            let id: i64 = row.get(0)?;
-            let post = BlogPost {
-                id: Some(id),
-                title: row.get(1)?,
-                slug: row.get(2)?,
-                date: row.get(3)?,
-                author: row.get(4)?,
-                excerpt: row.get(5)?,
-                content: row.get(6)?,
-                published: row.get(7)?,
-                featured: row.get(8)?,
-                image: row.get(9)?,
-                tags: Vector::new(),          // Will be loaded separately
-                metadata: im::HashMap::new(), // Will be loaded separately
-            };
-            Ok(post)
-        })?;
-
-        let mut posts = Vector::new();
-        for post_result in post_iter {
-            let mut post = post_result?;
-
-            // Load tags for this post
-            post.tags = self.get_tags_for_post(post.id.unwrap())?;
-
-            // Load metadata for this post
-            post.metadata = self.get_metadata_for_post(post.id.unwrap())?;
-
-            posts.push_back(post);
-        }
+        // Convert repository posts to blog_data posts
+        let posts = blog_converters::convert_posts_to_data(&repo_posts);
 
         Ok(posts)
     }
 
     /// Gets a blog post by ID
     pub fn get_post_by_id(&self, post_id: i64) -> Result<Option<BlogPost>> {
-        let conn = self.conn.lock().unwrap();
+        // Use the runtime to execute the async method synchronously
+        let repo_post = self
+            .runtime
+            .block_on(self.repository.get_post_by_id(post_id))
+            .map_err(|e| {
+                BlogError::Internal(format!("Failed to get post by ID {}: {}", post_id, e))
+            })?;
 
-        // Check if the blog_posts table exists
-        let table_exists = conn
-            .query_row(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name='blog_posts'",
-                [],
-                |_| Ok(true),
-            )
-            .unwrap_or(false);
-
-        if !table_exists {
-            println!("Warning: blog_posts table doesn't exist yet");
-            return Ok(None);
-        }
-
-        let mut stmt = conn.prepare(
-            "SELECT id, title, slug, date, author, excerpt, content, published, featured, image 
-             FROM blog_posts WHERE id = ?",
-        )?;
-
-        let post_result = stmt.query_row([post_id], |row| {
-            // Get tags and handle potential errors without using ? operator
-            let tags = match self.get_tags_for_post_with_conn(&conn, post_id) {
-                Ok(t) => t,
-                Err(e) => {
-                    println!("Error fetching tags for post {post_id}: {e:?}");
-                    Vector::new()
-                }
-            };
-
-            // Get metadata and handle potential errors without using ? operator
-            let metadata = match self.get_metadata_for_post_with_conn(&conn, post_id) {
-                Ok(m) => m,
-                Err(e) => {
-                    println!("Error fetching metadata for post {post_id}: {e:?}");
-                    im::HashMap::new()
-                }
-            };
-
-            Ok(BlogPost {
-                id: Some(row.get(0)?),
-                title: row.get(1)?,
-                slug: row.get(2)?,
-                date: row.get(3)?,
-                author: row.get(4)?,
-                excerpt: row.get(5)?,
-                content: row.get(6)?,
-                published: row.get(7)?,
-                featured: row.get(8)?,
-                image: row.get(9)?,
-                tags,
-                metadata,
-            })
-        });
-
-        match post_result {
-            Ok(post) => Ok(Some(post)),
-            Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
-            Err(e) => {
-                println!("Error retrieving post with ID {post_id}: {e:?}");
-                Err(BlogError::Database(e.into()))
-            }
-        }
+        // Convert repository post to blog_data post if found
+        Ok(repo_post.map(|post| blog_converters::repo_to_data(&post)))
     }
 
     pub fn get_post_by_slug(&self, slug: &str) -> Result<Option<BlogPost>> {
-        let conn = self.conn.lock().unwrap();
-        let mut stmt = conn.prepare(
-            "SELECT id, title, slug, date, author, excerpt, content, published, featured, image 
-             FROM blog_posts 
-             WHERE slug = ?",
-        )?;
+        // Use the runtime to execute the async method synchronously
+        let repo_post = self
+            .runtime
+            .block_on(self.repository.get_post_by_slug(slug))
+            .map_err(|e| {
+                BlogError::Internal(format!("Failed to get post by slug '{}': {}", slug, e))
+            })?;
 
-        let post_result = stmt.query_row(params![slug], |row| {
-            let id: i64 = row.get(0)?;
-            let post = BlogPost {
-                id: Some(id),
-                title: row.get(1)?,
-                slug: row.get(2)?,
-                date: row.get(3)?,
-                author: row.get(4)?,
-                excerpt: row.get(5)?,
-                content: row.get(6)?,
-                published: row.get(7)?,
-                featured: row.get(8)?,
-                image: row.get(9)?,
-                tags: Vector::new(),          // Will be loaded separately
-                metadata: im::HashMap::new(), // Will be loaded separately
-            };
-            Ok(post)
-        });
-
-        match post_result {
-            Ok(mut post) => {
-                // Load tags for this post
-                post.tags = self.get_tags_for_post_with_conn(&conn, post.id.unwrap())?;
-
-                // Load metadata for this post
-                post.metadata = self.get_metadata_for_post_with_conn(&conn, post.id.unwrap())?;
-
-                Ok(Some(post))
-            }
-            Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
-            Err(e) => Err(e.into()),
-        }
-    }
-
-    /// Gets tags for a specific post
-    fn get_tags_for_post(&self, post_id: i64) -> Result<Vector<Tag>> {
-        let conn = self.conn.lock().unwrap();
-        self.get_tags_for_post_with_conn(&conn, post_id)
-    }
-
-    /// Gets tags for a specific post using an existing connection
-    fn get_tags_for_post_with_conn(
-        &self,
-        conn: &rusqlite::Connection,
-        post_id: i64,
-    ) -> Result<Vector<Tag>> {
-        let mut stmt = conn.prepare(
-            "SELECT t.id, t.name, t.slug 
-             FROM tags t 
-             JOIN post_tags pt ON t.id = pt.tag_id 
-             WHERE pt.post_id = ?",
-        )?;
-
-        let tag_iter = stmt.query_map(params![post_id], |row| {
-            let tag = Tag {
-                id: Some(row.get(0)?),
-                name: row.get(1)?,
-                slug: row.get(2)?,
-            };
-            Ok(tag)
-        })?;
-
-        let mut tags = Vector::new();
-        for tag_result in tag_iter {
-            tags.push_back(tag_result?);
-        }
-
-        Ok(tags)
-    }
-
-    /// Gets metadata for a specific post
-    fn get_metadata_for_post(&self, post_id: i64) -> Result<im::HashMap<String, String>> {
-        let conn = self.conn.lock().unwrap();
-        self.get_metadata_for_post_with_conn(&conn, post_id)
-    }
-
-    /// Gets metadata for a specific post using an existing connection
-    fn get_metadata_for_post_with_conn(
-        &self,
-        conn: &rusqlite::Connection,
-        post_id: i64,
-    ) -> Result<im::HashMap<String, String>> {
-        let mut stmt = conn.prepare(
-            "SELECT key, value 
-             FROM post_metadata 
-             WHERE post_id = ?",
-        )?;
-
-        let metadata_iter = stmt.query_map(params![post_id], |row| {
-            let key: String = row.get(0)?;
-            let value: String = row.get(1)?;
-            Ok((key, value))
-        })?;
-
-        let mut metadata = im::HashMap::new();
-        for metadata_result in metadata_iter {
-            let (key, value) = metadata_result?;
-            metadata = metadata.update(key, value);
-        }
-
-        Ok(metadata)
+        // Convert repository post to blog_data post if found
+        Ok(repo_post.map(|post| blog_converters::repo_to_data(&post)))
     }
 
     /// Gets all tags
     pub fn get_all_tags(&self) -> Result<Vector<Tag>> {
-        let conn = self
-            .conn
-            .lock()
-            .map_err(|e| BlogError::MutexLock(format!("Mutex lock error: {e}")))?;
-        let mut stmt = conn.prepare("SELECT id, name, slug FROM tags ORDER BY name")?;
+        // Use the runtime to execute the async method synchronously
+        let repo_tags = self
+            .runtime
+            .block_on(self.repository.get_all_tags())
+            .map_err(|e| BlogError::Internal(format!("Failed to get all tags: {}", e)))?;
 
-        let tag_iter = stmt.query_map([], |row| {
-            let tag = Tag {
-                id: Some(row.get(0)?),
-                name: row.get(1)?,
-                slug: row.get(2)?,
-            };
-            Ok(tag)
-        })?;
-
-        let mut tags = Vector::new();
-        for tag_result in tag_iter {
-            tags.push_back(tag_result?);
-        }
+        // Convert repository tags to blog_data tags
+        let tags = blog_converters::convert_tags_to_data(&repo_tags);
 
         Ok(tags)
-    }
-
-    /// Creates or updates a tag
-    fn create_or_update_tag(&self, tag: &Tag) -> Result<i64> {
-        // If tag has ID, try to update it
-        if let Some(id) = tag.id {
-            let rows_affected = self.conn.lock().unwrap().execute(
-                "UPDATE tags SET name = ?, slug = ? WHERE id = ?",
-                params![tag.name, tag.slug, id],
-            )?;
-
-            if rows_affected > 0 {
-                return Ok(id);
-            }
-        }
-
-        // Check if tag exists by name or slug
-        let existing_tag_result = self
-            .conn
-            .lock()
-            .map_err(|e| BlogError::MutexLock(format!("Mutex lock error: {e}")))?
-            .query_row(
-                "SELECT id FROM tags WHERE name = ? OR slug = ?",
-                params![tag.name, tag.slug],
-                |row| row.get::<_, i64>(0),
-            );
-
-        match existing_tag_result {
-            Ok(id) => Ok(id),
-            Err(rusqlite::Error::QueryReturnedNoRows) => {
-                // Insert new tag
-                self.conn
-                    .lock()
-                    .map_err(|e| BlogError::MutexLock(format!("Mutex lock error: {e}")))?
-                    .execute(
-                        "INSERT INTO tags (name, slug) VALUES (?, ?)",
-                        params![tag.name, tag.slug],
-                    )?;
-
-                Ok(self
-                    .conn
-                    .lock()
-                    .map_err(|e| BlogError::MutexLock(format!("Mutex lock error: {e}")))?
-                    .last_insert_rowid())
-            }
-            Err(e) => Err(e.into()),
-        }
-    }
-
-    /// Creates or updates a tag using an existing transaction
-    fn create_or_update_tag_with_tx(&self, tx: &rusqlite::Transaction, tag: &Tag) -> Result<i64> {
-        // If tag has ID, try to update it
-        if let Some(id) = tag.id {
-            let rows_affected = tx.execute(
-                "UPDATE tags SET name = ?, slug = ? WHERE id = ?",
-                params![tag.name, tag.slug, id],
-            )?;
-
-            if rows_affected > 0 {
-                return Ok(id);
-            }
-        }
-
-        // Check if tag exists by name or slug
-        let existing_tag_result = tx.query_row(
-            "SELECT id FROM tags WHERE name = ? OR slug = ?",
-            params![tag.name, tag.slug],
-            |row| row.get::<_, i64>(0),
-        );
-
-        match existing_tag_result {
-            Ok(id) => Ok(id),
-            Err(rusqlite::Error::QueryReturnedNoRows) => {
-                // Insert new tag
-                tx.execute(
-                    "INSERT INTO tags (name, slug) VALUES (?, ?)",
-                    params![tag.name, tag.slug],
-                )?;
-
-                Ok(tx.last_insert_rowid())
-            }
-            Err(e) => Err(e.into()),
-        }
-    }
-
-    /// Checks if the connection might be stale and needs refreshing
-    fn refresh_connection_if_stale(&self) -> Result<()> {
-        // Get current time
-        let now = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap_or_default()
-            .as_secs();
-
-        // Get last used time
-        let last_used = self.last_used.load(std::sync::atomic::Ordering::Relaxed);
-
-        // Always update last_used time to prevent multiple concurrent refresh attempts
-        self.last_used
-            .store(now, std::sync::atomic::Ordering::Relaxed);
-
-        // If connection hasn't been used in 15 seconds, check it
-        // More aggressive to catch stale connections quickly
-        if now - last_used > 15 {
-            println!("Connection might be stale, checking and refreshing...");
-            let conn = self
-                .conn
-                .lock()
-                .map_err(|e| BlogError::MutexLock(format!("Mutex lock error: {e}")))?;
-
-            // Test if connection is still good with a simple query
-            match conn.query_row("SELECT 1", [], |_| Ok(())) {
-                Ok(_) => {
-                    println!("Connection is still good, updating last_used timestamp");
-                    // Connection is still good, update last_used
-                    self.last_used
-                        .store(now, std::sync::atomic::Ordering::Relaxed);
-
-                    // Even if the connection is good, reconfigure it to ensure optimal settings
-                    let _ = conn.execute_batch(
-                        "
-                        PRAGMA journal_mode = WAL;
-                        PRAGMA synchronous = NORMAL;
-                        PRAGMA busy_timeout = 60000;
-                        PRAGMA temp_store = MEMORY;
-                        PRAGMA cache_size = 20000;
-                        PRAGMA locking_mode = NORMAL;
-                        PRAGMA mmap_size = 30000000;
-                    ",
-                    );
-                }
-                Err(e) => {
-                    println!("Connection test failed: {e}, reconfiguring...");
-                    // Connection might be stale, try to reconfigure
-                    conn.execute_batch(
-                        "
-                        PRAGMA journal_mode = WAL;
-                        PRAGMA synchronous = NORMAL;
-                        PRAGMA busy_timeout = 60000;
-                        PRAGMA temp_store = MEMORY;
-                        PRAGMA cache_size = 20000;
-                        PRAGMA locking_mode = NORMAL;
-                        PRAGMA mmap_size = 30000000;
-                    ",
-                    )
-                    .map_err(|e| BlogError::Database(e.into()))?;
-
-                    // Update last_used
-                    self.last_used
-                        .store(now, std::sync::atomic::Ordering::Relaxed);
-                    println!("Connection reconfigured successfully");
-                }
-            }
-        }
-
-        Ok(())
     }
 
     /// Creates or updates a blog post
     pub fn create_or_update_post(&self, post: &BlogPost) -> Result<i64> {
         println!("Starting create_or_update_post operation...");
 
-        // Check if connection might be stale
-        let _ = self.refresh_connection_if_stale();
+        // Convert blog_data post to repository post
+        let repo_post = blog_converters::data_to_repo(post);
 
-        // Start a transaction with retry logic for database locks
-        let mut conn = self
-            .conn
-            .lock()
-            .map_err(|e| BlogError::MutexLock(format!("Mutex lock error: {e}")))?;
+        // Use the runtime to execute the async method synchronously
+        let post_id = self
+            .runtime
+            .block_on(self.repository.create_or_update_post(&repo_post))
+            .map_err(|e| BlogError::Internal(format!("Failed to create or update post: {}", e)))?;
 
-        // Update last_used timestamp
-        self.last_used.store(
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap_or_default()
-                .as_secs(),
-            std::sync::atomic::Ordering::Relaxed,
-        );
-
-        println!("Acquired database lock, starting transaction");
-
-        // Configure SQLite for better concurrent access with optimized settings
-        conn.execute_batch(
-            "
-            PRAGMA journal_mode = WAL;
-            PRAGMA synchronous = NORMAL;
-            PRAGMA busy_timeout = 60000;
-            PRAGMA temp_store = MEMORY;
-            PRAGMA cache_size = 20000;
-            PRAGMA locking_mode = NORMAL;
-            PRAGMA wal_autocheckpoint = 1000;
-            PRAGMA mmap_size = 30000000;
-        ",
-        )
-        .map_err(|e| BlogError::Database(e.into()))?;
-
-        let tx = conn
-            .transaction()
-            .map_err(|e| BlogError::Database(e.into()))?;
-
-        let post_id = if let Some(id) = post.id {
-            println!("Updating existing post with ID: {id}");
-            // Update existing post
-            tx.execute(
-                "UPDATE blog_posts 
-                SET title = ?, slug = ?, date = ?, author = ?, excerpt = ?, 
-                    content = ?, published = ?, featured = ?, image = ? 
-                WHERE id = ?",
-                params![
-                    post.title,
-                    post.slug,
-                    post.date,
-                    post.author,
-                    post.excerpt,
-                    post.content,
-                    post.published,
-                    post.featured,
-                    post.image,
-                    id
-                ],
-            )
-            .map_err(|e| BlogError::Database(e.into()))?;
-
-            // Delete existing tags and metadata associations
-            tx.execute("DELETE FROM post_tags WHERE post_id = ?", params![id])
-                .map_err(|e| BlogError::Database(e.into()))?;
-            tx.execute("DELETE FROM post_metadata WHERE post_id = ?", params![id])
-                .map_err(|e| BlogError::Database(e.into()))?;
-
-            id
-        } else {
-            println!("Creating new post");
-            // Insert new post
-            tx.execute(
-                "INSERT INTO blog_posts 
-                (title, slug, date, author, excerpt, content, published, featured, image) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                params![
-                    post.title,
-                    post.slug,
-                    post.date,
-                    post.author,
-                    post.excerpt,
-                    post.content,
-                    post.published,
-                    post.featured,
-                    post.image
-                ],
-            )
-            .map_err(|e| BlogError::Database(e.into()))?;
-
-            let id = tx.last_insert_rowid();
-            println!("Created new post with ID: {id}");
-            id
-        };
-
-        // Insert tags
-        println!("Processing {} tags for post", post.tags.len());
-        for tag in post.tags.iter() {
-            let tag_id = match self.create_or_update_tag_with_tx(&tx, tag) {
-                Ok(id) => id,
-                Err(e) => {
-                    println!("Warning: Failed to create/update tag {}: {}", tag.name, e);
-                    continue; // Skip this tag but continue with others
-                }
-            };
-
-            // Associate tag with post
-            match tx.execute(
-                "INSERT INTO post_tags (post_id, tag_id) VALUES (?, ?)",
-                params![post_id, tag_id],
-            ) {
-                Ok(_) => {}
-                Err(e) => {
-                    println!(
-                        "Warning: Failed to associate tag {} with post: {}",
-                        tag.name, e
-                    );
-                    // Continue processing other tags
-                }
-            }
-        }
-
-        // Insert metadata
-        println!(
-            "Processing {} metadata entries for post",
-            post.metadata.len()
-        );
-        for (key, value) in post.metadata.iter() {
-            match tx.execute(
-                "INSERT INTO post_metadata (post_id, key, value) VALUES (?, ?, ?)",
-                params![post_id, key, value],
-            ) {
-                Ok(_) => {}
-                Err(e) => {
-                    println!("Warning: Failed to add metadata '{key}' to post: {e}");
-                    // Continue processing other metadata
-                }
-            }
-        }
-
-        // Commit the transaction with improved retry logic
-        println!("Committing transaction...");
-
-        // First attempt to commit the transaction
-        match tx.commit() {
-            Ok(_) => {
-                println!("Transaction committed successfully");
-                Ok(post_id)
-            }
-            Err(e) => {
-                // If it's not a locking error, just return the error
-                if !e.to_string().contains("locked") {
-                    return Err(BlogError::Internal(format!(
-                        "Failed to commit transaction: {e}"
-                    )));
-                }
-
-                // If it is a locking error, we can't retry with the same transaction
-                // Instead, we should return success since the operations were successful
-                // even if the commit failed due to a lock
-                println!("Database locked during commit, but operations were likely successful");
-                println!("This is common in WAL mode - the data changes may have been preserved");
-                Ok(post_id)
-            }
-        }
+        println!("Post operation completed with ID: {}", post_id);
+        Ok(post_id)
     }
 
     /// Deletes a blog post
     pub fn delete_post(&self, post_id: i64) -> Result<()> {
-        // Delete post (cascade will delete tags and metadata associations)
-        let mut conn = self
-            .conn
-            .lock()
-            .map_err(|e| BlogError::MutexLock(format!("Mutex lock error: {e}")))?;
-        let tx = conn.transaction()?;
+        // Use the runtime to execute the async method synchronously
+        self.runtime
+            .block_on(self.repository.delete_post(post_id))
+            .map_err(|e| {
+                BlogError::Internal(format!("Failed to delete post with ID {}: {}", post_id, e))
+            })?;
 
-        tx.execute("DELETE FROM blog_posts WHERE id = ?", params![post_id])?;
-
-        println!("Committing transaction to database");
-        tx.commit().map_err(|e| BlogError::Database(e.into()))?;
-        println!("Transaction committed successfully");
+        println!("Post with ID {} deleted successfully", post_id);
         Ok(())
     }
 
     /// Gets all published blog posts
     pub fn get_published_posts(&self) -> Result<Vector<BlogPost>> {
-        let posts = self.get_all_posts()?;
-        let published_posts = posts.iter().filter(|p| p.published).cloned().collect();
-        Ok(published_posts)
+        // Use the runtime to execute the async method synchronously
+        let repo_posts = self
+            .runtime
+            .block_on(self.repository.get_published_posts())
+            .map_err(|e| BlogError::Internal(format!("Failed to get published posts: {}", e)))?;
+
+        // Convert repository posts to blog_data posts
+        let posts = blog_converters::convert_posts_to_data(&repo_posts);
+
+        Ok(posts)
     }
 
     /// Gets all featured blog posts
     pub fn get_featured_posts(&self) -> Result<Vector<BlogPost>> {
-        let posts = self.get_published_posts()?;
-        let featured_posts = posts.iter().filter(|p| p.featured).cloned().collect();
-        Ok(featured_posts)
+        // Use the runtime to execute the async method synchronously
+        let repo_posts = self
+            .runtime
+            .block_on(self.repository.get_featured_posts())
+            .map_err(|e| BlogError::Internal(format!("Failed to get featured posts: {}", e)))?;
+
+        // Convert repository posts to blog_data posts
+        let posts = blog_converters::convert_posts_to_data(&repo_posts);
+
+        Ok(posts)
     }
 
     /// Gets posts by tag
     pub fn get_posts_by_tag(&self, tag_slug: &str) -> Result<Vector<BlogPost>> {
-        let connection = self.conn.lock().unwrap();
-        let mut stmt = connection.prepare(
-            "SELECT bp.id, bp.title, bp.slug, bp.date, bp.author, bp.excerpt, 
-                    bp.content, bp.published, bp.featured, bp.image 
-             FROM blog_posts bp 
-             JOIN post_tags pt ON bp.id = pt.post_id 
-             JOIN tags t ON pt.tag_id = t.id 
-             WHERE t.slug = ? AND bp.published = 1 
-             ORDER BY bp.date DESC",
-        )?;
+        // Use the runtime to execute the async method synchronously
+        let repo_posts = self
+            .runtime
+            .block_on(self.repository.get_posts_by_tag(tag_slug))
+            .map_err(|e| {
+                BlogError::Internal(format!("Failed to get posts by tag '{}': {}", tag_slug, e))
+            })?;
 
-        let post_iter = stmt.query_map(params![tag_slug], |row| {
-            let id: i64 = row.get(0)?;
-            let post = BlogPost {
-                id: Some(id),
-                title: row.get(1)?,
-                slug: row.get(2)?,
-                date: row.get(3)?,
-                author: row.get(4)?,
-                excerpt: row.get(5)?,
-                content: row.get(6)?,
-                published: row.get(7)?,
-                featured: row.get(8)?,
-                image: row.get(9)?,
-                tags: Vector::new(),          // Will be loaded separately
-                metadata: im::HashMap::new(), // Will be loaded separately
-            };
-            Ok(post)
-        })?;
-
-        let mut posts = Vector::new();
-        for post_result in post_iter {
-            let mut post = post_result?;
-
-            // Load tags for this post
-            post.tags = self.get_tags_for_post(post.id.unwrap())?;
-
-            // Load metadata for this post
-            post.metadata = self.get_metadata_for_post(post.id.unwrap())?;
-
-            posts.push_back(post);
-        }
+        // Convert repository posts to blog_data posts
+        let posts = blog_converters::convert_posts_to_data(&repo_posts);
 
         Ok(posts)
     }

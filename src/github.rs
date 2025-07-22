@@ -87,9 +87,7 @@ pub async fn fetch_github_projects(username: &str, token: Option<&str>) -> Resul
     let headers = create_github_headers(token)?;
 
     // Fetch repositories from GitHub API
-    let url = format!(
-        "https://api.github.com/users/{username}/repos?sort=updated&per_page=10"
-    );
+    let url = format!("https://api.github.com/users/{username}/repos?sort=updated&per_page=10");
 
     // Make the request
     let response = client
@@ -144,9 +142,7 @@ pub async fn fetch_github_org_projects(
     let headers = create_github_headers(token)?;
 
     // Fetch repositories from GitHub API
-    let url = format!(
-        "https://api.github.com/orgs/{org_name}/repos?sort=updated&per_page=10"
-    );
+    let url = format!("https://api.github.com/orgs/{org_name}/repos?sort=updated&per_page=10");
 
     // Make the request
     let response = client
@@ -418,9 +414,7 @@ pub async fn fetch_projects_from_sources(
                     all_projects = merge_projects(&all_projects, &projects);
                 }
                 Err(e) => {
-                    println!(
-                        "Warning: Failed to fetch GitHub projects for user {username}: {e}"
-                    );
+                    println!("Warning: Failed to fetch GitHub projects for user {username}: {e}");
                 }
             }
         }

@@ -2,10 +2,11 @@ use anyhow::{Context, Result};
 use cv::blog_api::create_blog_api_router;
 use cv::blog_utils::create_test_database;
 use cv::logging;
+use cv::unified_config::AppConfig;
 use std::net::SocketAddr;
 use std::sync::Once;
 use tokio::net::TcpListener;
-use tracing::{error, info, warn};
+use tracing::{debug, error, info, warn};
 
 // Initialize once to ensure we only set up global state once
 static INIT: Once = Once::new();
@@ -59,6 +60,10 @@ async fn main() -> Result<()> {
     // Configure SQLite for better concurrency
     configure_sqlite();
 
+    // Load configuration from all available sources
+    let config = AppConfig::load().context("Failed to load configuration")?;
+    debug!("Loaded configuration: {:?}", config);
+
     // Create a test database
     let db_path = create_test_database()?;
     info!("Using database at: {:?}", db_path);
@@ -66,9 +71,9 @@ async fn main() -> Result<()> {
     // Create the API router
     let app = create_blog_api_router(db_path)?;
 
-    // Try a range of ports starting from 3000
-    let mut port = 3000;
-    let max_port = 3010; // Try up to port 3010
+    // Try a range of ports starting from the configured port
+    let mut port = config.api_port;
+    let max_port = config.api_max_port;
     let mut listener = None;
 
     info!("Attempting to start server on ports {}-{}", port, max_port);
@@ -97,7 +102,7 @@ async fn main() -> Result<()> {
     if listener.is_none() {
         let err_msg = format!(
             "Could not find an available port between {} and {}",
-            3000, max_port
+            config.api_port, max_port
         );
         error!("{}", err_msg);
         return Err(anyhow::anyhow!(err_msg));

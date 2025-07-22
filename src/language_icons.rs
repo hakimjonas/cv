@@ -93,9 +93,7 @@ impl LanguageIcons {
 
             // Check if the language name is part of a compound word
             // Only match if it's a word boundary or part of a compound word with hyphens/underscores
-            let lang_pattern = format!(
-                "\\b{lang}\\b|\\b{lang}-|-{lang}\\b|\\b{lang}_|_{lang}\\b"
-            );
+            let lang_pattern = format!("\\b{lang}\\b|\\b{lang}-|-{lang}\\b|\\b{lang}_|_{lang}\\b");
             if regex::Regex::new(&lang_pattern)
                 .ok()
                 .filter(|re| re.is_match(&normalized_name))
@@ -116,9 +114,8 @@ impl LanguageIcons {
 
             // Check if the technology contains a language name at word boundaries
             for lang in &lang_keys {
-                let lang_pattern = format!(
-                    "\\b{lang}\\b|\\b{lang}-|-{lang}\\b|\\b{lang}_|_{lang}\\b"
-                );
+                let lang_pattern =
+                    format!("\\b{lang}\\b|\\b{lang}-|-{lang}\\b|\\b{lang}_|_{lang}\\b");
                 if regex::Regex::new(&lang_pattern)
                     .ok()
                     .filter(|re| re.is_match(&normalized_tech))

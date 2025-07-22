@@ -12,12 +12,14 @@ mod migrate;
 #[allow(dead_code)]
 mod runtime;
 mod typst_generator;
+mod unified_config;
 
 use anyhow::{Context, Result};
 use cv::logging;
 use im::Vector;
 use std::env;
 use tracing::{debug, error, info, warn};
+use unified_config::AppConfig;
 
 // Extension trait to enable method chaining with pipe
 trait Pipe: Sized {
@@ -132,6 +134,74 @@ fn get_github_token(config: config::Config) -> config::Config {
     }
 }
 
+/// Gets a GitHub token from available sources with priority:
+/// 1. GitHub Actions environment (if running in GitHub Actions)
+/// 2. Git config
+/// 3. Environment variable
+///
+/// # Returns
+///
+/// An AppConfig with the token set if found
+fn get_github_token_app(config: AppConfig) -> AppConfig {
+    // Check if running in GitHub Actions
+    match env::var("GITHUB_ACTIONS") {
+        Ok(actions) if actions == "true" => {
+            // We're running in GitHub Actions, check for GITHUB_TOKEN
+            match env::var("GITHUB_TOKEN") {
+                Ok(token) => {
+                    info!("Using GitHub API token from GitHub Actions for authentication");
+                    let mut updated_config = config.clone();
+                    updated_config.github_token = Some(token);
+                    updated_config
+                }
+                Err(_) => {
+                    warn!("No GitHub API token found in GitHub Actions environment.");
+                    config
+                }
+            }
+        }
+        _ => {
+            // Not running in GitHub Actions, check secure storage
+            match get_token_from_secure_storage() {
+                Ok(Some(token)) => {
+                    let mut updated_config = config.clone();
+                    updated_config.github_token = Some(token);
+                    updated_config
+                }
+                Ok(None) => {
+                    // Token not found in secure storage, try environment variable
+                    match get_token_from_env() {
+                        Some(token) => {
+                            let mut updated_config = config.clone();
+                            updated_config.github_token = Some(token);
+                            updated_config
+                        }
+                        None => {
+                            print_token_missing_message();
+                            config
+                        }
+                    }
+                }
+                Err(e) => {
+                    warn!("Failed to read GitHub token from secure storage: {}", e);
+                    // Fall back to environment variable
+                    match get_token_from_env() {
+                        Some(token) => {
+                            let mut updated_config = config.clone();
+                            updated_config.github_token = Some(token);
+                            updated_config
+                        }
+                        None => {
+                            print_token_missing_message();
+                            config
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 /// Main entry point for the CV generator application
 ///
 /// This function initializes the configuration, loads the CV data,
@@ -201,29 +271,35 @@ fn main() -> Result<()> {
         };
     }
 
-    // Create configuration with custom paths and options
-    let config = config::Config::default().pipe(|cfg| {
-        // Process arguments to find --cache-path and other options
-        args.iter().enumerate().fold(cfg, |acc, (i, arg)| {
-            if arg == "--cache-path" && i + 1 < args.len() {
-                let cache_path = std::path::PathBuf::from(&args[i + 1]);
-                println!("Using custom GitHub cache path: {}", cache_path.display());
-                acc.with_option(config::GITHUB_CACHE_KEY, &args[i + 1])
-            } else if arg == "--db-path" && i + 1 < args.len() {
-                let db_path = std::path::PathBuf::from(&args[i + 1]);
-                println!("Using custom database path: {}", db_path.display());
-                acc.with_option(config::DB_PATH_KEY, &args[i + 1])
-            } else if arg == "--public-data" && i + 1 < args.len() {
-                println!("Using custom public data settings: {}", args[i + 1]);
-                acc.with_option(config::PUBLIC_DATA_KEY, &args[i + 1])
-            } else if arg == "--db-storage" && i + 1 < args.len() {
-                println!("Using custom database storage settings: {}", args[i + 1]);
-                acc.with_option(config::DB_STORAGE_KEY, &args[i + 1])
-            } else {
-                acc
+    // Load configuration from all available sources
+    let mut config = AppConfig::load().context("Failed to load configuration")?;
+
+    // Process command-line arguments to override configuration
+    for i in 0..args.len() {
+        if i + 1 < args.len() {
+            match args[i].as_str() {
+                "--cache-path" => {
+                    let cache_path = std::path::PathBuf::from(&args[i + 1]);
+                    info!("Using custom GitHub cache path: {}", cache_path.display());
+                    config = config.with_option(unified_config::GITHUB_CACHE_KEY, &args[i + 1]);
+                }
+                "--db-path" => {
+                    let db_path = std::path::PathBuf::from(&args[i + 1]);
+                    info!("Using custom database path: {}", db_path.display());
+                    config = config.with_option(unified_config::DB_PATH_KEY, &args[i + 1]);
+                }
+                "--public-data" => {
+                    info!("Using custom public data settings: {}", args[i + 1]);
+                    config = config.with_option(unified_config::PUBLIC_DATA_KEY, &args[i + 1]);
+                }
+                "--db-storage" => {
+                    info!("Using custom database storage settings: {}", args[i + 1]);
+                    config = config.with_option(unified_config::DB_STORAGE_KEY, &args[i + 1]);
+                }
+                _ => {}
             }
-        })
-    });
+        }
+    }
 
     // Check if we should use the database
     let use_db = args.iter().any(|arg| arg == "--use-db");
@@ -243,7 +319,7 @@ fn main() -> Result<()> {
     };
 
     // Get GitHub token from available sources
-    let config_with_token = get_github_token(config);
+    let config_with_token = get_github_token_app(config);
 
     // Fetch GitHub projects from sources defined in CV data
     info!("Fetching GitHub projects from sources defined in CV data");

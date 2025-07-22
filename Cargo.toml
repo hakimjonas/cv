@@ -34,9 +34,15 @@ tracing-appender = "0.2.3"
 tracing-log = "0.2.0"
 proptest = "1.4.0"
 rand = "0.9.2"
+config = { version = "0.13.4", features = ["toml", "json", "yaml"] }
+clap = { version = "4.5.3", features = ["derive"] }
 
 
 
 
 [[bin]]
 name = "blog_tester"
+
+[[bin]]
+name = "blog_property_test"
+path = "src/blog_property_test.rs"

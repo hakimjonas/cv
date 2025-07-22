@@ -402,8 +402,8 @@ fn minify_css_content(content: &str) -> Result<String> {
 /// A Result indicating success or failure
 fn write_gzipped_file(path: &str, content: &[u8]) -> Result<()> {
     // Create the file
-    let file = fs::File::create(path)
-        .with_context(|| format!("Failed to create gzipped file: {path}"))?;
+    let file =
+        fs::File::create(path).with_context(|| format!("Failed to create gzipped file: {path}"))?;
 
     // Create a gzip encoder
     let mut encoder = GzEncoder::new(file, Compression::best());
@@ -1014,8 +1014,8 @@ fn copy_dir_recursively_except(src: &str, dst: &str, exclude: &[&str]) -> Result
 ///
 /// A Result containing a Vector of FsEntry or an error
 fn list_directory_entries(dir_path: &str) -> Result<Vector<FsEntry>> {
-    let entries = fs::read_dir(dir_path)
-        .with_context(|| format!("Failed to read directory: {dir_path}"))?;
+    let entries =
+        fs::read_dir(dir_path).with_context(|| format!("Failed to read directory: {dir_path}"))?;
 
     // Convert DirEntry stream to Vector<FsEntry> using functional patterns
     let result = entries

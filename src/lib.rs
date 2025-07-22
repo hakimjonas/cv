@@ -7,18 +7,21 @@ pub mod github;
 pub mod html_generator;
 pub mod language_icons;
 pub mod typst_generator;
+pub mod unified_config;
 
 // Database module
 pub mod db;
 
 // Blog-related modules
 pub mod blog_api;
+pub mod blog_converters;
 pub mod blog_data;
 pub mod blog_error;
 pub mod blog_utils;
 pub mod check_db_permissions;
 
 // Utility modules
+pub mod credentials;
 pub mod logging;
 
 // Re-export dependencies that are commonly used in the codebase

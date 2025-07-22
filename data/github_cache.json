@@ -8,13 +8,13 @@
       "Scala",
       "data-validation",
       "error-handling",
-      "maven-central",
       "scala",
+      "scala-native",
       "scala3",
       "validation"
     ],
     "highlights": [],
-    "stars": 3,
+    "stars": 2,
     "owner_username": "hakimjonas",
     "owner_avatar": "https://avatars.githubusercontent.com/u/3774539?v=4"
   },

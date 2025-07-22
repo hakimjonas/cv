@@ -266,9 +266,7 @@ fn generate_meta_variable(cv: &Cv) -> String {
     let subtitle = {
         let base = cv.personal_info.title.clone();
         if !cv.personal_info.summary.is_empty() {
-            format!(
-                "{base} with a focus on functional programming and scalable solutions"
-            )
+            format!("{base} with a focus on functional programming and scalable solutions")
         } else {
             base
         }

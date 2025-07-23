@@ -17,7 +17,7 @@ This project is a comprehensive personal website solution that includes a dynami
 - **Docker Support**: Easy deployment with Docker and Docker Compose
 - **CI/CD Pipeline**: Automated testing and deployment with GitHub Actions
 
-> **Project Roadmap**: See [PROJECT_ROADMAP.md](docs/PROJECT_ROADMAP.md) for the current project status, completed work, and the plan for future development with a focus on deployment.
+> **Project Architecture**: See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for information about the system architecture, design principles, and technical implementation.
 
 ## Directory Structure
 
@@ -35,8 +35,13 @@ This project is a comprehensive personal website solution that includes a dynami
 │   ├── docker-compose.yml   # Docker Compose configuration for production
 │   └── docker-compose.local.yml # Docker Compose configuration for local development
 ├── docs/                # Documentation files
-│   ├── DEPLOYMENT.md        # Deployment documentation
-│   └── PROJECT_ROADMAP.md   # Project roadmap and status
+│   ├── ARCHITECTURE.md      # System architecture and design principles
+│   ├── DEPLOYMENT_CONSOLIDATED.md # Comprehensive deployment documentation
+│   ├── API_GUIDE.md         # API documentation for developers
+│   ├── DATABASE.md          # Database schema and design
+│   ├── SECURITY.md          # Security considerations
+│   ├── TESTING_STRATEGY.md  # Testing approach and implementation
+│   └── USER_DOCUMENTATION.md # End-user documentation
 ├── scripts/             # Scripts for deployment and testing
 │   ├── deploy.sh            # Deployment script for blog API
 │   ├── deploy-local.sh      # Local deployment script
@@ -197,7 +202,7 @@ This will start a development server on port 3002 with the CV website and blog A
 
 ## Deployment
 
-> **Detailed Deployment Guide**: For comprehensive deployment instructions, including local development setup, CI/CD pipeline configuration, Docker configuration, and troubleshooting, see [DEPLOYMENT.md](docs/DEPLOYMENT.md).
+> **Detailed Deployment Guide**: For comprehensive deployment instructions, including local development setup, CI/CD pipeline configuration, Docker configuration, and troubleshooting, see [DEPLOYMENT_CONSOLIDATED.md](docs/DEPLOYMENT_CONSOLIDATED.md).
 
 The project supports multiple deployment options for both the CV website and the blog API server.
 
@@ -270,7 +275,7 @@ The project includes GitHub Actions workflows for automated testing and deployme
 - **Deploy CV Workflow**: Deploys the CV website to GitHub Pages on pushes to the main branch
 - **Deploy Blog API Workflow**: Deploys the blog API server to a production server on pushes to the main branch
 
-For detailed instructions on setting up and customizing the CI/CD pipeline, see [DEPLOYMENT.md](docs/DEPLOYMENT.md#cicd-pipeline).
+For detailed instructions on setting up and customizing the CI/CD pipeline, see [DEPLOYMENT_CONSOLIDATED.md](docs/DEPLOYMENT_CONSOLIDATED.md#cicd-pipeline).
 
 ## Customization
 
@@ -434,7 +439,7 @@ A robust blog API server built with Rust using Axum framework and SQLite databas
 
 ## Blog API Server Deployment
 
-> **Detailed Deployment Guide**: For comprehensive deployment instructions for the blog API server, including Docker configuration, health checks, and zero-downtime deployment, see [DEPLOYMENT.md](docs/DEPLOYMENT.md).
+> **Detailed Deployment Guide**: For comprehensive deployment instructions for the blog API server, including Docker configuration, health checks, and zero-downtime deployment, see [DEPLOYMENT_CONSOLIDATED.md](docs/DEPLOYMENT_CONSOLIDATED.md).
 
 ### Quick Start
 
@@ -508,7 +513,7 @@ If you encounter any issues:
 1. Use the debug tool at `http://localhost:3002/static/blog-debug.html` (for local development)
 2. Check the logs with `docker-compose logs blog-api`
 3. Verify you're using the correct port (3002) for local development
-4. Refer to the troubleshooting section in [DEPLOYMENT.md](docs/DEPLOYMENT.md)
+4. Refer to the troubleshooting section in [DEPLOYMENT_CONSOLIDATED.md](docs/DEPLOYMENT_CONSOLIDATED.md)
 
 ## Technologies
 

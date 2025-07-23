@@ -1,0 +1,100 @@
+groups:
+  - name: node_alerts
+    rules:
+      # CPU Usage Alert
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is above 80% for more than 5 minutes on {{ $labels.instance }}"
+          value: "{{ $value }}%"
+
+      # Memory Usage Alert
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is above 85% for more than 5 minutes on {{ $labels.instance }}"
+          value: "{{ $value }}%"
+
+      # Disk Space Alert
+      - alert: LowDiskSpace
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"} * 100) < 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk space on {{ $labels.instance }}"
+          description: "Disk space is below 10% for more than 5 minutes on {{ $labels.instance }} ({{ $labels.mountpoint }})"
+          value: "{{ $value }}%"
+
+      # Critical Disk Space Alert
+      - alert: CriticalDiskSpace
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"} * 100) < 5
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical disk space on {{ $labels.instance }}"
+          description: "Disk space is below 5% for more than 5 minutes on {{ $labels.instance }} ({{ $labels.mountpoint }})"
+          value: "{{ $value }}%"
+
+      # High Load Average Alert
+      - alert: HighLoadAverage
+        expr: node_load1 > (count by(instance) (node_cpu_seconds_total{mode="idle"}) * 0.8)
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High load average on {{ $labels.instance }}"
+          description: "Load average is high for more than 5 minutes on {{ $labels.instance }}"
+          value: "{{ $value }}"
+
+      # Node Down Alert
+      - alert: NodeDown
+        expr: up{job="node"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Node exporter down on {{ $labels.instance }}"
+          description: "Node exporter has been down for more than 1 minute on {{ $labels.instance }}"
+
+      # High Network Traffic Alert
+      - alert: HighNetworkTraffic
+        expr: sum by (instance) (rate(node_network_receive_bytes_total[5m]) + rate(node_network_transmit_bytes_total[5m])) / 1024 / 1024 > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High network traffic on {{ $labels.instance }}"
+          description: "Network traffic is above 100 MB/s for more than 5 minutes on {{ $labels.instance }}"
+          value: "{{ $value }} MB/s"
+
+      # Swap Usage Alert
+      - alert: HighSwapUsage
+        expr: (node_memory_SwapTotal_bytes - node_memory_SwapFree_bytes) / node_memory_SwapTotal_bytes * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High swap usage on {{ $labels.instance }}"
+          description: "Swap usage is above 80% for more than 5 minutes on {{ $labels.instance }}"
+          value: "{{ $value }}%"
+
+      # Disk I/O Alert
+      - alert: HighDiskIO
+        expr: rate(node_disk_io_time_seconds_total[5m]) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High disk I/O on {{ $labels.instance }}"
+          description: "Disk I/O utilization is above 50% for more than 5 minutes on {{ $labels.instance }} ({{ $labels.device }})"
+          value: "{{ $value * 100 }}%"

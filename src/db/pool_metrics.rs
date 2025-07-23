@@ -180,11 +180,11 @@ impl PoolMetrics {
     /// use r2d2::{Pool, PooledConnection};
     /// use r2d2_sqlite::SqliteConnectionManager;
     /// use rusqlite::Connection;
-    /// 
+    ///
     /// // Create a connection pool
     /// let manager = SqliteConnectionManager::memory();
     /// let pool = Pool::new(manager).unwrap();
-    /// 
+    ///
     /// // Create a metrics instance - in a real example, you would use the actual path
     /// # struct PoolMetrics { name: String }
     /// # impl PoolMetrics {
@@ -195,7 +195,7 @@ impl PoolMetrics {
     /// # }
     /// # struct ConnectionUsageTracker {}
     /// let metrics = PoolMetrics::new("example_pool");
-    /// 
+    ///
     /// // Record the start time for connection acquisition
     /// let start_time = Instant::now();
     ///
@@ -575,7 +575,7 @@ impl TimeSeries {
 /// ```no_run
 /// # // This example is marked as no_run because it requires external dependencies
 /// use std::time::Duration;
-/// 
+///
 /// # // Mock implementation for the example
 /// # struct PoolMetrics { name: String }
 /// # impl PoolMetrics {
@@ -585,13 +585,13 @@ impl TimeSeries {
 /// #     }
 /// # }
 /// # struct ConnectionUsageTracker {}
-/// 
+///
 /// // Create a metrics instance
 /// let pool_metrics = PoolMetrics::new("example_pool");
-/// 
+///
 /// // Create a wait time duration
 /// let wait_time = Duration::from_millis(10);
-/// 
+///
 /// // When a connection is acquired
 /// let tracker = pool_metrics.connection_acquired(wait_time);
 ///

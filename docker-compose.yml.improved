@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  blog-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - BUILD_VERSION=${BUILD_VERSION:-0.1.0}
+    image: blog-api:${BUILD_VERSION:-0.1.0}
+    ports:
+      - "3000:3000"
+    volumes:
+      - blog-data:/app/data
+    restart: unless-stopped
+    environment:
+      - RUST_LOG=info
+      - APP_VERSION=${BUILD_VERSION:-0.1.0}
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - blog-network
+    labels:
+      - "app=blog-api"
+      - "version=${BUILD_VERSION:-0.1.0}"
+      - "environment=production"
+
+networks:
+  blog-network:
+    driver: bridge
+    labels:
+      - "app=blog-api"
+      - "environment=production"
+
+volumes:
+  blog-data:
+    labels:
+      - "app=blog-api"
+      - "environment=production"

@@ -22,7 +22,7 @@ type PostsMap = BTreeMap<i64, (PostData, Vector<TagData>, HashMap<String, String
 /// ## Performance Optimization
 ///
 /// This function solves the N+1 query problem that would occur with a naive approach:
-/// 1. Without optimization: Fetch all posts (1 query) + fetch tags for each post (N queries) + 
+/// 1. Without optimization: Fetch all posts (1 query) + fetch tags for each post (N queries) +
 ///    fetch metadata for each post (N queries) = 2N+1 queries
 /// 2. With optimization: Fetch all posts with tags and metadata (1 query)
 ///
@@ -172,7 +172,7 @@ pub fn get_all_posts_optimized(conn: &Connection) -> Result<Vector<BlogPost>> {
 /// ## Performance Optimization
 ///
 /// Similar to `get_all_posts_optimized`, this function solves the N+1 query problem:
-/// 1. Without optimization: Fetch post by slug (1 query) + fetch tags (1 query) + 
+/// 1. Without optimization: Fetch post by slug (1 query) + fetch tags (1 query) +
 ///    fetch metadata (1 query) = 3 queries
 /// 2. With optimization: Fetch post with tags and metadata (1 query)
 ///
@@ -322,7 +322,7 @@ pub fn get_post_by_slug_optimized(conn: &Connection, slug: &str) -> Result<Optio
 ///
 /// This function uses the same optimization approach as `get_all_posts_optimized` but with
 /// an additional WHERE clause to filter for published posts only. It solves the N+1 query problem:
-/// 1. Without optimization: Fetch published posts (1 query) + fetch tags for each post (N queries) + 
+/// 1. Without optimization: Fetch published posts (1 query) + fetch tags for each post (N queries) +
 ///    fetch metadata for each post (N queries) = 2N+1 queries
 /// 2. With optimization: Fetch published posts with tags and metadata (1 query)
 ///

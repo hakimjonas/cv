@@ -116,9 +116,11 @@ async fn test_rate_limiting() {
     };
 
     // Create a test server with TcpListener
-    let listener = TcpListener::bind("127.0.0.1:0").await.expect("Failed to bind to address");
+    let listener = TcpListener::bind("127.0.0.1:0")
+        .await
+        .expect("Failed to bind to address");
     let addr = listener.local_addr().expect("Failed to get local address");
-    
+
     // Spawn the server in the background using axum::serve
     tokio::spawn(async move {
         axum::serve(listener, router).await.expect("Server error");
@@ -169,9 +171,11 @@ async fn test_csrf_protection() {
     };
 
     // Create a test server with TcpListener
-    let listener = TcpListener::bind("127.0.0.1:0").await.expect("Failed to bind to address");
+    let listener = TcpListener::bind("127.0.0.1:0")
+        .await
+        .expect("Failed to bind to address");
     let addr = listener.local_addr().expect("Failed to get local address");
-    
+
     // Spawn the server in the background using axum::serve
     tokio::spawn(async move {
         axum::serve(listener, router).await.expect("Server error");
@@ -270,9 +274,11 @@ async fn test_content_security_policy() {
     };
 
     // Create a test server with TcpListener
-    let listener = TcpListener::bind("127.0.0.1:0").await.expect("Failed to bind to address");
+    let listener = TcpListener::bind("127.0.0.1:0")
+        .await
+        .expect("Failed to bind to address");
     let addr = listener.local_addr().expect("Failed to get local address");
-    
+
     // Spawn the server in the background using axum::serve
     tokio::spawn(async move {
         axum::serve(listener, router).await.expect("Server error");

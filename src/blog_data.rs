@@ -3,12 +3,22 @@ use im::Vector;
 use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
+use utoipa::ToSchema;
 
 /// Represents a blog post tag
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, ToSchema)]
+#[schema(description = "A tag for categorizing blog posts")]
 pub struct Tag {
+    /// Unique identifier for the tag (null for new tags)
+    #[schema(example = 1)]
     pub id: Option<i64>,
+    
+    /// Display name of the tag
+    #[schema(example = "Technology")]
     pub name: String,
+    
+    /// URL-friendly version of the name
+    #[schema(example = "technology")]
     pub slug: String,
 }
 

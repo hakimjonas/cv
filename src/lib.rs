@@ -14,6 +14,8 @@ pub mod unified_config;
 pub mod db;
 
 // Blog-related modules
+pub mod api_docs;
+pub mod api_models;
 pub mod blog_api;
 pub mod blog_converters;
 pub mod blog_data;

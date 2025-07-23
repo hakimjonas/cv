@@ -1,4 +1,5 @@
 use anyhow::{Context, Result};
+use cv::api_docs::add_swagger_ui;
 use cv::blog_api::create_blog_api_router;
 use cv::blog_utils::create_test_database;
 use cv::logging;
@@ -70,6 +71,10 @@ async fn main() -> Result<()> {
 
     // Create the API router
     let app = create_blog_api_router(db_path)?;
+    
+    // Add Swagger UI for API documentation
+    let app = add_swagger_ui(app);
+    info!("API documentation available at /api-docs");
 
     // Try a range of ports starting from the configured port
     let mut port = config.api_port;

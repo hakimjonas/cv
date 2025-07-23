@@ -704,6 +704,48 @@ pub fn create_blog_api_router(db_path: PathBuf) -> std::result::Result<Router, B
             )
         }
     }
+    
+    // Handler to serve documentation.html from docs
+    async fn documentation_page_handler() -> impl axum::response::IntoResponse {
+        match tokio::fs::read_to_string("docs/documentation.html").await {
+            Ok(content) => axum::response::Html(content),
+            Err(_) => axum::response::Html(
+                r#"<html><body><h1>Documentation page not found</h1><p>Please ensure the documentation files are in the correct location.</p></body></html>"#.to_string()
+            )
+        }
+    }
+    
+    // Handler to serve USER_DOCUMENTATION.md
+    async fn user_documentation_handler() -> impl axum::response::IntoResponse {
+        match tokio::fs::read_to_string("USER_DOCUMENTATION.md").await {
+            Ok(content) => {
+                axum::response::Response::builder()
+                    .header("Content-Type", "text/markdown")
+                    .body(axum::body::Body::from(content))
+                    .unwrap()
+            },
+            Err(_) => axum::response::Response::builder()
+                .status(404)
+                .body(axum::body::Body::from("User documentation not found"))
+                .unwrap()
+        }
+    }
+    
+    // Handler to serve API_GUIDE.md
+    async fn api_guide_handler() -> impl axum::response::IntoResponse {
+        match tokio::fs::read_to_string("API_GUIDE.md").await {
+            Ok(content) => {
+                axum::response::Response::builder()
+                    .header("Content-Type", "text/markdown")
+                    .body(axum::body::Body::from(content))
+                    .unwrap()
+            },
+            Err(_) => axum::response::Response::builder()
+                .status(404)
+                .body(axum::body::Body::from("API guide not found"))
+                .unwrap()
+        }
+    }
 
     // Route order matters! More specific routes need to come before less specific ones
     // to avoid route conflicts, especially with path parameters
@@ -734,6 +776,10 @@ pub fn create_blog_api_router(db_path: PathBuf) -> std::result::Result<Router, B
         .route("/blog.html", get(blog_page_handler))
         .route("/cv.html", get(cv_page_handler))
         .route("/projects.html", get(projects_page_handler))
+        // Documentation routes
+        .route("/docs", get(documentation_page_handler))
+        .route("/USER_DOCUMENTATION.md", get(user_documentation_handler))
+        .route("/API_GUIDE.md", get(api_guide_handler))
         // Serve main website files from dist (CSS, JS, images, other assets)
         .nest_service("/css", ServeDir::new("dist/css"))
         .nest_service("/js", ServeDir::new("dist/js"))

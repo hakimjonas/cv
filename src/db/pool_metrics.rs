@@ -1,8 +1,48 @@
 /// Database connection pool metrics collection and monitoring
 ///
-/// This module provides a system for collecting, storing, and reporting metrics
+/// This module provides a comprehensive system for collecting, storing, and reporting metrics
 /// about the database connection pool, such as connection usage, acquisition time,
-/// and pool state.
+/// and pool state. These metrics are essential for monitoring database performance,
+/// identifying bottlenecks, and optimizing application behavior.
+///
+/// ## Architecture
+///
+/// The metrics system is built around several key components:
+///
+/// 1. **PoolMetrics**: The main entry point that provides a public API for recording metrics
+///    events (e.g., connection created, connection acquired, connection error).
+///
+/// 2. **Metrics**: Internal storage for atomic counters and other metrics data structures.
+///    Uses atomic types for thread-safe updates without locks.
+///
+/// 3. **ConnectionUsageTracker**: A RAII (Resource Acquisition Is Initialization) object
+///    that tracks the lifetime of a connection usage session. When dropped, it automatically
+///    records the connection usage time.
+///
+/// 4. **Histogram**: Tracks the distribution of durations (e.g., wait times, usage times)
+///    in predefined buckets for statistical analysis.
+///
+/// 5. **TimeSeries**: Records time-based samples of metrics (e.g., active connections over time)
+///    for trend analysis.
+///
+/// 6. **MetricsSnapshot**: A point-in-time snapshot of all metrics for reporting or analysis.
+///
+/// ## Usage Pattern
+///
+/// The typical usage pattern is:
+///
+/// 1. Create a `PoolMetrics` instance when initializing the connection pool
+/// 2. Call methods like `connection_created()`, `connection_closed()`, etc. when events occur
+/// 3. For connection acquisition, call `connection_acquired()` which returns a `ConnectionUsageTracker`
+/// 4. The `ConnectionUsageTracker` automatically records usage time when it's dropped
+/// 5. Periodically call `log_summary()` or `get_snapshot()` to report or analyze metrics
+///
+/// ## Thread Safety
+///
+/// The metrics system is designed to be thread-safe, using atomic operations for counters
+/// and mutex-protected access for more complex data structures like histograms and time series.
+/// This ensures accurate metrics collection in a concurrent environment without significant
+/// performance overhead.
 use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
@@ -105,6 +145,72 @@ impl PoolMetrics {
     }
 
     /// Record a connection being acquired from the pool
+    ///
+    /// This method is called when a connection is successfully acquired from the pool.
+    /// It updates various metrics related to connection acquisition and returns a
+    /// `ConnectionUsageTracker` that will automatically record the connection usage time
+    /// when it's dropped.
+    ///
+    /// ## Metrics Updated
+    ///
+    /// - Increments the total acquisitions count
+    /// - Increments the active connections count
+    /// - Decrements the idle connections count
+    /// - Adds the wait time to the total wait time
+    /// - Updates the maximum wait time if this wait was longer
+    /// - Records the wait time in the histogram
+    /// - Updates the time series if needed
+    ///
+    /// ## Parameters
+    ///
+    /// - `wait_time`: The time spent waiting to acquire the connection
+    ///
+    /// ## Returns
+    ///
+    /// A `ConnectionUsageTracker` that will automatically record the connection usage time
+    /// when it's dropped. This tracker should be kept alive for as long as the connection
+    /// is in use.
+    ///
+    /// ## Example
+    ///
+    /// ```no_run
+    /// # // This example is marked as no_run because it requires external dependencies
+    /// use std::time::{Duration, Instant};
+    /// use std::sync::Arc;
+    /// use r2d2::{Pool, PooledConnection};
+    /// use r2d2_sqlite::SqliteConnectionManager;
+    /// use rusqlite::Connection;
+    /// 
+    /// // Create a connection pool
+    /// let manager = SqliteConnectionManager::memory();
+    /// let pool = Pool::new(manager).unwrap();
+    /// 
+    /// // Create a metrics instance - in a real example, you would use the actual path
+    /// # struct PoolMetrics { name: String }
+    /// # impl PoolMetrics {
+    /// #     fn new(name: &str) -> Self { PoolMetrics { name: name.to_string() } }
+    /// #     fn connection_acquired(&self, _wait_time: Duration) -> ConnectionUsageTracker {
+    /// #         ConnectionUsageTracker {}
+    /// #     }
+    /// # }
+    /// # struct ConnectionUsageTracker {}
+    /// let metrics = PoolMetrics::new("example_pool");
+    /// 
+    /// // Record the start time for connection acquisition
+    /// let start_time = Instant::now();
+    ///
+    /// // Get a connection from the pool
+    /// let conn = pool.get().unwrap();
+    ///
+    /// // Calculate wait time and record connection acquisition
+    /// let wait_time = start_time.elapsed();
+    /// let tracker = metrics.connection_acquired(wait_time);
+    ///
+    /// // Use the connection...
+    ///
+    /// // The tracker will be dropped when it goes out of scope,
+    /// // automatically recording the connection usage time
+    /// ```
     pub fn connection_acquired(&self, wait_time: Duration) -> ConnectionUsageTracker {
         let wait_time_ns = wait_time.as_nanos() as u64;
 
@@ -173,6 +279,34 @@ impl PoolMetrics {
     }
 
     /// Update time series if needed
+    ///
+    /// This method updates the time series data for active and idle connections
+    /// if enough time has passed since the last sample. It's designed to be called
+    /// frequently (e.g., on every connection acquisition) but only actually updates
+    /// the time series at the configured sampling interval.
+    ///
+    /// ## Time Series Data
+    ///
+    /// The method maintains two time series:
+    /// - Active connections: Number of connections currently in use
+    /// - Idle connections: Number of connections currently idle in the pool
+    ///
+    /// These time series provide historical data that can be used to:
+    /// - Identify usage patterns over time
+    /// - Detect connection leaks (steadily increasing active connections)
+    /// - Optimize pool size based on actual usage
+    ///
+    /// ## Sampling Strategy
+    ///
+    /// To avoid excessive memory usage and performance overhead, samples are taken
+    /// at a fixed interval (default: 60 seconds). Each time series has a maximum
+    /// number of samples (default: 60), creating a rolling window of data (e.g., 1 hour).
+    ///
+    /// ## Thread Safety
+    ///
+    /// The time series data structures are protected by mutexes to ensure thread safety.
+    /// The method first checks if an update is needed without acquiring the lock,
+    /// minimizing contention in high-concurrency scenarios.
     fn update_time_series(&self) {
         let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
@@ -192,6 +326,57 @@ impl PoolMetrics {
     }
 
     /// Get a snapshot of the current metrics
+    ///
+    /// This method creates a point-in-time snapshot of all metrics collected by the system.
+    /// The snapshot includes counters, averages, histograms, and time series data, providing
+    /// a comprehensive view of the connection pool's performance and usage patterns.
+    ///
+    /// ## Use Cases
+    ///
+    /// The metrics snapshot can be used for:
+    /// - Monitoring database connection pool health
+    /// - Identifying performance bottlenecks
+    /// - Detecting connection leaks
+    /// - Optimizing connection pool configuration
+    /// - Generating performance reports
+    ///
+    /// ## Interpreting the Metrics
+    ///
+    /// Key metrics to monitor include:
+    ///
+    /// - **Connection Counts**: Compare `connections_created` vs `connections_closed` to detect leaks.
+    ///   The sum of `active_connections` and `idle_connections` should equal `connections_created - connections_closed`.
+    ///
+    /// - **Wait Times**: High `avg_wait_time` or `max_wait_time` indicates contention for connections.
+    ///   Consider increasing the pool size if wait times are consistently high.
+    ///
+    /// - **Usage Times**: Unusually high `avg_usage_time` or `max_usage_time` may indicate slow queries
+    ///   or connections being held longer than necessary.
+    ///
+    /// - **Acquisition Timeouts**: A non-zero `acquisition_timeouts` count indicates that the pool
+    ///   was unable to provide connections quickly enough. Consider increasing the pool size or
+    ///   timeout duration.
+    ///
+    /// - **Connection Errors**: A high `connection_errors` count may indicate database connectivity issues.
+    ///
+    /// - **Time Series Data**: The `active_connections_timeseries` and `idle_connections_timeseries`
+    ///   can reveal usage patterns over time and help identify peak usage periods.
+    ///
+    /// ## Thread Safety
+    ///
+    /// This method is thread-safe and can be called concurrently from multiple threads.
+    /// It uses atomic operations for counters and acquires locks only briefly to clone
+    /// the histogram and time series data.
+    ///
+    /// ## Performance Considerations
+    ///
+    /// While this method is designed to be efficient, it does involve cloning histogram and
+    /// time series data, which can be relatively expensive. It's recommended to call this
+    /// method periodically (e.g., every few minutes) rather than on every connection operation.
+    ///
+    /// ## Returns
+    ///
+    /// A `MetricsSnapshot` containing all metrics at the time of the call
     pub fn get_snapshot(&self) -> MetricsSnapshot {
         let metrics = &self.metrics;
 
@@ -378,6 +563,54 @@ impl TimeSeries {
 }
 
 /// Tracker for a connection usage session
+///
+/// This struct implements the RAII (Resource Acquisition Is Initialization) pattern
+/// to automatically track the duration of a database connection usage session.
+/// When a connection is acquired from the pool, a `ConnectionUsageTracker` is created.
+/// When the tracker is dropped (goes out of scope), it automatically records the
+/// connection usage time and updates the relevant metrics.
+///
+/// ## Usage
+///
+/// ```no_run
+/// # // This example is marked as no_run because it requires external dependencies
+/// use std::time::Duration;
+/// 
+/// # // Mock implementation for the example
+/// # struct PoolMetrics { name: String }
+/// # impl PoolMetrics {
+/// #     fn new(name: &str) -> Self { PoolMetrics { name: name.to_string() } }
+/// #     fn connection_acquired(&self, _wait_time: Duration) -> ConnectionUsageTracker {
+/// #         ConnectionUsageTracker {}
+/// #     }
+/// # }
+/// # struct ConnectionUsageTracker {}
+/// 
+/// // Create a metrics instance
+/// let pool_metrics = PoolMetrics::new("example_pool");
+/// 
+/// // Create a wait time duration
+/// let wait_time = Duration::from_millis(10);
+/// 
+/// // When a connection is acquired
+/// let tracker = pool_metrics.connection_acquired(wait_time);
+///
+/// // Use the connection...
+///
+/// // When done, the tracker is automatically dropped, recording usage time
+/// // This happens implicitly when the tracker goes out of scope
+/// ```
+///
+/// ## Implementation Details
+///
+/// The tracker uses Rust's `Drop` trait to automatically record metrics when it's dropped.
+/// This approach ensures that metrics are always recorded, even if an error occurs or
+/// the function returns early, providing accurate tracking without manual instrumentation.
+///
+/// The tracker stores:
+/// - A reference to the metrics object for updating metrics
+/// - The start time when the connection was acquired
+/// - The name of the pool for logging purposes
 pub struct ConnectionUsageTracker {
     /// Reference to the metrics
     metrics: Arc<Metrics>,
@@ -389,6 +622,18 @@ pub struct ConnectionUsageTracker {
 
 impl Drop for ConnectionUsageTracker {
     /// When the tracker is dropped, record the connection usage time
+    ///
+    /// This method is automatically called when the tracker goes out of scope.
+    /// It calculates the connection usage time, updates the relevant metrics,
+    /// and logs the event. This ensures that connection usage is always tracked,
+    /// even if an error occurs or the function returns early.
+    ///
+    /// The metrics updated include:
+    /// - Decrementing the active connections count
+    /// - Incrementing the idle connections count
+    /// - Adding the usage time to the total usage time
+    /// - Updating the maximum usage time if this usage was longer
+    /// - Recording the usage time in the histogram
     fn drop(&mut self) {
         let usage_time = self.start_time.elapsed();
         let usage_time_ns = usage_time.as_nanos() as u64;

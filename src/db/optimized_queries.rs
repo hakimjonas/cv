@@ -19,6 +19,32 @@ type PostsMap = BTreeMap<i64, (PostData, Vector<TagData>, HashMap<String, String
 /// This function uses a single SQL query with JOINs to fetch all posts, tags, and metadata
 /// in one database roundtrip. It then processes the results to construct the BlogPost objects.
 ///
+/// ## Performance Optimization
+///
+/// This function solves the N+1 query problem that would occur with a naive approach:
+/// 1. Without optimization: Fetch all posts (1 query) + fetch tags for each post (N queries) + 
+///    fetch metadata for each post (N queries) = 2N+1 queries
+/// 2. With optimization: Fetch all posts with tags and metadata (1 query)
+///
+/// ## Algorithm
+///
+/// The algorithm works as follows:
+/// 1. Execute a single SQL query with LEFT JOINs to fetch posts, tags, and metadata
+/// 2. For each row in the result:
+///    - Extract post data, tag data (if present), and metadata (if present)
+///    - Use a map keyed by post ID to group related data
+///    - For each post ID, maintain a collection of tags and metadata
+/// 3. Convert the map to a Vector of BlogPost objects
+///
+/// This approach handles the many-to-many and one-to-many relationships efficiently,
+/// even though the JOIN results in multiple rows per post (one for each tag and metadata entry).
+///
+/// ## Memory Considerations
+///
+/// The function uses a BTreeMap as an intermediate data structure to efficiently group
+/// related data by post ID. This approach trades some memory usage for significant
+/// performance gains by reducing database roundtrips.
+///
 /// # Arguments
 ///
 /// * `conn` - A reference to a SQLite connection
@@ -142,6 +168,26 @@ pub fn get_all_posts_optimized(conn: &Connection) -> Result<Vector<BlogPost>> {
 ///
 /// This function uses a single SQL query with JOINs to fetch a post, its tags, and metadata
 /// in one database roundtrip. It then processes the results to construct the BlogPost object.
+///
+/// ## Performance Optimization
+///
+/// Similar to `get_all_posts_optimized`, this function solves the N+1 query problem:
+/// 1. Without optimization: Fetch post by slug (1 query) + fetch tags (1 query) + 
+///    fetch metadata (1 query) = 3 queries
+/// 2. With optimization: Fetch post with tags and metadata (1 query)
+///
+/// ## Algorithm
+///
+/// The algorithm is similar to `get_all_posts_optimized` but optimized for a single post:
+/// 1. Execute a single SQL query with LEFT JOINs to fetch the post, tags, and metadata
+/// 2. For each row in the result:
+///    - Extract post data (same for all rows)
+///    - Extract tag data if present and add to a collection
+///    - Extract metadata if present and add to a collection
+/// 3. Construct a BlogPost object with the collected data
+///
+/// This approach is particularly efficient for retrieving a single post with all its
+/// related data, which is a common operation in blog systems (e.g., viewing a single post).
 ///
 /// # Arguments
 ///
@@ -272,6 +318,27 @@ pub fn get_post_by_slug_optimized(conn: &Connection, slug: &str) -> Result<Optio
 /// This function uses a single SQL query with JOINs to fetch all published posts, tags, and metadata
 /// in one database roundtrip. It then processes the results to construct the BlogPost objects.
 ///
+/// ## Performance Optimization
+///
+/// This function uses the same optimization approach as `get_all_posts_optimized` but with
+/// an additional WHERE clause to filter for published posts only. It solves the N+1 query problem:
+/// 1. Without optimization: Fetch published posts (1 query) + fetch tags for each post (N queries) + 
+///    fetch metadata for each post (N queries) = 2N+1 queries
+/// 2. With optimization: Fetch published posts with tags and metadata (1 query)
+///
+/// ## Algorithm
+///
+/// The algorithm is identical to `get_all_posts_optimized`:
+/// 1. Execute a single SQL query with LEFT JOINs and a WHERE clause to fetch published posts, tags, and metadata
+/// 2. For each row in the result:
+///    - Extract post data, tag data (if present), and metadata (if present)
+///    - Use a map keyed by post ID to group related data
+///    - For each post ID, maintain a collection of tags and metadata
+/// 3. Convert the map to a Vector of BlogPost objects
+///
+/// This approach is commonly used for displaying blog post listings on the public-facing
+/// website, where only published posts should be shown.
+///
 /// # Arguments
 ///
 /// * `conn` - A reference to a SQLite connection
@@ -395,25 +462,52 @@ pub fn get_published_posts_optimized(conn: &Connection) -> Result<Vector<BlogPos
     Ok(posts)
 }
 
-/// Helper struct to store post data from a row
+/// Helper struct to store post data from a database row
+///
+/// This struct is used as an intermediate representation when processing query results
+/// from the optimized JOIN queries. It contains only the post fields without any related
+/// data (tags or metadata), which are processed separately and combined later.
+///
+/// The struct mirrors the columns in the posts table and is used to efficiently extract
+/// post data from each row of the query result before aggregating related data.
 #[derive(Debug, Clone)]
 struct PostData {
+    /// Primary key of the post
     id: i64,
+    /// Title of the post
     title: String,
+    /// URL-friendly version of the title (unique)
     slug: String,
+    /// Publication date in ISO format
     date: String,
+    /// Author of the post
     author: String,
+    /// Short summary of the post
     excerpt: String,
+    /// Full content of the post
     content: String,
+    /// Whether the post is published (true) or draft (false)
     published: bool,
+    /// Whether the post is featured (true) or not (false)
     featured: bool,
+    /// Optional URL or path to a featured image
     image: Option<String>,
 }
 
-/// Helper struct to store tag data from a row
+/// Helper struct to store tag data from a database row
+///
+/// This struct is used as an intermediate representation when processing query results
+/// from the optimized JOIN queries. It contains only the tag fields, which are extracted
+/// from each row of the query result that contains tag data.
+///
+/// The struct mirrors the columns in the tags table and is used to efficiently extract
+/// tag data before aggregating it with the corresponding post.
 #[derive(Debug, Clone)]
 struct TagData {
+    /// Primary key of the tag
     id: i64,
+    /// Display name of the tag
     name: String,
+    /// URL-friendly version of the name (unique)
     slug: String,
 }

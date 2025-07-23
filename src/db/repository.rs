@@ -43,6 +43,41 @@ pub struct BlogRepository {
 }
 
 #[allow(dead_code)]
+/// Implementation of the BlogRepository
+///
+/// The BlogRepository provides a high-level API for working with blog posts, tags, and metadata
+/// in the database. It handles the complexities of working with related data across multiple tables.
+///
+/// ## Architecture
+///
+/// The repository follows a layered architecture:
+///
+/// 1. **Public API Methods**: Async methods that provide the main interface for CRUD operations
+///    (e.g., `get_all_posts`, `save_post`, `update_post`, `delete_post`).
+///
+/// 2. **Transaction Methods**: Helper methods that work within database transactions to ensure
+///    atomicity of operations that affect multiple tables (e.g., `save_post_tx`, `save_tags_tx`,
+///    `save_metadata_tx`).
+///
+/// 3. **Data Loading Methods**: Helper methods that load related data for posts
+///    (e.g., `load_tags_for_post`, `load_metadata_for_post`).
+///
+/// ## Method Relationships
+///
+/// - `create_or_update_post` is the main entry point for saving or updating posts. It handles
+///   both new posts and updates to existing posts, using a transaction to ensure atomicity.
+///
+/// - `save_post_tx`, `save_tags_tx`, and `save_metadata_tx` are called by `create_or_update_post`
+///   to handle different aspects of saving a post within a transaction.
+///
+/// - `load_tags_for_post` and `load_metadata_for_post` are used by various retrieval methods
+///   to load the complete post data, including related tags and metadata.
+///
+/// ## Async Implementation
+///
+/// The repository uses `task::spawn_blocking` to execute SQLite operations asynchronously,
+/// preventing blocking of the async runtime. This is necessary because SQLite operations
+/// are inherently blocking.
 impl BlogRepository {
     /// Create a new repository with the given connection pool
     pub fn new(pool: Arc<Pool<SqliteConnectionManager>>) -> Self {
@@ -423,6 +458,27 @@ impl BlogRepository {
     ///
     /// This method handles both creating new posts and updating existing ones.
     /// If the post has an ID, it will be updated. Otherwise, a new post will be created.
+    ///
+    /// The method uses a database transaction to ensure atomicity of operations:
+    /// - For updates: Updates the post record, deletes existing tags and metadata, then adds new ones
+    /// - For creates: Inserts the post record, then adds tags and metadata
+    ///
+    /// The method is executed asynchronously using `task::spawn_blocking` because SQLite
+    /// operations are blocking and would otherwise block the async runtime.
+    ///
+    /// # Arguments
+    ///
+    /// * `post` - The blog post to create or update
+    ///
+    /// # Returns
+    ///
+    /// A Result containing the ID of the created or updated post
+    ///
+    /// # Error Handling
+    ///
+    /// This method includes special handling for database lock errors that can occur in WAL mode.
+    /// If a lock error occurs during commit, the method assumes the operations were successful
+    /// and returns the post ID with a warning log.
     #[instrument(skip(self, post), err)]
     pub async fn create_or_update_post(&self, post: &BlogPost) -> Result<i64> {
         let post = post.clone();
@@ -508,6 +564,23 @@ impl BlogRepository {
     }
 
     /// Helper method to save a post within a transaction
+    ///
+    /// This method inserts a new blog post record into the database as part of an existing transaction.
+    /// It does not commit the transaction - that responsibility belongs to the calling method.
+    ///
+    /// # Arguments
+    ///
+    /// * `tx` - The active database transaction
+    /// * `post` - The blog post to insert
+    ///
+    /// # Returns
+    ///
+    /// A Result containing the ID of the newly inserted post (from last_insert_rowid())
+    ///
+    /// # Note
+    ///
+    /// This method only inserts the post record itself. Related data (tags, metadata)
+    /// must be inserted separately using the corresponding helper methods.
     fn save_post_tx(tx: &Transaction, post: &BlogPost) -> Result<i64> {
         tx.execute(
             "
@@ -533,6 +606,24 @@ impl BlogRepository {
     }
 
     /// Helper method to save tags within a transaction
+    ///
+    /// This method handles saving tags for a blog post as part of an existing transaction.
+    /// For each tag, it:
+    /// 1. Inserts the tag into the tags table if it doesn't exist, or updates the name if the slug exists
+    /// 2. Retrieves the tag ID (either newly created or existing)
+    /// 3. Associates the tag with the post in the post_tags junction table
+    ///
+    /// The method uses INSERT OR IGNORE for the post_tags association to prevent duplicate entries.
+    ///
+    /// # Arguments
+    ///
+    /// * `tx` - The active database transaction
+    /// * `post_id` - The ID of the post to associate tags with
+    /// * `tags` - A Vector of Tag objects to save
+    ///
+    /// # Returns
+    ///
+    /// A Result indicating success or failure
     fn save_tags_tx(tx: &Transaction, post_id: i64, tags: &Vector<Tag>) -> Result<()> {
         for tag in tags.iter() {
             // Insert or get the tag ID
@@ -566,6 +657,22 @@ impl BlogRepository {
     }
 
     /// Helper method to save metadata within a transaction
+    ///
+    /// This method handles saving metadata key-value pairs for a blog post as part of an existing transaction.
+    /// For each metadata entry, it inserts the key-value pair into the post_metadata table.
+    /// If a key already exists for the post, its value is updated.
+    ///
+    /// The method uses ON CONFLICT DO UPDATE to handle the upsert operation efficiently.
+    ///
+    /// # Arguments
+    ///
+    /// * `tx` - The active database transaction
+    /// * `post_id` - The ID of the post to associate metadata with
+    /// * `metadata` - A HashMap of metadata key-value pairs to save
+    ///
+    /// # Returns
+    ///
+    /// A Result indicating success or failure
     fn save_metadata_tx(
         tx: &Transaction,
         post_id: i64,
@@ -586,6 +693,27 @@ impl BlogRepository {
     }
 
     /// Helper method to load tags for a post
+    ///
+    /// This method retrieves all tags associated with a blog post from the database
+    /// and adds them to the post object. It performs a JOIN between the tags and post_tags
+    /// tables to find all tags associated with the given post ID.
+    ///
+    /// If the post has no ID (i.e., it's a new post that hasn't been saved yet),
+    /// the method returns the post unchanged.
+    ///
+    /// # Arguments
+    ///
+    /// * `conn` - A reference to the SQLite connection
+    /// * `post` - The blog post to load tags for (passed by value)
+    ///
+    /// # Returns
+    ///
+    /// A Result containing the updated BlogPost with tags loaded
+    ///
+    /// # Note
+    ///
+    /// This method takes ownership of the post and returns a new post with tags added,
+    /// using Rust's functional update syntax (`BlogPost { tags, ..post }`).
     fn load_tags_for_post(conn: &rusqlite::Connection, post: BlogPost) -> Result<BlogPost> {
         let post_id = match post.id {
             Some(id) => id,
@@ -621,6 +749,28 @@ impl BlogRepository {
     }
 
     /// Helper method to load metadata for a post
+    ///
+    /// This method retrieves all metadata key-value pairs associated with a blog post
+    /// from the database and adds them to the post object. It queries the post_metadata
+    /// table for all entries matching the given post ID.
+    ///
+    /// If the post has no ID (i.e., it's a new post that hasn't been saved yet),
+    /// the method returns the post unchanged.
+    ///
+    /// # Arguments
+    ///
+    /// * `conn` - A reference to the SQLite connection
+    /// * `post` - The blog post to load metadata for (passed by value)
+    ///
+    /// # Returns
+    ///
+    /// A Result containing the updated BlogPost with metadata loaded
+    ///
+    /// # Note
+    ///
+    /// This method takes ownership of the post and returns a new post with metadata added,
+    /// using Rust's functional update syntax (`BlogPost { metadata, ..post }`).
+    /// The metadata is stored as a HashMap<String, String> for efficient key-value lookup.
     fn load_metadata_for_post(conn: &rusqlite::Connection, post: BlogPost) -> Result<BlogPost> {
         let post_id = match post.id {
             Some(id) => id,

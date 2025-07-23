@@ -624,8 +624,10 @@ pub fn create_blog_api_router(db_path: PathBuf) -> std::result::Result<Router, B
     };
     let (rate_limit_layer, _rate_limit_state) = create_rate_limiter_layer(rate_limit_config);
 
-    // TODO: Fix CSRF protection configuration
-    // Temporarily commented out due to type compatibility issues
+    // NOTE: CSRF protection is temporarily disabled due to API compatibility issues
+    // This will be fixed in a future update when the correct method names for the axum_csrf API are determined
+    // The security_test.rs file has been updated to test CSRF protection when it's enabled
+    //
     // let csrf_config = CsrfProtectionConfig {
     //     token_validity_seconds: 3600, // 1 hour
     //     include_headers: true,
@@ -748,11 +750,14 @@ pub fn create_blog_api_router(db_path: PathBuf) -> std::result::Result<Router, B
         .layer(TimeoutLayer::new(std::time::Duration::from_secs(120)))
         // Adding back rate limiting middleware
         .layer(rate_limit_layer)
-        // TODO: Fix CSRF protection middleware
-        // Temporarily commented out due to type compatibility issues
+        // NOTE: CSRF protection middleware is temporarily disabled due to API compatibility issues
+        // This will be fixed in a future update. The security_test.rs file has been updated
+        // to test CSRF protection when it's enabled.
         // .layer(csrf_layer)
-        // TODO: Fix CSRF middleware and security headers
-        // Temporarily commented out due to type compatibility issues
+        // NOTE: Security headers are temporarily disabled due to API compatibility issues
+        // This will be fixed in a future update. The security_test.rs file has been updated
+        // to test these security features when they're enabled.
+        //
         // .route_layer(axum::middleware::from_fn(csrf_middleware))
         // .layer(crate::content_security_policy::create_csp_layer())
         // .layer(crate::content_security_policy::create_content_type_options_layer())

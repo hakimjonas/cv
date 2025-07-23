@@ -194,23 +194,27 @@ fn test_metadata_conversion_manual() -> Result<()> {
 }
 
 // Strategy for generating a Tag
+#[cfg(test)]
 fn tag_strategy() -> impl Strategy<Value = blog_data::Tag> {
     (prop::option::of(prop::num::i64::ANY), "\\PC*", "\\PC*")
         .prop_map(|(id, name, slug)| blog_data::Tag { id, name, slug })
 }
 
 // Strategy for generating a Vector of Tags
+#[cfg(test)]
 fn tags_strategy() -> impl Strategy<Value = Vector<blog_data::Tag>> {
     prop::collection::vec(tag_strategy(), 0..5).prop_map(|tags| tags.into_iter().collect())
 }
 
 // Strategy for generating a HashMap of metadata
+#[cfg(test)]
 fn metadata_strategy() -> impl Strategy<Value = HashMap<String, String>> {
     prop::collection::hash_map("\\PC*", "\\PC*", 0..5)
         .prop_map(|map| map.into_iter().collect::<HashMap<_, _>>())
 }
 
 // Strategy for generating a BlogPost
+#[cfg(test)]
 fn blog_post_strategy() -> impl Strategy<Value = blog_data::BlogPost> {
     (
         prop::option::of(prop::num::i64::ANY),

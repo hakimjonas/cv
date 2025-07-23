@@ -1,6 +1,5 @@
 use cv::blog_api::create_blog_api_router;
 use cv::check_db_permissions::secure_db_permissions;
-use std::path::PathBuf;
 use std::process::exit;
 use tokio::net::TcpListener;
 use tracing::{error, info};
@@ -99,6 +98,7 @@ async fn test_secure_file_permissions() {
 }
 
 /// Test rate limiting
+#[allow(dead_code)]
 async fn test_rate_limiting() {
     info!("Testing rate limiting");
 
@@ -132,7 +132,7 @@ async fn test_rate_limiting() {
     // Send 101 requests (rate limit is 100 per minute)
     for i in 1..=101 {
         let response = client
-            .get(format!("http://{}/api/blog/test", addr))
+            .get(format!("http://{addr}/api/blog/test"))
             .send()
             .await
             .expect("Failed to send request");
@@ -154,6 +154,7 @@ async fn test_rate_limiting() {
 }
 
 /// Test CSRF protection
+#[allow(dead_code)]
 async fn test_csrf_protection() {
     info!("Testing CSRF protection");
 
@@ -189,7 +190,7 @@ async fn test_csrf_protection() {
 
     // Send a GET request to get the CSRF token
     let response = client
-        .get(format!("http://{}/api/blog/test", addr))
+        .get(format!("http://{addr}/api/blog/test"))
         .send()
         .await
         .expect("Failed to send request");
@@ -206,7 +207,7 @@ async fn test_csrf_protection() {
 
     // Send a POST request with the CSRF token
     let response = client
-        .post(format!("http://{}/api/blog", addr))
+        .post(format!("http://{addr}/api/blog"))
         .header("X-CSRF-Token", csrf_token)
         .json(&serde_json::json!({
             "title": "Test Post",
@@ -231,7 +232,7 @@ async fn test_csrf_protection() {
 
     // Send a POST request without the CSRF token
     let response = client
-        .post(format!("http://{}/api/blog", addr))
+        .post(format!("http://{addr}/api/blog"))
         .json(&serde_json::json!({
             "title": "Test Post",
             "slug": "test-post-2",
@@ -257,6 +258,7 @@ async fn test_csrf_protection() {
 }
 
 /// Test Content Security Policy
+#[allow(dead_code)]
 async fn test_content_security_policy() {
     info!("Testing Content Security Policy");
 
@@ -289,7 +291,7 @@ async fn test_content_security_policy() {
 
     // Send a request
     let response = client
-        .get(format!("http://{}/api/blog/test", addr))
+        .get(format!("http://{addr}/api/blog/test"))
         .send()
         .await
         .expect("Failed to send request");

@@ -23,6 +23,7 @@ use tracing::{debug, error, info, warn};
 use unified_config::AppConfig;
 
 // Extension trait to enable method chaining with pipe
+#[allow(dead_code)]
 trait Pipe: Sized {
     fn pipe<F, R>(self, f: F) -> R
     where
@@ -89,6 +90,7 @@ fn get_token_from_secure_storage() -> Result<Option<String>> {
 /// # Returns
 ///
 /// A Config with the token set if found
+#[allow(dead_code)]
 fn get_github_token(config: config::Config) -> config::Config {
     // Check if running in GitHub Actions
     match env::var("GITHUB_ACTIONS") {

@@ -103,8 +103,7 @@ pub fn get_all_posts_optimized(conn: &Connection) -> Result<Vector<BlogPost>> {
     })?;
 
     // Process the rows to construct BlogPost objects
-    let mut posts_map: BTreeMap<i64, (PostData, Vector<TagData>, HashMap<String, String>)> =
-        BTreeMap::new();
+    let mut posts_map: PostsMap = BTreeMap::new();
 
     for row_result in rows {
         let (post_data, tag_data_opt, metadata_opt) = row_result?;
@@ -398,8 +397,7 @@ pub fn get_published_posts_optimized(conn: &Connection) -> Result<Vector<BlogPos
     })?;
 
     // Process the rows to construct BlogPost objects
-    let mut posts_map: BTreeMap<i64, (PostData, Vector<TagData>, HashMap<String, String>)> =
-        BTreeMap::new();
+    let mut posts_map: PostsMap = BTreeMap::new();
 
     for row_result in rows {
         let (post_data, tag_data_opt, metadata_opt) = row_result?;

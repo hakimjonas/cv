@@ -56,10 +56,10 @@ impl BlogRepository {
 
         task::spawn_blocking(move || {
             let conn = pool.get()?;
-            
+
             // Use the optimized query function
             let posts = super::optimized_queries::get_all_posts_optimized(&conn)?;
-            
+
             debug!("Loaded {} blog posts using optimized query", posts.len());
             Ok(posts)
         })
@@ -74,16 +74,16 @@ impl BlogRepository {
 
         task::spawn_blocking(move || {
             let conn = pool.get()?;
-            
+
             // Use the optimized query function
             let post = super::optimized_queries::get_post_by_slug_optimized(&conn, &slug)?;
-            
+
             if post.is_some() {
                 debug!("Loaded blog post with slug: {} using optimized query", slug);
             } else {
                 debug!("No blog post found with slug: {}", slug);
             }
-            
+
             Ok(post)
         })
         .await?
@@ -324,11 +324,14 @@ impl BlogRepository {
 
         task::spawn_blocking(move || {
             let conn = pool.get()?;
-            
+
             // Use the optimized query function
             let posts = super::optimized_queries::get_published_posts_optimized(&conn)?;
-            
-            debug!("Loaded {} published blog posts using optimized query", posts.len());
+
+            debug!(
+                "Loaded {} published blog posts using optimized query",
+                posts.len()
+            );
             Ok(posts)
         })
         .await?

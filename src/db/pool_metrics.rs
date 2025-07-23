@@ -78,7 +78,10 @@ struct TimeSeries {
 impl PoolMetrics {
     /// Create a new PoolMetrics instance
     pub fn new(name: &str) -> Self {
-        info!("Initializing database connection pool metrics for '{}'", name);
+        info!(
+            "Initializing database connection pool metrics for '{}'",
+            name
+        );
         Self {
             name: name.to_string(),
             metrics: Arc::new(Metrics::new()),
@@ -87,26 +90,36 @@ impl PoolMetrics {
 
     /// Record a new connection being created
     pub fn connection_created(&self) {
-        self.metrics.connections_created.fetch_add(1, Ordering::Relaxed);
+        self.metrics
+            .connections_created
+            .fetch_add(1, Ordering::Relaxed);
         debug!("Connection created in pool '{}'", self.name);
     }
 
     /// Record a connection being closed
     pub fn connection_closed(&self) {
-        self.metrics.connections_closed.fetch_add(1, Ordering::Relaxed);
+        self.metrics
+            .connections_closed
+            .fetch_add(1, Ordering::Relaxed);
         debug!("Connection closed in pool '{}'", self.name);
     }
 
     /// Record a connection being acquired from the pool
     pub fn connection_acquired(&self, wait_time: Duration) -> ConnectionUsageTracker {
         let wait_time_ns = wait_time.as_nanos() as u64;
-        
+
         // Update metrics
         self.metrics.acquisitions.fetch_add(1, Ordering::Relaxed);
-        self.metrics.active_connections.fetch_add(1, Ordering::Relaxed);
-        self.metrics.idle_connections.fetch_sub(1, Ordering::Relaxed);
-        self.metrics.wait_time_ns.fetch_add(wait_time_ns, Ordering::Relaxed);
-        
+        self.metrics
+            .active_connections
+            .fetch_add(1, Ordering::Relaxed);
+        self.metrics
+            .idle_connections
+            .fetch_sub(1, Ordering::Relaxed);
+        self.metrics
+            .wait_time_ns
+            .fetch_add(wait_time_ns, Ordering::Relaxed);
+
         // Update max wait time if this wait was longer
         let mut current_max = self.metrics.max_wait_time_ns.load(Ordering::Relaxed);
         while wait_time_ns > current_max {
@@ -120,21 +133,21 @@ impl PoolMetrics {
                 Err(actual) => current_max = actual,
             }
         }
-        
+
         // Update wait time histogram
         let wait_time_ms = wait_time.as_millis() as u64;
         if let Ok(mut histogram) = self.metrics.wait_time_histogram.lock() {
             histogram.record(wait_time_ms);
         }
-        
+
         // Update time series if needed
         self.update_time_series();
-        
+
         debug!(
             "Connection acquired from pool '{}' after waiting for {:?}",
             self.name, wait_time
         );
-        
+
         // Return a tracker for this connection usage
         ConnectionUsageTracker {
             metrics: Arc::clone(&self.metrics),
@@ -145,13 +158,17 @@ impl PoolMetrics {
 
     /// Record a connection acquisition timeout
     pub fn acquisition_timeout(&self) {
-        self.metrics.acquisition_timeouts.fetch_add(1, Ordering::Relaxed);
+        self.metrics
+            .acquisition_timeouts
+            .fetch_add(1, Ordering::Relaxed);
         warn!("Connection acquisition timeout in pool '{}'", self.name);
     }
 
     /// Record a connection error
     pub fn connection_error(&self) {
-        self.metrics.connection_errors.fetch_add(1, Ordering::Relaxed);
+        self.metrics
+            .connection_errors
+            .fetch_add(1, Ordering::Relaxed);
         warn!("Connection error in pool '{}'", self.name);
     }
 
@@ -161,28 +178,23 @@ impl PoolMetrics {
             .duration_since(UNIX_EPOCH)
             .unwrap_or_default()
             .as_secs();
-        
+
         // Update active connections time series
         if let Ok(mut timeseries) = self.metrics.active_connections_timeseries.lock() {
-            timeseries.maybe_add_sample(
-                now,
-                self.metrics.active_connections.load(Ordering::Relaxed),
-            );
+            timeseries
+                .maybe_add_sample(now, self.metrics.active_connections.load(Ordering::Relaxed));
         }
-        
+
         // Update idle connections time series
         if let Ok(mut timeseries) = self.metrics.idle_connections_timeseries.lock() {
-            timeseries.maybe_add_sample(
-                now,
-                self.metrics.idle_connections.load(Ordering::Relaxed),
-            );
+            timeseries.maybe_add_sample(now, self.metrics.idle_connections.load(Ordering::Relaxed));
         }
     }
 
     /// Get a snapshot of the current metrics
     pub fn get_snapshot(&self) -> MetricsSnapshot {
         let metrics = &self.metrics;
-        
+
         // Get current values
         let connections_created = metrics.connections_created.load(Ordering::Relaxed);
         let connections_closed = metrics.connections_closed.load(Ordering::Relaxed);
@@ -195,48 +207,48 @@ impl PoolMetrics {
         let usage_time_ns = metrics.usage_time_ns.load(Ordering::Relaxed);
         let max_wait_time_ns = metrics.max_wait_time_ns.load(Ordering::Relaxed);
         let max_usage_time_ns = metrics.max_usage_time_ns.load(Ordering::Relaxed);
-        
+
         // Calculate averages
         let avg_wait_time_ns = if acquisitions > 0 {
             wait_time_ns / acquisitions as u64
         } else {
             0
         };
-        
+
         let avg_usage_time_ns = if acquisitions > 0 {
             usage_time_ns / acquisitions as u64
         } else {
             0
         };
-        
+
         // Clone histograms and time series
         let wait_time_histogram = metrics
             .wait_time_histogram
             .lock()
             .map(|h| h.clone())
             .unwrap_or_else(|_| Histogram::new());
-        
+
         let usage_time_histogram = metrics
             .usage_time_histogram
             .lock()
             .map(|h| h.clone())
             .unwrap_or_else(|_| Histogram::new());
-        
+
         let active_connections_timeseries = metrics
             .active_connections_timeseries
             .lock()
             .map(|ts| ts.clone())
             .unwrap_or_else(|_| TimeSeries::new(60, 60));
-        
+
         let idle_connections_timeseries = metrics
             .idle_connections_timeseries
             .lock()
             .map(|ts| ts.clone())
             .unwrap_or_else(|_| TimeSeries::new(60, 60));
-        
+
         // Calculate uptime
         let uptime = metrics.start_time.elapsed();
-        
+
         MetricsSnapshot {
             name: self.name.clone(),
             connections_created,
@@ -261,11 +273,8 @@ impl PoolMetrics {
     /// Log a summary of the current metrics
     pub fn log_summary(&self) {
         let snapshot = self.get_snapshot();
-        
-        info!(
-            "Database pool '{}' metrics summary:",
-            snapshot.name
-        );
+
+        info!("Database pool '{}' metrics summary:", snapshot.name);
         info!(
             "  Connections: {} created, {} closed, {} active, {} idle",
             snapshot.connections_created,
@@ -275,24 +284,17 @@ impl PoolMetrics {
         );
         info!(
             "  Acquisitions: {} total, {} timeouts, {} errors",
-            snapshot.acquisitions,
-            snapshot.acquisition_timeouts,
-            snapshot.connection_errors
+            snapshot.acquisitions, snapshot.acquisition_timeouts, snapshot.connection_errors
         );
         info!(
             "  Wait time: {:?} avg, {:?} max",
-            snapshot.avg_wait_time,
-            snapshot.max_wait_time
+            snapshot.avg_wait_time, snapshot.max_wait_time
         );
         info!(
             "  Usage time: {:?} avg, {:?} max",
-            snapshot.avg_usage_time,
-            snapshot.max_usage_time
+            snapshot.avg_usage_time, snapshot.max_usage_time
         );
-        info!(
-            "  Uptime: {:?}",
-            snapshot.uptime
-        );
+        info!("  Uptime: {:?}", snapshot.uptime);
     }
 }
 
@@ -314,7 +316,7 @@ impl Metrics {
             wait_time_histogram: Mutex::new(Histogram::new()),
             usage_time_histogram: Mutex::new(Histogram::new()),
             active_connections_timeseries: Mutex::new(TimeSeries::new(60, 60)), // 1 hour of 1-minute samples
-            idle_connections_timeseries: Mutex::new(TimeSeries::new(60, 60)),   // 1 hour of 1-minute samples
+            idle_connections_timeseries: Mutex::new(TimeSeries::new(60, 60)), // 1 hour of 1-minute samples
             start_time: Instant::now(),
         }
     }
@@ -334,7 +336,7 @@ impl Histogram {
             (500, 1000, 0),
             (1000, u64::MAX, 0),
         ];
-        
+
         Self { buckets }
     }
 
@@ -366,7 +368,7 @@ impl TimeSeries {
             // Add the sample
             self.samples.push((timestamp, value));
             self.last_sample_time = timestamp;
-            
+
             // Remove oldest samples if we've exceeded the maximum
             if self.samples.len() > self.max_samples {
                 self.samples.remove(0);
@@ -390,12 +392,18 @@ impl Drop for ConnectionUsageTracker {
     fn drop(&mut self) {
         let usage_time = self.start_time.elapsed();
         let usage_time_ns = usage_time.as_nanos() as u64;
-        
+
         // Update metrics
-        self.metrics.active_connections.fetch_sub(1, Ordering::Relaxed);
-        self.metrics.idle_connections.fetch_add(1, Ordering::Relaxed);
-        self.metrics.usage_time_ns.fetch_add(usage_time_ns, Ordering::Relaxed);
-        
+        self.metrics
+            .active_connections
+            .fetch_sub(1, Ordering::Relaxed);
+        self.metrics
+            .idle_connections
+            .fetch_add(1, Ordering::Relaxed);
+        self.metrics
+            .usage_time_ns
+            .fetch_add(usage_time_ns, Ordering::Relaxed);
+
         // Update max usage time if this usage was longer
         let mut current_max = self.metrics.max_usage_time_ns.load(Ordering::Relaxed);
         while usage_time_ns > current_max {
@@ -409,13 +417,13 @@ impl Drop for ConnectionUsageTracker {
                 Err(actual) => current_max = actual,
             }
         }
-        
+
         // Update usage time histogram
         let usage_time_ms = usage_time.as_millis() as u64;
         if let Ok(mut histogram) = self.metrics.usage_time_histogram.lock() {
             histogram.record(usage_time_ms);
         }
-        
+
         debug!(
             "Connection returned to pool '{}' after being used for {:?}",
             self.pool_name, usage_time

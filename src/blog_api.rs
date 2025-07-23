@@ -1,22 +1,29 @@
 use crate::blog_data::{BlogPost, Tag};
 use crate::blog_error::BlogError;
+use crate::blog_validation::{BlogValidationError, validate_and_sanitize_blog_post};
+use crate::check_db_permissions::secure_db_permissions;
+use crate::content_security_policy::create_security_headers_layer;
+use crate::csrf_protection::{CsrfProtectionConfig, create_csrf_layer, csrf_middleware};
 use crate::db::{BlogRepository, Database};
+// Adding back rate limiting
+use crate::rate_limiter::{RateLimiterConfig, create_rate_limiter_layer};
 
 /// API result type
 type ApiResult<T> = std::result::Result<T, ApiError>;
 use axum::{
     Router,
-    extract::{Path, State},
+    extract::{ConnectInfo, Path, State},
     http::{Method, StatusCode},
     response::{IntoResponse, Json, Response},
     routing::{delete, get, post, put},
 };
 use im::Vector;
-use std::{path::PathBuf, sync::Arc};
+use std::{net::SocketAddr, path::PathBuf, sync::Arc};
 use thiserror::Error;
 use tower_http::{
     cors::{Any, CorsLayer},
     services::ServeDir,
+    set_header::SetResponseHeaderLayer,
     timeout::TimeoutLayer,
 };
 use tracing::{debug, error, info, instrument, warn};
@@ -180,24 +187,27 @@ async fn create_post(
 ) -> ApiResult<(StatusCode, Json<BlogPost>)> {
     info!("Creating new blog post with slug: {}", post.slug);
 
-    // Validate required fields
-    if post.title.is_empty()
-        || post.slug.is_empty()
-        || post.content.is_empty()
-        || post.date.is_empty()
-        || post.author.is_empty()
-    {
-        warn!("Validation failed: Missing required fields for blog post");
-        return Err(ApiError::ValidationError(
-            "Missing required fields: title, slug, content, date, author must be non-empty"
-                .to_string(),
-        ));
-    }
-
-    debug!("Validation passed for new blog post");
+    // Validate and sanitize the blog post
+    let sanitized_post = match validate_and_sanitize_blog_post(&post) {
+        Ok(sanitized) => {
+            debug!("Validation and sanitization passed for new blog post");
+            sanitized
+        }
+        Err(BlogValidationError::ValidationError(message)) => {
+            warn!("Validation failed: {}", message);
+            return Err(ApiError::ValidationError(message));
+        }
+        Err(BlogValidationError::SanitizationError(message)) => {
+            warn!("Sanitization failed: {}", message);
+            return Err(ApiError::ValidationError(format!(
+                "Sanitization error: {}",
+                message
+            )));
+        }
+    };
 
     // Convert API post to repository post
-    let repo_post = api_to_repo_post(&post);
+    let repo_post = api_to_repo_post(&sanitized_post);
 
     // Try to save the post
     match state.blog_repo.save_post(&repo_post).await {
@@ -275,19 +285,24 @@ async fn update_post(
 ) -> ApiResult<Json<BlogPost>> {
     info!("Updating blog post with slug: {}", slug);
 
-    // Validate required fields
-    if post.title.is_empty()
-        || post.slug.is_empty()
-        || post.content.is_empty()
-        || post.date.is_empty()
-        || post.author.is_empty()
-    {
-        warn!("Validation failed: Missing required fields for blog post update");
-        return Err(ApiError::ValidationError(
-            "Missing required fields: title, slug, content, date, author must be non-empty"
-                .to_string(),
-        ));
-    }
+    // Validate and sanitize the blog post
+    let sanitized_post = match validate_and_sanitize_blog_post(&post) {
+        Ok(sanitized) => {
+            debug!("Validation and sanitization passed for blog post update");
+            sanitized
+        }
+        Err(BlogValidationError::ValidationError(message)) => {
+            warn!("Validation failed: {}", message);
+            return Err(ApiError::ValidationError(message));
+        }
+        Err(BlogValidationError::SanitizationError(message)) => {
+            warn!("Sanitization failed: {}", message);
+            return Err(ApiError::ValidationError(format!(
+                "Sanitization error: {}",
+                message
+            )));
+        }
+    };
 
     // First, check if post exists
     let existing_post = match state.blog_repo.get_post_by_slug(&slug).await {
@@ -312,7 +327,7 @@ async fn update_post(
     // Create a new post with the existing ID
     let post_to_update = BlogPost {
         id: existing_post.id,
-        ..post
+        ..sanitized_post
     };
 
     // Convert to repository post
@@ -592,12 +607,40 @@ async fn root_handler() -> impl axum::response::IntoResponse {
 
 /// Creates the blog API router
 pub fn create_blog_api_router(db_path: PathBuf) -> std::result::Result<Router, BlogError> {
+    // Set secure permissions for the database file
+    secure_db_permissions(&db_path).map_err(|e| {
+        BlogError::Internal(format!("Failed to set secure database permissions: {}", e))
+    })?;
+
+    // Create the database and blog repository
     let db = Database::new(&db_path)?;
     let blog_repo = db.blog_repository();
     let state = Arc::new(ApiState { blog_repo, db });
 
     // Create a static file service for the static directory (blog tools)
     let static_service = ServeDir::new("static");
+
+    // Adding back rate limiting
+    let rate_limit_config = RateLimiterConfig {
+        max_requests: 100,     // 100 requests per minute
+        window_seconds: 60,    // 1 minute window
+        include_headers: true, // Include rate limit headers in response
+        status_code: StatusCode::TOO_MANY_REQUESTS,
+    };
+    let (rate_limit_layer, _rate_limit_state) = create_rate_limiter_layer(rate_limit_config);
+
+    // TODO: Fix CSRF protection configuration
+    // Temporarily commented out due to type compatibility issues
+    // let csrf_config = CsrfProtectionConfig {
+    //     token_validity_seconds: 3600, // 1 hour
+    //     include_headers: true,
+    //     cookie_name: "csrf_token".to_string(),
+    //     cookie_path: "/".to_string(),
+    //     cookie_secure: true,
+    //     cookie_http_only: true,
+    //     cookie_same_site: axum_csrf::SameSite::Strict,
+    // };
+    // let csrf_layer = create_csrf_layer(csrf_config);
 
     // Configure CORS to allow all origins
     let cors = CorsLayer::new()
@@ -708,6 +751,20 @@ pub fn create_blog_api_router(db_path: PathBuf) -> std::result::Result<Router, B
         .layer(cors)
         // Add request timeout middleware - increased to 120 seconds for database operations
         .layer(TimeoutLayer::new(std::time::Duration::from_secs(120)))
+        // Adding back rate limiting middleware
+        .layer(rate_limit_layer)
+        // TODO: Fix CSRF protection middleware
+        // Temporarily commented out due to type compatibility issues
+        // .layer(csrf_layer)
+        // TODO: Fix CSRF middleware and security headers
+        // Temporarily commented out due to type compatibility issues
+        // .route_layer(axum::middleware::from_fn(csrf_middleware))
+        // .layer(crate::content_security_policy::create_csp_layer())
+        // .layer(crate::content_security_policy::create_content_type_options_layer())
+        // .layer(crate::content_security_policy::create_frame_options_layer())
+        // .layer(crate::content_security_policy::create_xss_protection_layer())
+        // .layer(crate::content_security_policy::create_referrer_policy_layer())
+        // .layer(crate::content_security_policy::create_permissions_policy_layer())
         .with_state(state);
 
     Ok(router)

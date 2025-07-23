@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 once_cell = "1.21.3"
+lazy_static = "1.4.0"
 reqwest = { version = "0.12.18", features = ["json", "blocking"] }
 hostname = "0.4.1"
 flate2 = "1.1.1"
@@ -22,7 +23,7 @@ keyring = "3.6.2"
 git2 = "0.20.2"
 minify-html = "0.16.4"
 im = { version = "15.1", features = ["serde"] }
-tower-http = { version = "0.6.6", features = ["fs", "cors", "timeout"] }
+tower-http = { version = "0.6.6", features = ["fs", "cors", "timeout", "limit", "set-header"] }
 askama = "0.14.0"
 thiserror = "2.0.12"
 r2d2 = "0.8.10"
@@ -33,10 +34,12 @@ tracing-subscriber = { version = "0.3.18", features = ["env-filter", "json"] }
 tracing-appender = "0.2.3"
 tracing-log = "0.2.0"
 proptest = "1.4.0"
-rand = "0.9.2"
-config = { version = "0.13.4", features = ["toml", "json", "yaml"] }
-clap = { version = "4.5.3", features = ["derive"] }
-toml = "0.8.10"
+rand = { version = "0.9.2", features = ["std_rng"] }
+config = { version = "0.15.13", features = ["toml", "json", "yaml"] }
+toml = "0.9.2"
+validator = { version = "0.20.0", features = ["derive"] }
+ammonia = "4.1.1"
+axum_csrf = { version = "0.11.0", features = ["layer"] }
 
 
 
@@ -47,3 +50,7 @@ name = "blog_tester"
 [[bin]]
 name = "blog_property_test"
 path = "src/blog_property_test.rs"
+
+[[bin]]
+name = "security_test"
+path = "src/bin/security_test.rs"

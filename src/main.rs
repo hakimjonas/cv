@@ -260,7 +260,9 @@ async fn main() -> Result<()> {
         return match migrate::migrate_json_to_sqlite_async(
             &config.data_path_str()?,
             &config.db_path_str()?,
-        ).await {
+        )
+        .await
+        {
             Ok(_) => {
                 info!(
                     "CV data migrated successfully to database: {}",
@@ -314,7 +316,8 @@ async fn main() -> Result<()> {
             "Loading CV data from database asynchronously: {}",
             config.db_path.display()
         );
-        migrate::load_cv_from_sqlite_async(&config.db_path_str()?).await
+        migrate::load_cv_from_sqlite_async(&config.db_path_str()?)
+            .await
             .context("Failed to load CV data from database")?
     } else {
         info!("Loading CV data from JSON: {}", config.data_path.display());
@@ -327,10 +330,9 @@ async fn main() -> Result<()> {
 
     // Fetch GitHub projects from sources defined in CV data
     info!("Fetching GitHub projects from sources defined in CV data asynchronously");
-    match github::fetch_projects_from_sources(
-        &cv.github_sources,
-        config_with_token.github_token(),
-    ).await {
+    match github::fetch_projects_from_sources(&cv.github_sources, config_with_token.github_token())
+        .await
+    {
         Ok(github_projects) => {
             info!("Found {} GitHub projects", github_projects.len());
 
@@ -429,11 +431,8 @@ async fn main() -> Result<()> {
 
     // Process and bundle assets
     info!("Processing and bundling assets");
-    bundler::process_assets(
-        "bundle.toml",
-        &config_with_token.static_dir_str()?,
-    )
-    .context("Failed to process and bundle assets")?;
+    bundler::process_assets("bundle.toml", &config_with_token.static_dir_str()?)
+        .context("Failed to process and bundle assets")?;
 
     // Print summary
     info!("Done! Output files:");
@@ -443,7 +442,10 @@ async fn main() -> Result<()> {
         "  - Static assets: {}",
         config_with_token.output_dir.display()
     );
-    info!("  - Bundled assets: {}/[bundle_name].bundle.[css|js]", config_with_token.output_dir.display());
+    info!(
+        "  - Bundled assets: {}/[bundle_name].bundle.[css|js]",
+        config_with_token.output_dir.display()
+    );
 
     Ok(())
 }

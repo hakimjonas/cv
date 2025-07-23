@@ -523,7 +523,7 @@ pub fn fetch_projects_from_sources_sync(
     // Get the configuration
     let config = crate::unified_config::AppConfig::load()
         .context("Failed to load application configuration")?;
-    
+
     let cache_path_str = config
         .github_cache_path_str()
         .context("Failed to get GitHub cache path")?;
@@ -531,7 +531,7 @@ pub fn fetch_projects_from_sources_sync(
 
     // Determine the refresh strategy
     let refresh_strategy = &config.github_cache_refresh_strategy;
-    
+
     // Try to read from the cache first
     match read_github_cache(cache_path) {
         Ok(projects) => {
@@ -545,14 +545,14 @@ pub fn fetch_projects_from_sources_sync(
                         projects.len()
                     );
                     return Ok(projects);
-                },
-                
+                }
+
                 // Eager strategy - refresh cache immediately
                 "eager" => {
                     println!("Cache exists but refresh strategy is eager, fetching fresh data...");
                     // Fall through to fetch new data
-                },
-                
+                }
+
                 // Background strategy - use cache and refresh in background
                 "background" => {
                     println!(
@@ -560,36 +560,42 @@ pub fn fetch_projects_from_sources_sync(
                         cache_path.display(),
                         projects.len()
                     );
-                    
+
                     // Clone what we need for the background task
                     let sources_clone = sources.clone();
                     let token_clone = token.map(String::from);
                     let cache_path_clone = cache_path.to_path_buf();
-                    
+
                     // Spawn a background task to refresh the cache
                     std::thread::spawn(move || {
                         println!("Background refresh of GitHub cache started");
-                        
+
                         // Use the shared runtime to run the async function
                         let token_ref = token_clone.as_deref();
-                        match RUNTIME.block_on(fetch_projects_from_sources(&sources_clone, token_ref)) {
+                        match RUNTIME
+                            .block_on(fetch_projects_from_sources(&sources_clone, token_ref))
+                        {
                             Ok(fresh_projects) => {
                                 // Write the results to the cache
-                                if let Err(e) = write_github_cache(&cache_path_clone, &fresh_projects) {
-                                    println!("Warning: Failed to write GitHub cache in background: {e}");
+                                if let Err(e) =
+                                    write_github_cache(&cache_path_clone, &fresh_projects)
+                                {
+                                    println!(
+                                        "Warning: Failed to write GitHub cache in background: {e}"
+                                    );
                                 } else {
                                     println!("GitHub cache refreshed in background");
                                 }
-                            },
+                            }
                             Err(e) => {
                                 println!("Warning: Background refresh of GitHub cache failed: {e}");
                             }
                         }
                     });
-                    
+
                     return Ok(projects);
-                },
-                
+                }
+
                 // Unknown strategy - default to lazy
                 _ => {
                     println!(
@@ -600,7 +606,7 @@ pub fn fetch_projects_from_sources_sync(
                     return Ok(projects);
                 }
             }
-        },
+        }
         Err(e) => {
             println!("GitHub cache not available: {e}");
             println!("Fetching projects from GitHub API...");

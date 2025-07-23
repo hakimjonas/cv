@@ -50,8 +50,12 @@ pub fn load_config(config_path: &str) -> Result<BundleConfig> {
     let config_content = fs::read_to_string(config_path)
         .with_context(|| format!("Failed to read bundling configuration from {}", config_path))?;
 
-    let config: BundleConfig = toml::from_str(&config_content)
-        .with_context(|| format!("Failed to parse bundling configuration from {}", config_path))?;
+    let config: BundleConfig = toml::from_str(&config_content).with_context(|| {
+        format!(
+            "Failed to parse bundling configuration from {}",
+            config_path
+        )
+    })?;
 
     Ok(config)
 }
@@ -131,8 +135,12 @@ pub fn write_default_config(config_path: &str) -> Result<()> {
     let config_content = toml::to_string_pretty(&config)
         .context("Failed to serialize default bundling configuration")?;
 
-    fs::write(config_path, config_content)
-        .with_context(|| format!("Failed to write default bundling configuration to {}", config_path))?;
+    fs::write(config_path, config_content).with_context(|| {
+        format!(
+            "Failed to write default bundling configuration to {}",
+            config_path
+        )
+    })?;
 
     info!("Created default bundling configuration at {}", config_path);
     Ok(())
@@ -155,36 +163,36 @@ pub fn bundle_css(config: &BundleConfig, static_dir: &str) -> Result<()> {
     for (bundle_name, files) in &config.bundles.css {
         info!("Bundling CSS: {}", bundle_name);
         let output_path = Path::new(output_dir).join(format!("{}.bundle.css", bundle_name));
-        
+
         // Read and concatenate files
         let mut bundle_content = String::new();
         for file in files {
             let file_path = Path::new(static_dir).join(file);
             debug!("Adding file to bundle: {}", file_path.display());
-            
+
             let file_content = fs::read_to_string(&file_path)
                 .with_context(|| format!("Failed to read CSS file: {}", file_path.display()))?;
-            
+
             // Add file path comment for debugging
             bundle_content.push_str(&format!("/* Source: {} */\n", file));
             bundle_content.push_str(&file_content);
             bundle_content.push('\n');
         }
-        
+
         // Minify the bundle if in release mode
         #[cfg(not(debug_assertions))]
         let final_content = minify_css(&bundle_content)
             .with_context(|| format!("Failed to minify CSS bundle: {}", bundle_name))?;
-        
+
         #[cfg(debug_assertions)]
         let final_content = bundle_content;
-        
+
         // Write the bundle
         fs::write(&output_path, &final_content)
             .with_context(|| format!("Failed to write CSS bundle to {}", output_path.display()))?;
-        
+
         info!("Created CSS bundle: {}", output_path.display());
-        
+
         // Create gzipped version in release mode
         #[cfg(not(debug_assertions))]
         {
@@ -196,7 +204,7 @@ pub fn bundle_css(config: &BundleConfig, static_dir: &str) -> Result<()> {
             info!("Created gzipped CSS bundle: {}", gz_path.display());
         }
     }
-    
+
     Ok(())
 }
 
@@ -217,36 +225,41 @@ pub fn bundle_js(config: &BundleConfig, static_dir: &str) -> Result<()> {
     for (bundle_name, files) in &config.bundles.js {
         info!("Bundling JavaScript: {}", bundle_name);
         let output_path = Path::new(output_dir).join(format!("{}.bundle.js", bundle_name));
-        
+
         // Read and concatenate files
         let mut bundle_content = String::new();
         for file in files {
             let file_path = Path::new(static_dir).join(file);
             debug!("Adding file to bundle: {}", file_path.display());
-            
-            let file_content = fs::read_to_string(&file_path)
-                .with_context(|| format!("Failed to read JavaScript file: {}", file_path.display()))?;
-            
+
+            let file_content = fs::read_to_string(&file_path).with_context(|| {
+                format!("Failed to read JavaScript file: {}", file_path.display())
+            })?;
+
             // Add file path comment for debugging
             bundle_content.push_str(&format!("/* Source: {} */\n", file));
             bundle_content.push_str(&file_content);
             bundle_content.push('\n');
         }
-        
+
         // Minify the bundle if in release mode
         #[cfg(not(debug_assertions))]
         let final_content = minify_js(&bundle_content)
             .with_context(|| format!("Failed to minify JavaScript bundle: {}", bundle_name))?;
-        
+
         #[cfg(debug_assertions)]
         let final_content = bundle_content;
-        
+
         // Write the bundle
-        fs::write(&output_path, &final_content)
-            .with_context(|| format!("Failed to write JavaScript bundle to {}", output_path.display()))?;
-        
+        fs::write(&output_path, &final_content).with_context(|| {
+            format!(
+                "Failed to write JavaScript bundle to {}",
+                output_path.display()
+            )
+        })?;
+
         info!("Created JavaScript bundle: {}", output_path.display());
-        
+
         // Create gzipped version in release mode
         #[cfg(not(debug_assertions))]
         {
@@ -258,7 +271,7 @@ pub fn bundle_js(config: &BundleConfig, static_dir: &str) -> Result<()> {
             info!("Created gzipped JavaScript bundle: {}", gz_path.display());
         }
     }
-    
+
     Ok(())
 }
 
@@ -310,19 +323,19 @@ pub fn process_assets(config_path: &str, static_dir: &str) -> Result<()> {
         info!("Bundling configuration not found, creating default configuration");
         write_default_config(config_path)?;
     }
-    
+
     // Load the configuration
     let config = load_config(config_path)?;
-    
+
     // Bundle CSS files
     bundle_css(&config, static_dir)?;
-    
+
     // Bundle JavaScript files
     bundle_js(&config, static_dir)?;
-    
+
     // Generate server configuration files
     crate::asset_processor::generate_server_configs(&config.output.directory)?;
-    
+
     info!("Asset processing completed successfully");
     Ok(())
 }

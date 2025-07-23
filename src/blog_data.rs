@@ -292,9 +292,7 @@ impl BlogManager {
         let repo_post = self
             .runtime
             .block_on(self.repository.get_post_by_id(post_id))
-            .map_err(|e| {
-                BlogError::Internal(format!("Failed to get post by ID {post_id}: {e}"))
-            })?;
+            .map_err(|e| BlogError::Internal(format!("Failed to get post by ID {post_id}: {e}")))?;
 
         // Convert repository post to blog_data post if found
         Ok(repo_post.map(|post| blog_converters::repo_to_data(&post)))

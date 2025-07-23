@@ -212,8 +212,11 @@ impl GitHubCache {
                     debug!("GitHub cache is expired");
                     return Err(anyhow::anyhow!("GitHub cache is expired"));
                 }
-                
-                debug!("Successfully loaded GitHub cache with {} projects", cache.projects.len());
+
+                debug!(
+                    "Successfully loaded GitHub cache with {} projects",
+                    cache.projects.len()
+                );
                 Ok(cache)
             }
             Err(_) => {
@@ -221,7 +224,7 @@ impl GitHubCache {
                 debug!("Trying to parse GitHub cache as old format");
                 let projects: Vector<Project> = serde_json::from_str(&cache_data)
                     .context("Failed to parse GitHub cache data")?;
-                
+
                 // Convert to the new format
                 debug!("Converting old cache format to new format");
                 Ok(Self::with_projects(&projects, config))
@@ -237,8 +240,8 @@ impl GitHubCache {
         }
 
         // Serialize the cache to JSON
-        let cache_data = serde_json::to_string_pretty(self)
-            .context("Failed to serialize GitHub cache")?;
+        let cache_data =
+            serde_json::to_string_pretty(self).context("Failed to serialize GitHub cache")?;
 
         // Write the cache file
         fs::write(path, cache_data).context("Failed to write GitHub cache file")?;

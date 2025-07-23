@@ -137,7 +137,10 @@ impl Database {
         migrations::run_migrations(&conn)?;
 
         // Create metrics for the connection pool
-        let metrics = Arc::new(pool_metrics::PoolMetrics::new(&format!("db-{}", config.path)));
+        let metrics = Arc::new(pool_metrics::PoolMetrics::new(&format!(
+            "db-{}",
+            config.path
+        )));
 
         Ok(Self {
             pool: Arc::new(pool),
@@ -832,17 +835,17 @@ impl Database {
     pub fn blog_repository(&self) -> BlogRepository {
         BlogRepository::new(Arc::clone(&self.pool))
     }
-    
+
     /// Get the metrics object for the connection pool
     pub fn metrics(&self) -> Arc<pool_metrics::PoolMetrics> {
         Arc::clone(&self.metrics)
     }
-    
+
     /// Log a summary of the connection pool metrics
     pub fn log_metrics_summary(&self) {
         self.metrics.log_summary();
     }
-    
+
     /// Get a snapshot of the connection pool metrics
     pub fn get_metrics_snapshot(&self) -> pool_metrics::MetricsSnapshot {
         self.metrics.get_snapshot()
@@ -856,11 +859,11 @@ impl Database {
     {
         let pool = Arc::clone(&self.pool);
         let metrics = Arc::clone(&self.metrics);
-        
+
         task::spawn_blocking(move || {
             // Record the start time for connection acquisition
             let start_time = std::time::Instant::now();
-            
+
             // Get a connection from the pool
             let conn = match pool.get() {
                 Ok(conn) => conn,
@@ -870,17 +873,17 @@ impl Database {
                     return Err(e.into());
                 }
             };
-            
+
             // Calculate wait time and record connection acquisition
             let wait_time = start_time.elapsed();
             let usage_tracker = metrics.connection_acquired(wait_time);
-            
+
             // Execute the function with the connection
             let result = f(&conn);
-            
+
             // The usage_tracker will be dropped when this function returns,
             // which will record the connection usage time
-            
+
             result
         })
         .await?
@@ -894,11 +897,11 @@ impl Database {
     {
         let pool = Arc::clone(&self.pool);
         let metrics = Arc::clone(&self.metrics);
-        
+
         task::spawn_blocking(move || {
             // Record the start time for connection acquisition
             let start_time = std::time::Instant::now();
-            
+
             // Get a connection from the pool
             let mut conn = match pool.get() {
                 Ok(conn) => conn,
@@ -908,17 +911,17 @@ impl Database {
                     return Err(e.into());
                 }
             };
-            
+
             // Calculate wait time and record connection acquisition
             let wait_time = start_time.elapsed();
             let usage_tracker = metrics.connection_acquired(wait_time);
-            
+
             // Execute the function with the mutable connection
             let result = f(&mut conn);
-            
+
             // The usage_tracker will be dropped when this function returns,
             // which will record the connection usage time
-            
+
             result
         })
         .await?

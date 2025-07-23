@@ -75,16 +75,20 @@ pub async fn migrate_json_to_sqlite_async<P: AsRef<Path>, Q: AsRef<Path>>(
     );
 
     // Create database and schema asynchronously
-    info!("Creating database asynchronously: {}", db_path.as_ref().display());
-    let db = Database::new(&db_path)
-        .context("Failed to create database connection")?;
-    db.create_schema_async().await
+    info!(
+        "Creating database asynchronously: {}",
+        db_path.as_ref().display()
+    );
+    let db = Database::new(&db_path).context("Failed to create database connection")?;
+    db.create_schema_async()
+        .await
         .context("Failed to create database schema")?;
     debug!("Database schema created successfully");
 
     // Insert CV data into database asynchronously
     info!("Inserting CV data into database asynchronously");
-    db.insert_cv_async(&cv).await
+    db.insert_cv_async(&cv)
+        .await
         .context("Failed to insert CV data into database")?;
     debug!("CV data inserted successfully");
 
@@ -136,12 +140,13 @@ pub async fn load_cv_from_sqlite_async<P: AsRef<Path>>(db_path: P) -> Result<Cv>
         "Loading CV data from database asynchronously: {}",
         db_path.as_ref().display()
     );
-    let db = Database::new(&db_path)
-        .context("Failed to create database connection")?;
+    let db = Database::new(&db_path).context("Failed to create database connection")?;
     debug!("Database connection established");
 
     // Load CV data asynchronously
-    let cv = db.load_cv_async().await
+    let cv = db
+        .load_cv_async()
+        .await
         .context("Failed to load CV data from database")?;
     debug!("CV data loaded with {} projects", cv.projects.len());
 

@@ -103,10 +103,7 @@ fn test_blog_posts_vector_conversion_manual() -> Result<()> {
     // Check that each post is preserved
     for (i, (original_post, roundtrip_post)) in posts.iter().zip(roundtrip_posts.iter()).enumerate()
     {
-        assert_eq!(
-            original_post.id, roundtrip_post.id,
-            "Post {i} ID mismatch"
-        );
+        assert_eq!(original_post.id, roundtrip_post.id, "Post {i} ID mismatch");
         assert_eq!(
             original_post.title, roundtrip_post.title,
             "Post {i} title mismatch"
@@ -209,10 +206,8 @@ fn tags_strategy() -> impl Strategy<Value = Vector<blog_data::Tag>> {
 
 // Strategy for generating a HashMap of metadata
 fn metadata_strategy() -> impl Strategy<Value = HashMap<String, String>> {
-    prop::collection::hash_map("\\PC*", "\\PC*", 0..5).prop_map(|map| {
-        map.into_iter()
-            .collect::<HashMap<_, _>>()
-    })
+    prop::collection::hash_map("\\PC*", "\\PC*", 0..5)
+        .prop_map(|map| map.into_iter().collect::<HashMap<_, _>>())
 }
 
 // Strategy for generating a BlogPost

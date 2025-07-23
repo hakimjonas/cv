@@ -79,12 +79,12 @@ pub fn get_all_posts_optimized(conn: &Connection) -> Result<Vector<BlogPost>> {
 
     for row_result in rows {
         let (post_data, tag_data_opt, metadata_opt) = row_result?;
-        
+
         // Get or insert the post entry
         let entry = posts_map
             .entry(post_data.id)
             .or_insert_with(|| (post_data, Vector::new(), HashMap::new()));
-        
+
         // Add tag if present
         if let Some(tag_data) = tag_data_opt {
             // Only add if not already present
@@ -92,7 +92,7 @@ pub fn get_all_posts_optimized(conn: &Connection) -> Result<Vector<BlogPost>> {
                 entry.1.push_back(tag_data);
             }
         }
-        
+
         // Add metadata if present
         if let Some((key, value)) = metadata_opt {
             entry.2 = entry.2.update(key, value);
@@ -205,12 +205,12 @@ pub fn get_post_by_slug_optimized(conn: &Connection, slug: &str) -> Result<Optio
 
     for row_result in rows {
         let (current_post_data, tag_data_opt, metadata_opt) = row_result?;
-        
+
         // Set post data if not already set
         if post_data.is_none() {
             post_data = Some(current_post_data.clone());
         }
-        
+
         // Add tag if present
         if let Some(tag_data) = tag_data_opt {
             // Only add if not already present
@@ -218,7 +218,7 @@ pub fn get_post_by_slug_optimized(conn: &Connection, slug: &str) -> Result<Optio
                 tags_data.push_back(tag_data);
             }
         }
-        
+
         // Add metadata if present
         if let Some((key, value)) = metadata_opt {
             metadata = metadata.update(key, value);
@@ -257,7 +257,10 @@ pub fn get_post_by_slug_optimized(conn: &Connection, slug: &str) -> Result<Optio
         metadata,
     };
 
-    debug!("Loaded blog post with slug '{}' using optimized query", slug);
+    debug!(
+        "Loaded blog post with slug '{}' using optimized query",
+        slug
+    );
     Ok(Some(post))
 }
 
@@ -330,12 +333,12 @@ pub fn get_published_posts_optimized(conn: &Connection) -> Result<Vector<BlogPos
 
     for row_result in rows {
         let (post_data, tag_data_opt, metadata_opt) = row_result?;
-        
+
         // Get or insert the post entry
         let entry = posts_map
             .entry(post_data.id)
             .or_insert_with(|| (post_data, Vector::new(), HashMap::new()));
-        
+
         // Add tag if present
         if let Some(tag_data) = tag_data_opt {
             // Only add if not already present
@@ -343,7 +346,7 @@ pub fn get_published_posts_optimized(conn: &Connection) -> Result<Vector<BlogPos
                 entry.1.push_back(tag_data);
             }
         }
-        
+
         // Add metadata if present
         if let Some((key, value)) = metadata_opt {
             entry.2 = entry.2.update(key, value);
@@ -382,7 +385,10 @@ pub fn get_published_posts_optimized(conn: &Connection) -> Result<Vector<BlogPos
         })
         .collect();
 
-    debug!("Loaded {} published blog posts with optimized query", posts.len());
+    debug!(
+        "Loaded {} published blog posts with optimized query",
+        posts.len()
+    );
     Ok(posts)
 }
 

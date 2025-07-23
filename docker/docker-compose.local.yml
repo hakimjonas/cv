@@ -6,21 +6,24 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.local
-    image: blog-api-local:latest
+      args:
+        - BUILD_VERSION=${BUILD_VERSION:-0.1.0-dev}
+    image: blog-api-local:${BUILD_VERSION:-0.1.0-dev}
     ports:
       - "3002:3000"
     volumes:
       - blog-data:/app/data
       # Mount source code for hot reloading
-      - ./src:/app/src
-      - ./static:/app/static
-      - ./templates:/app/templates
-      - ./Cargo.toml:/app/Cargo.toml
-      - ./Cargo.lock:/app/Cargo.lock
+      - ../src:/app/src
+      - ../static:/app/static
+      - ../templates:/app/templates
+      - ../Cargo.toml:/app/Cargo.toml
+      - ../Cargo.lock:/app/Cargo.lock
     restart: unless-stopped
     environment:
       - RUST_LOG=debug  # More verbose logging for development
       - RUST_BACKTRACE=1  # Full backtraces for debugging
+      - APP_VERSION=${BUILD_VERSION:-0.1.0-dev}
     networks:
       - blog-network
     # Simplified health check for development
@@ -45,12 +48,22 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+    labels:
+      - "app=blog-api"
+      - "version=${BUILD_VERSION:-0.1.0-dev}"
+      - "environment=development"
 
 networks:
   blog-network:
     driver: bridge
+    labels:
+      - "app=blog-api"
+      - "environment=development"
 
 volumes:
   blog-data:
     # Add driver specification for better compatibility
     driver: local
+    labels:
+      - "app=blog-api"
+      - "environment=development"

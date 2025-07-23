@@ -17,7 +17,7 @@ This project is a comprehensive personal website solution that includes a dynami
 - **Docker Support**: Easy deployment with Docker and Docker Compose
 - **CI/CD Pipeline**: Automated testing and deployment with GitHub Actions
 
-> **Project Roadmap**: See [PROJECT_ROADMAP.md](PROJECT_ROADMAP.md) for the current project status, completed work, and the plan for future development with a focus on deployment.
+> **Project Roadmap**: See [PROJECT_ROADMAP.md](docs/PROJECT_ROADMAP.md) for the current project status, completed work, and the plan for future development with a focus on deployment.
 
 ## Directory Structure
 
@@ -26,19 +26,21 @@ This project is a comprehensive personal website solution that includes a dynami
 ├── Cargo.toml           # Rust project configuration
 ├── Cargo.lock           # Rust dependency lock file
 ├── blog_api_server.rs   # Blog API server entry point
-├── blog_tester.rs       # Blog testing utility
 ├── blog.db              # SQLite database for blog content
-├── DEPLOYMENT.md        # Deployment documentation
-├── deploy.sh            # Deployment script for blog API
-├── deploy-local.sh      # Local deployment script
-├── Dockerfile           # Docker configuration for blog API
-├── Dockerfile.local     # Docker configuration for local development
-├── docker-compose.yml   # Docker Compose configuration for production
-├── docker-compose.local.yml # Docker Compose configuration for local development
-├── PROJECT_ROADMAP.md   # Project roadmap and status
 ├── README-dev.md        # Development guidelines
 ├── README.md            # This file
-├── test.sh              # Test runner script
+├── docker/              # Docker configuration files
+│   ├── Dockerfile           # Docker configuration for blog API
+│   ├── Dockerfile.local     # Docker configuration for local development
+│   ├── docker-compose.yml   # Docker Compose configuration for production
+│   └── docker-compose.local.yml # Docker Compose configuration for local development
+├── docs/                # Documentation files
+│   ├── DEPLOYMENT.md        # Deployment documentation
+│   └── PROJECT_ROADMAP.md   # Project roadmap and status
+├── scripts/             # Scripts for deployment and testing
+│   ├── deploy.sh            # Deployment script for blog API
+│   ├── deploy-local.sh      # Local deployment script
+│   └── test.sh              # Test runner script
 ├── data/                # Data files
 │   └── cv_data.json     # CV data in JSON format
 ├── src/                 # Rust source code
@@ -185,17 +187,17 @@ For a complete local development environment with hot reloading:
 
 ```bash
 # Make the script executable
-chmod +x deploy-local.sh
+chmod +x scripts/deploy-local.sh
 
 # Start the local development environment
-./deploy-local.sh start
+./scripts/deploy-local.sh start
 ```
 
 This will start a development server on port 3002 with the CV website and blog API.
 
 ## Deployment
 
-> **Detailed Deployment Guide**: For comprehensive deployment instructions, including local development setup, CI/CD pipeline configuration, Docker configuration, and troubleshooting, see [DEPLOYMENT.md](DEPLOYMENT.md).
+> **Detailed Deployment Guide**: For comprehensive deployment instructions, including local development setup, CI/CD pipeline configuration, Docker configuration, and troubleshooting, see [DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 The project supports multiple deployment options for both the CV website and the blog API server.
 
@@ -209,7 +211,7 @@ The CV website is a static site that can be deployed to any web hosting service:
    cargo run --release
 
    # Deploy to GitHub Pages using the provided script
-   ./deploy.sh
+   ./scripts/deploy.sh
    ```
 
 2. **Traditional Web Hosting**:
@@ -232,7 +234,7 @@ The blog API server can be deployed using Docker for easy setup and management:
 1. **Docker Deployment** (Recommended):
    ```bash
    # Deploy using Docker Compose
-   docker-compose up -d
+   docker-compose -f docker/docker-compose.yml up -d
    ```
 
 2. **Manual Deployment**:
@@ -250,10 +252,10 @@ For local development and testing:
 
 ```bash
 # Start the local development environment
-./deploy-local.sh start
+./scripts/deploy-local.sh start
 
 # Stop the local development environment
-./deploy-local.sh stop
+./scripts/deploy-local.sh stop
 ```
 
 This will start a development server on port 3002 with hot reloading, making it easy to test changes before deployment.
@@ -268,7 +270,7 @@ The project includes GitHub Actions workflows for automated testing and deployme
 - **Deploy CV Workflow**: Deploys the CV website to GitHub Pages on pushes to the main branch
 - **Deploy Blog API Workflow**: Deploys the blog API server to a production server on pushes to the main branch
 
-For detailed instructions on setting up and customizing the CI/CD pipeline, see [DEPLOYMENT.md](DEPLOYMENT.md#cicd-pipeline).
+For detailed instructions on setting up and customizing the CI/CD pipeline, see [DEPLOYMENT.md](docs/DEPLOYMENT.md#cicd-pipeline).
 
 ## Customization
 
@@ -384,7 +386,7 @@ The project includes comprehensive tests for all functionality. Run them with ou
 
 ```bash
 # Run all tests
-./test.sh
+./scripts/test.sh
 ```
 
 The test suite includes:
@@ -432,14 +434,14 @@ A robust blog API server built with Rust using Axum framework and SQLite databas
 
 ## Blog API Server Deployment
 
-> **Detailed Deployment Guide**: For comprehensive deployment instructions for the blog API server, including Docker configuration, health checks, and zero-downtime deployment, see [DEPLOYMENT.md](DEPLOYMENT.md).
+> **Detailed Deployment Guide**: For comprehensive deployment instructions for the blog API server, including Docker configuration, health checks, and zero-downtime deployment, see [DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 ### Quick Start
 
 The easiest way to deploy the blog API server is with Docker:
 
 ```bash
-./deploy.sh
+./scripts/deploy.sh
 ```
 
 This script will:
@@ -506,7 +508,7 @@ If you encounter any issues:
 1. Use the debug tool at `http://localhost:3002/static/blog-debug.html` (for local development)
 2. Check the logs with `docker-compose logs blog-api`
 3. Verify you're using the correct port (3002) for local development
-4. Refer to the troubleshooting section in [DEPLOYMENT.md](DEPLOYMENT.md)
+4. Refer to the troubleshooting section in [DEPLOYMENT.md](docs/DEPLOYMENT.md)
 
 ## Technologies
 

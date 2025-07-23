@@ -9,7 +9,6 @@ use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 use tokio::runtime::Runtime;
 
-use crate::config;
 use crate::cv_data::{GitHubSource, Project};
 
 // Shared Tokio runtime for all synchronous API calls

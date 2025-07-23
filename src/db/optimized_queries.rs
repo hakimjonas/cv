@@ -11,6 +11,9 @@ use tracing::{debug, instrument};
 
 use super::repository::{BlogPost, Tag};
 
+/// Type alias for the map used to process blog posts with tags and metadata
+type PostsMap = BTreeMap<i64, (PostData, Vector<TagData>, HashMap<String, String>)>;
+
 /// Fetches all blog posts with their tags and metadata in a single query
 ///
 /// This function uses a single SQL query with JOINs to fetch all posts, tags, and metadata

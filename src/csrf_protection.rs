@@ -5,9 +5,8 @@
 use axum::extract::State;
 use axum::http::{Request, StatusCode};
 use axum::middleware::Next;
-use axum::response::{IntoResponse, Response};
-use axum_csrf::{CsrfConfig, CsrfError, CsrfLayer, CsrfToken, SameSite};
-use std::time::Duration;
+use axum::response::Response;
+use axum_csrf::{CsrfConfig, CsrfLayer, CsrfToken, SameSite};
 use tracing::{debug, warn};
 
 /// CSRF configuration

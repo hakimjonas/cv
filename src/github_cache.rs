@@ -7,8 +7,8 @@ use im::Vector;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
-use std::time::{Duration, SystemTime};
-use tracing::{debug, info, warn};
+use std::time::SystemTime;
+use tracing::debug;
 
 use crate::cv_data::Project;
 use crate::unified_config::AppConfig;

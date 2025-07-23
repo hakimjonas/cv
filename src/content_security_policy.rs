@@ -31,28 +31,27 @@ impl Default for CspConfig {
 /// This function creates a strict CSP header value that prevents XSS attacks
 /// by restricting what resources can be loaded by the browser.
 pub fn create_csp_header_value(config: &CspConfig) -> HeaderValue {
-    // Use owned strings instead of references
-    let mut directives = Vec::new();
-
-    // Add all directives as owned strings
-    directives.push(String::from("default-src 'self'"));
-    directives.push(String::from("script-src 'self' 'unsafe-inline'"));
-    directives.push(String::from("style-src 'self' 'unsafe-inline'"));
-    directives.push(String::from("img-src 'self' data:"));
-    directives.push(String::from("font-src 'self'"));
-    directives.push(String::from("connect-src 'self'"));
-    directives.push(String::from("object-src 'none'"));
-    directives.push(String::from("frame-src 'self'"));
-    directives.push(String::from("frame-ancestors 'self'"));
-    directives.push(String::from("form-action 'self'"));
-    directives.push(String::from("base-uri 'self'"));
-    directives.push(String::from("upgrade-insecure-requests"));
-    directives.push(String::from("block-all-mixed-content"));
+    // Use vec! macro for better performance and readability
+    let mut directives = vec![
+        String::from("default-src 'self'"),
+        String::from("script-src 'self' 'unsafe-inline'"),
+        String::from("style-src 'self' 'unsafe-inline'"),
+        String::from("img-src 'self' data:"),
+        String::from("font-src 'self'"),
+        String::from("connect-src 'self'"),
+        String::from("object-src 'none'"),
+        String::from("frame-src 'self'"),
+        String::from("frame-ancestors 'self'"),
+        String::from("form-action 'self'"),
+        String::from("base-uri 'self'"),
+        String::from("upgrade-insecure-requests"),
+        String::from("block-all-mixed-content"),
+    ];
 
     // Add report URI if configured
     if let Some(report_uri) = &config.report_uri {
         // Store the formatted string in a variable to avoid the temporary value dropped while borrowed error
-        let report_directive = format!("report-uri {}", report_uri);
+        let report_directive = format!("report-uri {report_uri}");
         directives.push(report_directive);
     }
 

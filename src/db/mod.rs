@@ -876,15 +876,14 @@ impl Database {
 
             // Calculate wait time and record connection acquisition
             let wait_time = start_time.elapsed();
-            let usage_tracker = metrics.connection_acquired(wait_time);
+            let _usage_tracker = metrics.connection_acquired(wait_time);
 
             // Execute the function with the connection
-            let result = f(&conn);
 
             // The usage_tracker will be dropped when this function returns,
             // which will record the connection usage time
 
-            result
+            f(&conn)
         })
         .await?
     }
@@ -914,15 +913,14 @@ impl Database {
 
             // Calculate wait time and record connection acquisition
             let wait_time = start_time.elapsed();
-            let usage_tracker = metrics.connection_acquired(wait_time);
+            let _usage_tracker = metrics.connection_acquired(wait_time);
 
             // Execute the function with the mutable connection
-            let result = f(&mut conn);
 
             // The usage_tracker will be dropped when this function returns,
             // which will record the connection usage time
 
-            result
+            f(&mut conn)
         })
         .await?
     }

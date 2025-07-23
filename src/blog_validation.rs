@@ -7,7 +7,7 @@ use ammonia::{Builder, Url};
 use regex::Regex;
 use std::collections::HashSet;
 use thiserror::Error;
-use tracing::{debug, warn};
+use tracing::debug;
 /// Blog validation errors
 #[derive(Debug, Error)]
 pub enum BlogValidationError {

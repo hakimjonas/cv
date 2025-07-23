@@ -7,8 +7,8 @@ use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
-use std::path::{Path, PathBuf};
-use tracing::{debug, info, warn};
+use std::path::Path;
+use tracing::{debug, info};
 
 /// Represents a bundling configuration
 #[derive(Debug, Deserialize, Serialize)]
@@ -48,14 +48,10 @@ pub struct OutputConfig {
 /// A Result containing the parsed configuration
 pub fn load_config(config_path: &str) -> Result<BundleConfig> {
     let config_content = fs::read_to_string(config_path)
-        .with_context(|| format!("Failed to read bundling configuration from {}", config_path))?;
+        .with_context(|| format!("Failed to read bundling configuration from {config_path}"))?;
 
-    let config: BundleConfig = toml::from_str(&config_content).with_context(|| {
-        format!(
-            "Failed to parse bundling configuration from {}",
-            config_path
-        )
-    })?;
+    let config: BundleConfig = toml::from_str(&config_content)
+        .with_context(|| format!("Failed to parse bundling configuration from {config_path}"))?;
 
     Ok(config)
 }
@@ -136,10 +132,7 @@ pub fn write_default_config(config_path: &str) -> Result<()> {
         .context("Failed to serialize default bundling configuration")?;
 
     fs::write(config_path, config_content).with_context(|| {
-        format!(
-            "Failed to write default bundling configuration to {}",
-            config_path
-        )
+        format!("Failed to write default bundling configuration to {config_path}")
     })?;
 
     info!("Created default bundling configuration at {}", config_path);
@@ -162,7 +155,7 @@ pub fn bundle_css(config: &BundleConfig, static_dir: &str) -> Result<()> {
 
     for (bundle_name, files) in &config.bundles.css {
         info!("Bundling CSS: {}", bundle_name);
-        let output_path = Path::new(output_dir).join(format!("{}.bundle.css", bundle_name));
+        let output_path = Path::new(output_dir).join(format!("{bundle_name}.bundle.css"));
 
         // Read and concatenate files
         let mut bundle_content = String::new();
@@ -174,7 +167,7 @@ pub fn bundle_css(config: &BundleConfig, static_dir: &str) -> Result<()> {
                 .with_context(|| format!("Failed to read CSS file: {}", file_path.display()))?;
 
             // Add file path comment for debugging
-            bundle_content.push_str(&format!("/* Source: {} */\n", file));
+            bundle_content.push_str(&format!("/* Source: {file} */\n"));
             bundle_content.push_str(&file_content);
             bundle_content.push('\n');
         }
@@ -224,7 +217,7 @@ pub fn bundle_js(config: &BundleConfig, static_dir: &str) -> Result<()> {
 
     for (bundle_name, files) in &config.bundles.js {
         info!("Bundling JavaScript: {}", bundle_name);
-        let output_path = Path::new(output_dir).join(format!("{}.bundle.js", bundle_name));
+        let output_path = Path::new(output_dir).join(format!("{bundle_name}.bundle.js"));
 
         // Read and concatenate files
         let mut bundle_content = String::new();
@@ -237,7 +230,7 @@ pub fn bundle_js(config: &BundleConfig, static_dir: &str) -> Result<()> {
             })?;
 
             // Add file path comment for debugging
-            bundle_content.push_str(&format!("/* Source: {} */\n", file));
+            bundle_content.push_str(&format!("/* Source: {file} */\n"));
             bundle_content.push_str(&file_content);
             bundle_content.push('\n');
         }

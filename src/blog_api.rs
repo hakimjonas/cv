@@ -2,8 +2,6 @@ use crate::blog_data::{BlogPost, Tag};
 use crate::blog_error::BlogError;
 use crate::blog_validation::{BlogValidationError, validate_and_sanitize_blog_post};
 use crate::check_db_permissions::secure_db_permissions;
-use crate::content_security_policy::create_security_headers_layer;
-use crate::csrf_protection::{CsrfProtectionConfig, create_csrf_layer, csrf_middleware};
 use crate::db::{BlogRepository, Database};
 // Adding back rate limiting
 use crate::rate_limiter::{RateLimiterConfig, create_rate_limiter_layer};
@@ -12,18 +10,17 @@ use crate::rate_limiter::{RateLimiterConfig, create_rate_limiter_layer};
 type ApiResult<T> = std::result::Result<T, ApiError>;
 use axum::{
     Router,
-    extract::{ConnectInfo, Path, State},
+    extract::{Path, State},
     http::{Method, StatusCode},
     response::{IntoResponse, Json, Response},
     routing::{delete, get, post, put},
 };
 use im::Vector;
-use std::{net::SocketAddr, path::PathBuf, sync::Arc};
+use std::{path::PathBuf, sync::Arc};
 use thiserror::Error;
 use tower_http::{
     cors::{Any, CorsLayer},
     services::ServeDir,
-    set_header::SetResponseHeaderLayer,
     timeout::TimeoutLayer,
 };
 use tracing::{debug, error, info, instrument, warn};
@@ -200,8 +197,7 @@ async fn create_post(
         Err(BlogValidationError::SanitizationError(message)) => {
             warn!("Sanitization failed: {}", message);
             return Err(ApiError::ValidationError(format!(
-                "Sanitization error: {}",
-                message
+                "Sanitization error: {message}"
             )));
         }
     };
@@ -298,8 +294,7 @@ async fn update_post(
         Err(BlogValidationError::SanitizationError(message)) => {
             warn!("Sanitization failed: {}", message);
             return Err(ApiError::ValidationError(format!(
-                "Sanitization error: {}",
-                message
+                "Sanitization error: {message}"
             )));
         }
     };
@@ -609,7 +604,7 @@ async fn root_handler() -> impl axum::response::IntoResponse {
 pub fn create_blog_api_router(db_path: PathBuf) -> std::result::Result<Router, BlogError> {
     // Set secure permissions for the database file
     secure_db_permissions(&db_path).map_err(|e| {
-        BlogError::Internal(format!("Failed to set secure database permissions: {}", e))
+        BlogError::Internal(format!("Failed to set secure database permissions: {e}"))
     })?;
 
     // Create the database and blog repository

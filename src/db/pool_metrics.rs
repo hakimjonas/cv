@@ -56,7 +56,7 @@ struct Metrics {
 
 /// Histogram for tracking distribution of durations
 #[derive(Debug, Clone)]
-struct Histogram {
+pub struct Histogram {
     /// Buckets for the histogram (in milliseconds)
     /// Each bucket counts occurrences in the range [lower_bound, upper_bound)
     buckets: Vec<(u64, u64, usize)>, // (lower_bound_ms, upper_bound_ms, count)
@@ -64,7 +64,7 @@ struct Histogram {
 
 /// Time series for tracking metrics over time
 #[derive(Debug, Clone)]
-struct TimeSeries {
+pub struct TimeSeries {
     /// Samples in the time series (timestamp, value)
     samples: Vec<(u64, usize)>, // (timestamp_seconds, value)
     /// Maximum number of samples to keep

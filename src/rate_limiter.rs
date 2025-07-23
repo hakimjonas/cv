@@ -13,7 +13,7 @@ use axum::middleware::Next;
 use axum::response::IntoResponse;
 use tokio::sync::Mutex;
 use tokio::time::Instant;
-use tracing::{debug, warn};
+use tracing::warn;
 
 /// Configuration for the rate limiter
 #[derive(Debug, Clone)]
@@ -97,11 +97,7 @@ impl RateLimiterState {
         } else {
             let oldest = timestamps[0];
             let elapsed = now.duration_since(oldest).as_secs();
-            if elapsed >= config.window_seconds {
-                0
-            } else {
-                config.window_seconds - elapsed
-            }
+            config.window_seconds.saturating_sub(elapsed)
         };
 
         (is_allowed, remaining, reset)

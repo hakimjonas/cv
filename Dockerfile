@@ -1,4 +1,5 @@
-FROM rust:1.87.0-slim-bullseye as builder
+FROM rust:1.88.0-slim-bullseye as builder
+# NOTE: Consider updating to the latest stable Rust version in the future
 
 # Create a new empty shell project
 WORKDIR /usr/src/app

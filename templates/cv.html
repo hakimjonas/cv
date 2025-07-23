@@ -34,7 +34,16 @@
               </p>
             </div>
             <div class="profile-image">
-              <img src="img/profile_picture.jpg" alt="{{ cv.personal_info.name }}" />
+              <img 
+                src="img/profile_picture.jpg" 
+                srcset="img/profile_picture-sm.jpg 300w, 
+                        img/profile_picture-md.jpg 500w, 
+                        img/profile_picture-lg.jpg 800w"
+                sizes="(max-width: 576px) 100vw, 
+                       (max-width: 768px) 300px, 
+                       300px"
+                alt="{{ cv.personal_info.name }}"
+                loading="lazy" />
             </div>
           </div>
 

@@ -1,4 +1,5 @@
 FROM rust:1.88.0-slim-bullseye
+# NOTE: Consider updating to the latest stable Rust version in the future
 
 WORKDIR /app
 
@@ -15,7 +16,11 @@ RUN apt-get update && apt-get install -y \
 COPY Cargo.toml Cargo.lock ./
 
 # Pre-build dependencies (creates better Docker layer caching)
-RUN mkdir src && echo "fn main() {}" > src/main.rs && \
+RUN mkdir -p src/bin && \
+    echo "fn main() {}" > src/main.rs && \
+    echo "fn main() { println!(\"Placeholder for blog_tester\"); }" > src/bin/blog_tester.rs && \
+    echo "fn main() { println!(\"Placeholder for blog_property_test\"); }" > src/blog_property_test.rs && \
+    echo "fn main() { println!(\"Placeholder for security_test\"); }" > src/bin/security_test.rs && \
     cargo build --release && \
     rm -rf src target/release/deps/cv*
 

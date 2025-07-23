@@ -1,4 +1,6 @@
 
+version: '3.8'
+
 services:
   blog-api:
     build:
@@ -13,7 +15,6 @@ services:
       - ./src:/app/src
       - ./static:/app/static
       - ./templates:/app/templates
-      - ./blog_tester.rs:/app/blog_tester.rs
       - ./Cargo.toml:/app/Cargo.toml
       - ./Cargo.lock:/app/Cargo.lock
     restart: unless-stopped
@@ -29,6 +30,21 @@ services:
       timeout: 10s
       retries: 5
       start_period: 120s  # Increased to allow time for Rust compilation
+    # Add resource limits to prevent container from using too much CPU/memory
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    # Add logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 networks:
   blog-network:
@@ -36,3 +52,5 @@ networks:
 
 volumes:
   blog-data:
+    # Add driver specification for better compatibility
+    driver: local

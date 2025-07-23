@@ -69,6 +69,23 @@
   --transition-fast: 0.2s ease;
   --transition-medium: 0.3s ease;
   --transition-slow: 0.5s ease;
+
+  /* Breakpoints */
+  --breakpoint-sm: 576px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 992px;
+  --breakpoint-xl: 1200px;
+  
+  /* Shadow variables */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  
+  /* RGB color values for rgba() usage */
+  --color-primary-rgb: 40, 105, 131; /* RGB value of #286983 (rose-pine-pine) */
+  --color-secondary-rgb: 86, 148, 159; /* RGB value of #56949f (rose-pine-foam) */
+  --color-accent-rgb: 144, 122, 169; /* RGB value of #907aa9 (rose-pine-iris) */
+  --color-text-rgb: 87, 82, 121; /* RGB value of #575279 (rose-pine-text) */
 }
 
 /* Dark Theme */
@@ -147,4 +164,50 @@
   --color-footer-background: var(--rose-pine-overlay);
   --color-code-background: var(--rose-pine-overlay);
   --color-blockquote-border: var(--rose-pine-muted);
+}
+
+/* High Contrast Light Theme */
+.theme-light.high-contrast {
+  /* Enhanced contrast for light theme */
+  --rose-pine-text: #000000; /* Black text for maximum contrast */
+  --rose-pine-subtle: #444444; /* Darker secondary text */
+  --rose-pine-pine: #005a87; /* Darker primary color */
+  --rose-pine-foam: #006e7a; /* Darker secondary color */
+  --rose-pine-iris: #5f4b8b; /* Darker accent color */
+  
+  /* Increase contrast for interactive elements */
+  --color-primary: var(--rose-pine-pine);
+  --color-secondary: var(--rose-pine-foam);
+  --color-accent: var(--rose-pine-iris);
+  --color-text: var(--rose-pine-text);
+  --color-text-light: var(--rose-pine-subtle);
+  
+  /* Increase border contrast */
+  --color-border: #aaaaaa;
+  
+  /* Add focus outline color */
+  --color-focus-outline: #000000;
+}
+
+/* High Contrast Dark Theme */
+.theme-dark.high-contrast {
+  /* Enhanced contrast for dark theme */
+  --rose-pine-text: #ffffff; /* White text for maximum contrast */
+  --rose-pine-subtle: #cccccc; /* Lighter secondary text */
+  --rose-pine-pine: #4cc2f1; /* Brighter primary color */
+  --rose-pine-foam: #6fddec; /* Brighter secondary color */
+  --rose-pine-iris: #d8c5f7; /* Brighter accent color */
+  
+  /* Increase contrast for interactive elements */
+  --color-primary: var(--rose-pine-pine);
+  --color-secondary: var(--rose-pine-foam);
+  --color-accent: var(--rose-pine-iris);
+  --color-text: var(--rose-pine-text);
+  --color-text-light: var(--rose-pine-subtle);
+  
+  /* Increase border contrast */
+  --color-border: #777777;
+  
+  /* Add focus outline color */
+  --color-focus-outline: #ffffff;
 }

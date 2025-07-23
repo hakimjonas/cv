@@ -480,3 +480,44 @@
   clip: auto;
   white-space: normal;
 }
+
+/* Touch interaction utilities */
+@media (max-width: 768px) {
+  /* Increase touch target size for better mobile experience */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Add padding to common interactive elements for larger touch targets */
+  a, button, .btn, input[type="button"], input[type="submit"], input[type="reset"], select, .nav-link {
+    padding: 0.75rem;
+    margin: 0.25rem;
+  }
+
+  /* Ensure adequate spacing between touch targets */
+  .touch-spacing > * {
+    margin-bottom: 0.5rem;
+    margin-right: 0.5rem;
+  }
+
+  /* Make touch feedback visible */
+  .touch-feedback:active {
+    transform: scale(0.97);
+    transition: transform 0.1s ease;
+  }
+}
+
+/* Touch-friendly hover states */
+@media (hover: none) {
+  /* Apply hover styles to active state for touch devices */
+  a:active, button:active, .btn:active, .nav-link:active {
+    background-color: rgba(var(--color-primary-rgb), 0.1);
+    transition: background-color 0.3s ease;
+  }
+  
+  /* Prevent sticky hover states on touch devices */
+  a:hover, button:hover, .btn:hover, .nav-link:hover {
+    background-color: transparent;
+  }
+}

@@ -1,6 +1,7 @@
 #[allow(dead_code)]
 mod asset_processor;
 mod bundler;
+
 mod config;
 mod credentials;
 mod cv_data;
@@ -268,7 +269,7 @@ async fn main() -> Result<()> {
             Ok(_) => {
                 info!(
                     "CV data migrated successfully to database: {}",
-                    config.db_path.display()
+                    config.db_path().display()
                 );
                 Ok(())
             }

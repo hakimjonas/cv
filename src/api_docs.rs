@@ -1,10 +1,10 @@
+use axum::Router;
 /// OpenAPI documentation for the blog API
 ///
 /// This module provides OpenAPI documentation for the blog API using utoipa.
 /// It defines the OpenAPI document and provides a Swagger UI for exploring the API.
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
-use axum::Router;
 
 use crate::api_models::{ApiBlogPost, ApiTag};
 
@@ -47,8 +47,7 @@ pub struct ApiDoc;
 /// The router with the Swagger UI added
 pub fn add_swagger_ui(router: Router) -> Router {
     // Create the Swagger UI
-    let swagger_ui = SwaggerUi::new("/api-docs")
-        .url("/api-docs/openapi.json", ApiDoc::openapi());
+    let swagger_ui = SwaggerUi::new("/api-docs").url("/api-docs/openapi.json", ApiDoc::openapi());
 
     // Add the Swagger UI to the router
     router.merge(swagger_ui)

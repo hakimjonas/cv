@@ -71,7 +71,7 @@ async fn main() -> Result<()> {
 
     // Create the API router
     let app = create_blog_api_router(db_path)?;
-    
+
     // Add Swagger UI for API documentation
     let app = add_swagger_ui(app);
     info!("API documentation available at /api-docs");

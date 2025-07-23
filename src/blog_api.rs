@@ -704,7 +704,7 @@ pub fn create_blog_api_router(db_path: PathBuf) -> std::result::Result<Router, B
             )
         }
     }
-    
+
     // Handler to serve documentation.html from docs
     async fn documentation_page_handler() -> impl axum::response::IntoResponse {
         match tokio::fs::read_to_string("docs/documentation.html").await {
@@ -714,36 +714,32 @@ pub fn create_blog_api_router(db_path: PathBuf) -> std::result::Result<Router, B
             )
         }
     }
-    
+
     // Handler to serve USER_DOCUMENTATION.md
     async fn user_documentation_handler() -> impl axum::response::IntoResponse {
         match tokio::fs::read_to_string("USER_DOCUMENTATION.md").await {
-            Ok(content) => {
-                axum::response::Response::builder()
-                    .header("Content-Type", "text/markdown")
-                    .body(axum::body::Body::from(content))
-                    .unwrap()
-            },
+            Ok(content) => axum::response::Response::builder()
+                .header("Content-Type", "text/markdown")
+                .body(axum::body::Body::from(content))
+                .unwrap(),
             Err(_) => axum::response::Response::builder()
                 .status(404)
                 .body(axum::body::Body::from("User documentation not found"))
-                .unwrap()
+                .unwrap(),
         }
     }
-    
+
     // Handler to serve API_GUIDE.md
     async fn api_guide_handler() -> impl axum::response::IntoResponse {
         match tokio::fs::read_to_string("API_GUIDE.md").await {
-            Ok(content) => {
-                axum::response::Response::builder()
-                    .header("Content-Type", "text/markdown")
-                    .body(axum::body::Body::from(content))
-                    .unwrap()
-            },
+            Ok(content) => axum::response::Response::builder()
+                .header("Content-Type", "text/markdown")
+                .body(axum::body::Body::from(content))
+                .unwrap(),
             Err(_) => axum::response::Response::builder()
                 .status(404)
                 .body(axum::body::Body::from("API guide not found"))
-                .unwrap()
+                .unwrap(),
         }
     }
 

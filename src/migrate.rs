@@ -18,6 +18,7 @@ use crate::db::Database;
 /// # Returns
 ///
 /// A Result indicating success or failure
+#[allow(dead_code)]
 pub fn migrate_json_to_sqlite<P: AsRef<Path>, Q: AsRef<Path>>(
     json_path: P,
     db_path: Q,
@@ -108,6 +109,7 @@ pub async fn migrate_json_to_sqlite_async<P: AsRef<Path>, Q: AsRef<Path>>(
 /// # Returns
 ///
 /// A Result containing the CV data or an error
+#[allow(dead_code)]
 pub fn load_cv_from_sqlite<P: AsRef<Path>>(db_path: P) -> Result<Cv> {
     // Open database
     info!(

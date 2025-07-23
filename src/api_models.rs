@@ -16,11 +16,11 @@ pub struct ApiTag {
     /// Unique identifier for the tag (null for new tags)
     #[schema(example = 1)]
     pub id: Option<i64>,
-    
+
     /// Display name of the tag
     #[schema(example = "Technology")]
     pub name: String,
-    
+
     /// URL-friendly version of the name
     #[schema(example = "technology")]
     pub slug: String,
@@ -33,46 +33,46 @@ pub struct ApiBlogPost {
     /// Unique identifier for the blog post (null for new posts)
     #[schema(example = 1)]
     pub id: Option<i64>,
-    
+
     /// Title of the blog post
     #[schema(example = "Getting Started with Rust")]
     pub title: String,
-    
+
     /// URL-friendly version of the title
     #[schema(example = "getting-started-with-rust")]
     pub slug: String,
-    
+
     /// Publication date in ISO format
     #[schema(example = "2025-07-23")]
     pub date: String,
-    
+
     /// Author of the blog post
     #[schema(example = "Jane Doe")]
     pub author: String,
-    
+
     /// Short summary of the blog post
     #[schema(example = "A beginner's guide to getting started with Rust programming language")]
     pub excerpt: String,
-    
+
     /// Full content of the blog post
     #[schema(example = "# Getting Started with Rust\n\nRust is a systems programming language...")]
     pub content: String,
-    
+
     /// Whether the post is published (true) or draft (false)
     #[schema(example = true)]
     pub published: bool,
-    
+
     /// Whether the post is featured (true) or not (false)
     #[schema(example = false)]
     pub featured: bool,
-    
+
     /// Optional URL or path to a featured image
     #[schema(example = "/images/rust-logo.png")]
     pub image: Option<String>,
-    
+
     /// List of tags associated with the blog post
     pub tags: Vec<ApiTag>,
-    
+
     /// Additional metadata as key-value pairs
     pub metadata: HashMap<String, String>,
 }
@@ -109,7 +109,11 @@ pub fn domain_to_api_post(post: &blog_data::BlogPost) -> ApiBlogPost {
         featured: post.featured,
         image: post.image.clone(),
         tags: post.tags.iter().map(domain_to_api_tag).collect(),
-        metadata: post.metadata.iter().map(|(k, v)| (k.clone(), v.clone())).collect(),
+        metadata: post
+            .metadata
+            .iter()
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect(),
     }
 }
 
@@ -127,7 +131,11 @@ pub fn api_to_domain_post(post: &ApiBlogPost) -> blog_data::BlogPost {
         featured: post.featured,
         image: post.image.clone(),
         tags: post.tags.iter().map(api_to_domain_tag).collect(),
-        metadata: post.metadata.iter().map(|(k, v)| (k.clone(), v.clone())).collect(),
+        metadata: post
+            .metadata
+            .iter()
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect(),
     }
 }
 

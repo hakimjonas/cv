@@ -12,11 +12,11 @@ pub struct Tag {
     /// Unique identifier for the tag (null for new tags)
     #[schema(example = 1)]
     pub id: Option<i64>,
-    
+
     /// Display name of the tag
     #[schema(example = "Technology")]
     pub name: String,
-    
+
     /// URL-friendly version of the name
     #[schema(example = "technology")]
     pub slug: String,

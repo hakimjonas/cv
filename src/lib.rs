@@ -1,6 +1,5 @@
 /// CV Application library
 // Core modules
-pub mod config;
 pub mod cv_data;
 pub mod cv_db;
 pub mod github;

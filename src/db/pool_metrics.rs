@@ -61,8 +61,10 @@ pub struct PoolMetrics {
 #[derive(Debug)]
 struct Metrics {
     /// Total number of connections created
+    #[allow(dead_code)]
     connections_created: AtomicUsize,
     /// Total number of connections closed
+    #[allow(dead_code)]
     connections_closed: AtomicUsize,
     /// Current number of active connections
     active_connections: AtomicUsize,
@@ -71,6 +73,7 @@ struct Metrics {
     /// Total number of connection acquisitions
     acquisitions: AtomicUsize,
     /// Total number of connection acquisition timeouts
+    #[allow(dead_code)]
     acquisition_timeouts: AtomicUsize,
     /// Total number of connection errors
     connection_errors: AtomicUsize,
@@ -91,6 +94,7 @@ struct Metrics {
     /// Time series of idle connections (samples every minute)
     idle_connections_timeseries: Mutex<TimeSeries>,
     /// Time when metrics collection started
+    #[allow(dead_code)]
     start_time: Instant,
 }
 
@@ -129,6 +133,7 @@ impl PoolMetrics {
     }
 
     /// Record a new connection being created
+    #[allow(dead_code)]
     pub fn connection_created(&self) {
         self.metrics
             .connections_created
@@ -137,6 +142,7 @@ impl PoolMetrics {
     }
 
     /// Record a connection being closed
+    #[allow(dead_code)]
     pub fn connection_closed(&self) {
         self.metrics
             .connections_closed
@@ -263,6 +269,7 @@ impl PoolMetrics {
     }
 
     /// Record a connection acquisition timeout
+    #[allow(dead_code)]
     pub fn acquisition_timeout(&self) {
         self.metrics
             .acquisition_timeouts
@@ -377,6 +384,7 @@ impl PoolMetrics {
     /// ## Returns
     ///
     /// A `MetricsSnapshot` containing all metrics at the time of the call
+    #[allow(dead_code)]
     pub fn get_snapshot(&self) -> MetricsSnapshot {
         let metrics = &self.metrics;
 
@@ -456,6 +464,7 @@ impl PoolMetrics {
     }
 
     /// Log a summary of the current metrics
+    #[allow(dead_code)]
     pub fn log_summary(&self) {
         let snapshot = self.get_snapshot();
 
@@ -678,6 +687,7 @@ impl Drop for ConnectionUsageTracker {
 
 /// Snapshot of pool metrics at a point in time
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct MetricsSnapshot {
     /// Name of the pool
     pub name: String,

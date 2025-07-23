@@ -837,16 +837,19 @@ impl Database {
     }
 
     /// Get the metrics object for the connection pool
+    #[allow(dead_code)]
     pub fn metrics(&self) -> Arc<pool_metrics::PoolMetrics> {
         Arc::clone(&self.metrics)
     }
 
     /// Log a summary of the connection pool metrics
+    #[allow(dead_code)]
     pub fn log_metrics_summary(&self) {
         self.metrics.log_summary();
     }
 
     /// Get a snapshot of the connection pool metrics
+    #[allow(dead_code)]
     pub fn get_metrics_snapshot(&self) -> pool_metrics::MetricsSnapshot {
         self.metrics.get_snapshot()
     }

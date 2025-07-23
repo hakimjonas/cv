@@ -11,6 +11,7 @@ use std::path::{Path, PathBuf};
 use tracing::{debug, info, warn};
 
 /// Configuration key for the GitHub API token
+#[allow(dead_code)]
 pub const GITHUB_TOKEN_KEY: &str = "github_token";
 
 /// Configuration key for the GitHub cache file
@@ -20,18 +21,21 @@ pub const GITHUB_CACHE_KEY: &str = "github_cache";
 pub const DEFAULT_GITHUB_CACHE_PATH: &str = "data/github_cache.json";
 
 /// Configuration key for the GitHub cache TTL (Time To Live) in seconds
+#[allow(dead_code)]
 pub const GITHUB_CACHE_TTL_KEY: &str = "github_cache_ttl";
 
 /// Default TTL for GitHub cache in seconds (1 hour)
 pub const DEFAULT_GITHUB_CACHE_TTL: u64 = 3600;
 
 /// Configuration key for the GitHub cache refresh strategy
+#[allow(dead_code)]
 pub const GITHUB_CACHE_REFRESH_STRATEGY_KEY: &str = "github_cache_refresh_strategy";
 
 /// Default refresh strategy for GitHub cache
 pub const DEFAULT_GITHUB_CACHE_REFRESH_STRATEGY: &str = "lazy";
 
 /// Configuration key for the GitHub API rate limit handling strategy
+#[allow(dead_code)]
 pub const GITHUB_RATE_LIMIT_STRATEGY_KEY: &str = "github_rate_limit_strategy";
 
 /// Default strategy for handling GitHub API rate limits
@@ -478,6 +482,7 @@ impl AppConfig {
     }
 
     /// Checks if a field should be publicly visible
+    #[allow(dead_code)]
     pub fn is_public(&self, field: &str) -> bool {
         let result = self.public_data().contains(&field.to_string());
         debug!("Checking if field '{}' is public: {}", field, result);
@@ -485,6 +490,7 @@ impl AppConfig {
     }
 
     /// Gets the list of fields that should be stored in the database
+    #[allow(dead_code)]
     pub fn db_storage(&self) -> Vector<String> {
         let db_storage = if let Some(value) = self.options.get(DB_STORAGE_KEY) {
             debug!("Using db_storage from options: {}", value);
@@ -504,6 +510,7 @@ impl AppConfig {
     }
 
     /// Checks if a field should be stored in the database
+    #[allow(dead_code)]
     pub fn store_in_db(&self, field: &str) -> bool {
         let result = self.db_storage().contains(&field.to_string());
         debug!(
@@ -526,6 +533,7 @@ impl AppConfig {
 }
 
 /// Extension trait to enable method chaining with pipe
+#[allow(dead_code)]
 pub trait Pipe: Sized {
     fn pipe<F, R>(self, f: F) -> R
     where

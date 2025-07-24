@@ -10,7 +10,7 @@ fn test_fetch_github_projects_sync() {
     // If we get a 403 Forbidden error, it's likely due to GitHub API rate limiting
     // In this case, we'll skip the test
     if let Err(e) = &result {
-        let err_string = format!("{:?}", e);
+        let err_string = format!("{e:?}");
         if err_string.contains("403 Forbidden") {
             println!("Skipping test due to GitHub API rate limiting (403 Forbidden)");
             return;
@@ -43,8 +43,7 @@ fn test_fetch_github_projects_sync() {
         if let Some(repo_url) = &project.repository {
             assert!(
                 repo_url.contains("github.com"),
-                "Repository URL does not contain github.com: {}",
-                repo_url
+                "Repository URL does not contain github.com: {repo_url}"
             );
         }
     }
@@ -58,7 +57,7 @@ fn test_fetch_github_org_projects_sync() {
     // If we get a 403 Forbidden error, it's likely due to GitHub API rate limiting
     // In this case, we'll skip the test
     if let Err(e) = &result {
-        let err_string = format!("{:?}", e);
+        let err_string = format!("{e:?}");
         if err_string.contains("403 Forbidden") {
             println!("Skipping test due to GitHub API rate limiting (403 Forbidden)");
             return;
@@ -91,8 +90,7 @@ fn test_fetch_github_org_projects_sync() {
         if let Some(repo_url) = &project.repository {
             assert!(
                 repo_url.contains("github.com"),
-                "Repository URL does not contain github.com: {}",
-                repo_url
+                "Repository URL does not contain github.com: {repo_url}"
             );
         }
 
@@ -158,8 +156,7 @@ fn test_fetch_all_github_projects_sync() {
         if let Some(repo_url) = &project.repository {
             assert!(
                 repo_url.contains("github.com"),
-                "Repository URL does not contain github.com: {}",
-                repo_url
+                "Repository URL does not contain github.com: {repo_url}"
             );
         }
     }
@@ -203,7 +200,7 @@ fn test_fetch_github_projects_sync_invalid_user() {
 
     // Check if the error message contains the expected text
     let err = result.err().unwrap();
-    let err_string = format!("{:?}", err);
+    let err_string = format!("{err:?}");
 
     // Accept both 404 (not found) and 403 (forbidden) as valid errors
     // 404 is the expected error for a non-existent user
@@ -217,8 +214,7 @@ fn test_fetch_github_projects_sync_invalid_user() {
 
     assert!(
         err_string.contains("404") || err_string.contains("not found"),
-        "Error message does not indicate a 404 or 'not found' error: {}",
-        err_string
+        "Error message does not indicate a 404 or 'not found' error: {err_string}"
     );
 }
 
@@ -252,7 +248,7 @@ fn test_fetch_projects_from_sources_sync() {
             return;
         }
     } else if let Err(e) = &result {
-        let err_string = format!("{:?}", e);
+        let err_string = format!("{e:?}");
         if err_string.contains("403 Forbidden") {
             println!("Skipping test due to GitHub API rate limiting (403 Forbidden)");
             return;
@@ -285,8 +281,7 @@ fn test_fetch_projects_from_sources_sync() {
         if let Some(repo_url) = &project.repository {
             assert!(
                 repo_url.contains("github.com"),
-                "Repository URL does not contain github.com: {}",
-                repo_url
+                "Repository URL does not contain github.com: {repo_url}"
             );
         }
     }

@@ -109,6 +109,7 @@ fn blog_post_strategy() -> BoxedStrategy<BlogPost> {
                     metadata,
                     published,
                     featured,
+                    user_id: None,
                 }
             },
         )

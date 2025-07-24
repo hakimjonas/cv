@@ -40,26 +40,27 @@ toml = "0.9.2"
 ammonia = "4.1.1"
 axum_csrf = { version = "0.11.0", features = ["layer"] }
 utoipa = { version = "5.4.0", features = ["axum_extras"] }
-utoipa-axum = "0.2.0"
 utoipa-swagger-ui = { version = "9.0.2", features = ["axum"] }
 argon2 = "0.5.3"
 jsonwebtoken = "9.2.0"
-async-trait = "0.1.77"
 rss = "2.0.7"
 atom_syndication = "0.12.2"
 uuid = { version = "1.7.0", features = ["v4"] }
-pulldown-cmark = "0.10.0"
-
-
-
+pulldown-cmark = "0.13.0"
 
 [[bin]]
 name = "blog_tester"
+path = "src/bin/blog_tester.rs"
 
-[[bin]]
-name = "blog_property_test"
-path = "src/blog_property_test.rs"
 
 [[bin]]
 name = "security_test"
 path = "src/bin/security_test.rs"
+
+[[bin]]
+name = "test_blog_core"
+path = "src/bin/test_blog_core.rs"
+
+[[bin]]
+name = "blog_api_server"
+path = "src/bin/blog_api_server.rs"

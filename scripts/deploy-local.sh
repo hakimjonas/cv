@@ -62,10 +62,14 @@ show_usage() {
     echo "  help     Show this help message"
 }
 
+# Get the absolute path to the project root directory
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+DOCKER_COMPOSE_FILE="${PROJECT_ROOT}/docker/docker-compose.local.yml"
+
 # Function to start the local development environment
 start_local_env() {
     print_header "Building and starting local development environment"
-    $DOCKER_COMPOSE -f ../docker/docker-compose.local.yml up -d --build --remove-orphans
+    $DOCKER_COMPOSE -f "${DOCKER_COMPOSE_FILE}" up -d --build --remove-orphans
 
     print_info "Waiting for services to start..."
 
@@ -74,14 +78,14 @@ start_local_env() {
     local max_attempts=10
     local wait_time=3
     for i in $(seq 1 $max_attempts); do
-        if $DOCKER_COMPOSE -f ../docker/docker-compose.local.yml ps | grep -q "blog-api.*Up"; then
+        if $DOCKER_COMPOSE -f "${DOCKER_COMPOSE_FILE}" ps | grep -q "blog-api.*Up"; then
             print_info "Container is up and running."
             break
         fi
         if [ $i -eq $max_attempts ]; then
             print_error "Failed to start container after $max_attempts attempts."
             print_info "Checking logs for potential issues:"
-            $DOCKER_COMPOSE -f ../docker/docker-compose.local.yml logs
+            $DOCKER_COMPOSE -f "${DOCKER_COMPOSE_FILE}" logs
             exit 1
         fi
         print_info "Waiting for container to start... (attempt $i/$max_attempts)"
@@ -93,7 +97,7 @@ start_local_env() {
     local health_max_attempts=30  # Reduced from 40 to 30
     local health_wait_time=10
     for i in $(seq 1 $health_max_attempts); do
-        HEALTH_STATUS=$(docker inspect --format='{{.State.Health.Status}}' $($DOCKER_COMPOSE -f ../docker/docker-compose.local.yml ps -q blog-api) 2>/dev/null)
+        HEALTH_STATUS=$(docker inspect --format='{{.State.Health.Status}}' $($DOCKER_COMPOSE -f "${DOCKER_COMPOSE_FILE}" ps -q blog-api) 2>/dev/null)
         if [ "$HEALTH_STATUS" = "healthy" ]; then
             print_header "Application is ready!"
             print_info "Local development environment is running!"
@@ -140,20 +144,20 @@ start_local_env() {
 # Function to stop the local development environment
 stop_local_env() {
     print_header "Stopping local development environment"
-    $DOCKER_COMPOSE -f ../docker/docker-compose.local.yml down --remove-orphans
+    $DOCKER_COMPOSE -f "${DOCKER_COMPOSE_FILE}" down --remove-orphans
     print_info "Local development environment stopped."
 }
 
 # Function to show logs
 show_logs() {
     print_header "Showing logs from local development environment"
-    $DOCKER_COMPOSE -f ../docker/docker-compose.local.yml logs -f
+    $DOCKER_COMPOSE -f "${DOCKER_COMPOSE_FILE}" logs -f
 }
 
 # Function to show status
 show_status() {
     print_header "Status of local development environment"
-    $DOCKER_COMPOSE -f ../docker/docker-compose.local.yml ps
+    $DOCKER_COMPOSE -f "${DOCKER_COMPOSE_FILE}" ps
 }
 
 # Function to prune unused Docker resources
@@ -165,7 +169,7 @@ prune_resources() {
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         print_info "Stopping any running containers first..."
-        $DOCKER_COMPOSE -f ../docker/docker-compose.local.yml down --remove-orphans
+        $DOCKER_COMPOSE -f "${DOCKER_COMPOSE_FILE}" down --remove-orphans
 
         print_info "Pruning containers..."
         docker container prune -f
@@ -193,10 +197,10 @@ rebuild_app() {
     print_info "Any data in volumes will be preserved."
 
     print_info "Stopping containers..."
-    $DOCKER_COMPOSE -f ../docker/docker-compose.local.yml down
+    $DOCKER_COMPOSE -f "${DOCKER_COMPOSE_FILE}" down
 
     print_info "Rebuilding images..."
-    $DOCKER_COMPOSE -f ../docker/docker-compose.local.yml build --no-cache
+    $DOCKER_COMPOSE -f "${DOCKER_COMPOSE_FILE}" build --no-cache
 
     print_info "Starting containers..."
     start_local_env

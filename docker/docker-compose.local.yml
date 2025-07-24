@@ -4,8 +4,8 @@ version: '3.8'
 services:
   blog-api:
     build:
-      context: .
-      dockerfile: Dockerfile.local
+      context: ..
+      dockerfile: docker/Dockerfile.local
       args:
         - BUILD_VERSION=${BUILD_VERSION:-0.1.0-dev}
     image: blog-api-local:${BUILD_VERSION:-0.1.0-dev}

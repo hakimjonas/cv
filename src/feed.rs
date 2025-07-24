@@ -66,7 +66,7 @@ pub fn generate_rss_feed(
         .iter()
         .map(|post| {
             let post_url = format!("{}/blog/{}", config.base_url, post.slug);
-            
+
             let mut builder = RssItemBuilder::default();
             let mut item_builder = builder
                 .title(post.title.clone())
@@ -132,39 +132,46 @@ pub fn generate_atom_feed(
             let post_url = format!("{}/blog/{}", config.base_url, post.slug);
             let post_date = parse_date(&post.date)?;
 
-            let mut entry = AtomEntry::default();
-            entry.title = AtomText::plain(post.title.clone());
+            let mut entry = AtomEntry {
+                title: AtomText::plain(post.title.clone()),
+                ..Default::default()
+            };
             entry.id = post_url.clone();
-            
+
             // Add link
-            let mut link = AtomLink::default();
-            link.href = post_url;
-            link.rel = "alternate".to_string();
+            let link = AtomLink {
+                href: post_url,
+                rel: "alternate".to_string(),
+                ..Default::default()
+            };
             entry.links.push(link);
-            
+
             // Add author
-            let mut author = AtomPerson::default();
-            author.name = post.author.clone();
+            let author = AtomPerson {
+                name: post.author.clone(),
+                ..Default::default()
+            };
             entry.authors.push(author);
-            
+
             // Add content
-            let mut content = Content::default();
-            content.value = Some(post.excerpt.clone());
-            content.content_type = Some("text".to_string());
+            let content = Content {
+                value: Some(post.excerpt.clone()),
+                content_type: Some("text".to_string()),
+                ..Default::default()
+            };
             entry.content = Some(content);
-            
+
             // Add published and updated dates
             entry.published = Some(post_date);
             entry.updated = post_date;
-            
+
             // Add categories (tags)
             entry.categories = post
                 .tags
                 .iter()
-                .map(|tag| {
-                    let mut category = atom_syndication::Category::default();
-                    category.term = tag.name.clone();
-                    category
+                .map(|tag| atom_syndication::Category {
+                    term: tag.name.clone(),
+                    ..Default::default()
                 })
                 .collect();
 
@@ -173,25 +180,31 @@ pub fn generate_atom_feed(
         .collect::<Result<Vec<_>, anyhow::Error>>()?;
 
     // Build the Atom feed
-    let mut feed = AtomFeed::default();
-    feed.title = AtomText::plain(config.title.clone());
+    let mut feed = AtomFeed {
+        title: AtomText::plain(config.title.clone()),
+        ..Default::default()
+    };
     feed.id = config.link.clone();
-    
+
     // Add link
-    let mut link = AtomLink::default();
-    link.href = config.link.clone();
-    link.rel = "self".to_string();
+    let link = AtomLink {
+        href: config.link.clone(),
+        rel: "self".to_string(),
+        ..Default::default()
+    };
     feed.links.push(link);
-    
+
     // Add author
-    let mut author = AtomPerson::default();
-    author.name = config.author.clone();
-    author.email = Some(config.email.clone());
+    let author = AtomPerson {
+        name: config.author.clone(),
+        email: Some(config.email.clone()),
+        ..Default::default()
+    };
     feed.authors.push(author);
-    
+
     // Add updated date
     feed.updated = Utc::now().into();
-    
+
     // Add entries
     feed.entries = entries;
 
@@ -211,20 +224,23 @@ fn parse_date(date_str: &str) -> Result<DateTime<FixedOffset>, anyhow::Error> {
     if let Ok(date) = DateTime::parse_from_rfc3339(date_str) {
         return Ok(date);
     }
-    
+
     // Try parsing as ISO 8601
     if let Ok(date) = DateTime::from_str(date_str) {
         return Ok(date);
     }
-    
+
     // Try parsing as YYYY-MM-DD
-    if date_str.len() >= 10 && date_str.chars().nth(4) == Some('-') && date_str.chars().nth(7) == Some('-') {
+    if date_str.len() >= 10
+        && date_str.chars().nth(4) == Some('-')
+        && date_str.chars().nth(7) == Some('-')
+    {
         let date_with_time = format!("{}T00:00:00Z", &date_str[0..10]);
         if let Ok(date) = DateTime::parse_from_rfc3339(&date_with_time) {
             return Ok(date);
         }
     }
-    
+
     // If all parsing attempts fail, return an error
     Err(anyhow::anyhow!("Failed to parse date: {}", date_str))
 }

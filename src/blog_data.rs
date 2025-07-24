@@ -1,14 +1,14 @@
 use crate::blog_error::{BlogError, Result};
 use crate::markdown_editor::utils::markdown_to_html;
+use argon2::{
+    Argon2,
+    password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString, rand_core::OsRng},
+};
 use im::Vector;
 use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 use utoipa::ToSchema;
-use argon2::{
-    password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
-    Argon2,
-};
 
 /// Represents a user role in the system
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, ToSchema)]
@@ -80,9 +80,14 @@ impl User {
     }
 
     /// Creates a new user with the given username, email, and password
-    pub fn with_credentials(username: &str, display_name: &str, email: &str, password: &str) -> Result<Self> {
+    pub fn with_credentials(
+        username: &str,
+        display_name: &str,
+        email: &str,
+        password: &str,
+    ) -> Result<Self> {
         let password_hash = Self::hash_password(password)?;
-        
+
         Ok(Self {
             username: username.to_string(),
             display_name: display_name.to_string(),
@@ -96,18 +101,18 @@ impl User {
     pub fn hash_password(password: &str) -> Result<String> {
         let salt = SaltString::generate(&mut OsRng);
         let argon2 = Argon2::default();
-        
+
         argon2
             .hash_password(password.as_bytes(), &salt)
             .map(|hash| hash.to_string())
-            .map_err(|e| BlogError::Internal(format!("Password hashing error: {}", e)))
+            .map_err(|e| BlogError::Internal(format!("Password hashing error: {e}")))
     }
 
     /// Verifies a password against the stored hash
     pub fn verify_password(&self, password: &str) -> Result<bool> {
         let parsed_hash = PasswordHash::new(&self.password_hash)
-            .map_err(|e| BlogError::Internal(format!("Password hash parsing error: {}", e)))?;
-        
+            .map_err(|e| BlogError::Internal(format!("Password hash parsing error: {e}")))?;
+
         Ok(Argon2::default()
             .verify_password(password.as_bytes(), &parsed_hash)
             .is_ok())
@@ -143,7 +148,7 @@ impl User {
     /// Returns a new user with updated password
     pub fn with_updated_password(self, password: &str) -> Result<Self> {
         let password_hash = Self::hash_password(password)?;
-        
+
         Ok(Self {
             password_hash,
             updated_at: chrono::Local::now().to_rfc3339(),
@@ -288,7 +293,7 @@ impl BlogPost {
             ..self
         }
     }
-    
+
     /// Returns a new blog post with updated content and format
     pub fn with_updated_content_and_format(self, content: &str, format: ContentFormat) -> Self {
         Self {
@@ -297,7 +302,7 @@ impl BlogPost {
             ..self
         }
     }
-    
+
     /// Returns a new blog post with updated content format
     pub fn with_updated_content_format(self, format: ContentFormat) -> Self {
         Self {
@@ -329,7 +334,7 @@ impl BlogPost {
             ..self
         }
     }
-    
+
     /// Returns a new blog post with updated user ID and author name
     pub fn with_updated_user(self, user_id: i64, display_name: &str) -> Self {
         Self {
@@ -338,7 +343,7 @@ impl BlogPost {
             ..self
         }
     }
-    
+
     /// Returns a new blog post with updated user ID
     pub fn with_updated_user_id(self, user_id: i64) -> Self {
         Self {
@@ -411,14 +416,14 @@ impl BlogPost {
             ..self
         }
     }
-    
+
     /// Renders the content based on its format
-    /// 
+    ///
     /// If the content is in Markdown format, it will be converted to HTML.
     /// If the content is already in HTML format, it will be returned as is.
-    /// 
+    ///
     /// # Returns
-    /// 
+    ///
     /// A Result containing the rendered HTML content
     pub fn render_content(&self) -> Result<String> {
         match self.content_format {
@@ -429,7 +434,7 @@ impl BlogPost {
             ContentFormat::Markdown => {
                 // Convert Markdown to HTML
                 markdown_to_html(&self.content)
-                    .map_err(|e| BlogError::Internal(format!("Failed to render Markdown: {}", e)))
+                    .map_err(|e| BlogError::Internal(format!("Failed to render Markdown: {e}")))
             }
         }
     }

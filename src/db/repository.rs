@@ -189,7 +189,7 @@ impl BlogRepository {
                             title,
                             slug,
                             date,
-                            user_id: None,            // Default to None
+                            user_id: None, // Default to None
                             author,
                             excerpt,
                             content,
@@ -437,7 +437,11 @@ impl BlogRepository {
     ///
     /// A Result containing a Vector of BlogPost objects matching the search query
     #[instrument(skip(self), err)]
-    pub async fn search_posts(&self, query: &str, published_only: bool) -> Result<Vector<BlogPost>> {
+    pub async fn search_posts(
+        &self,
+        query: &str,
+        published_only: bool,
+    ) -> Result<Vector<BlogPost>> {
         let query = query.to_string();
         let pool = Arc::clone(&self.pool);
 
@@ -445,7 +449,8 @@ impl BlogRepository {
             let conn = pool.get()?;
 
             // Use the optimized query function
-            let posts = super::optimized_queries::search_posts_optimized(&conn, &query, published_only)?;
+            let posts =
+                super::optimized_queries::search_posts_optimized(&conn, &query, published_only)?;
 
             debug!(
                 "Found {} blog posts matching query '{}' using optimized search",
@@ -494,7 +499,7 @@ impl BlogRepository {
                     title,
                     slug,
                     date,
-                    user_id: None,            // Default to None
+                    user_id: None, // Default to None
                     author,
                     excerpt,
                     content,

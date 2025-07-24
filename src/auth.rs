@@ -6,13 +6,13 @@
 use crate::blog_error::BlogError;
 use crate::db::{Database, UserRepository};
 use axum::{
+    Json,
     extract::State,
     http::StatusCode,
     response::{IntoResponse, Response},
-    Json,
 };
 use chrono::{Duration, Utc};
-use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
+use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tracing::{debug, error, info, instrument, warn};
@@ -94,7 +94,9 @@ pub enum AuthError {
 impl IntoResponse for AuthError {
     fn into_response(self) -> Response {
         let (status, error_message) = match self {
-            AuthError::InvalidCredentials => (StatusCode::UNAUTHORIZED, "Invalid credentials".to_string()),
+            AuthError::InvalidCredentials => {
+                (StatusCode::UNAUTHORIZED, "Invalid credentials".to_string())
+            }
             AuthError::TokenExpired => (StatusCode::UNAUTHORIZED, "Token expired".to_string()),
             AuthError::InvalidToken => (StatusCode::UNAUTHORIZED, "Invalid token".to_string()),
             AuthError::MissingToken => (StatusCode::UNAUTHORIZED, "Missing token".to_string()),
@@ -124,7 +126,7 @@ impl From<jsonwebtoken::errors::Error> for AuthError {
 
 impl From<anyhow::Error> for AuthError {
     fn from(error: anyhow::Error) -> Self {
-        AuthError::Internal(format!("Internal error: {}", error))
+        AuthError::Internal(format!("Internal error: {error}"))
     }
 }
 
@@ -170,7 +172,9 @@ impl AuthService {
         };
 
         // Generate a JWT token
-        let token = self.generate_token(user_id, &user.username, &user.role).await?;
+        let token = self
+            .generate_token(user_id, &user.username, &user.role)
+            .await?;
 
         // Convert role to string
         let role_str = match user.role {
@@ -200,7 +204,12 @@ impl AuthService {
         password: &str,
     ) -> Result<LoginResponse, AuthError> {
         // Check if the username already exists
-        if self.user_repo.get_user_by_username(username).await?.is_some() {
+        if self
+            .user_repo
+            .get_user_by_username(username)
+            .await?
+            .is_some()
+        {
             warn!("Username already exists: {}", username);
             return Err(AuthError::Internal("Username already exists".to_string()));
         }
@@ -268,7 +277,7 @@ impl AuthService {
             &claims,
             &EncodingKey::from_secret(self.jwt_secret.as_bytes()),
         )
-        .map_err(|e| AuthError::Internal(format!("Failed to generate token: {}", e)))?;
+        .map_err(|e| AuthError::Internal(format!("Failed to generate token: {e}")))?;
 
         debug!("Generated JWT token for user: {}", username);
         Ok(token)
@@ -284,7 +293,10 @@ impl AuthService {
             &Validation::default(),
         )?;
 
-        debug!("Validated JWT token for user: {}", token_data.claims.username);
+        debug!(
+            "Validated JWT token for user: {}",
+            token_data.claims.username
+        );
         Ok(token_data.claims)
     }
 }
@@ -309,9 +321,7 @@ pub async fn extract_and_validate_token(
     let auth_header = auth_header.ok_or(AuthError::MissingToken)?;
 
     // Extract the token
-    let auth_header_str = auth_header
-        .to_str()
-        .map_err(|_| AuthError::InvalidToken)?;
+    let auth_header_str = auth_header.to_str().map_err(|_| AuthError::InvalidToken)?;
 
     // Check if the header starts with "Bearer "
     if !auth_header_str.starts_with("Bearer ") {
@@ -325,7 +335,9 @@ pub async fn extract_and_validate_token(
     let claims = auth_service.validate_token(token).await?;
 
     // Convert user_id from string to i64
-    let user_id = claims.sub.parse::<i64>()
+    let user_id = claims
+        .sub
+        .parse::<i64>()
         .map_err(|_| AuthError::InvalidToken)?;
 
     // Create the authenticated user

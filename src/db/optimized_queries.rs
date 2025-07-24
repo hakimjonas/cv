@@ -564,7 +564,11 @@ struct TagData {
 ///
 /// A Result containing a Vector of BlogPost objects matching the search query
 #[instrument(skip(conn), err)]
-pub fn search_posts_optimized(conn: &Connection, query: &str, published_only: bool) -> Result<Vector<BlogPost>> {
+pub fn search_posts_optimized(
+    conn: &Connection,
+    query: &str,
+    published_only: bool,
+) -> Result<Vector<BlogPost>> {
     // Construct the SQL query with a WHERE clause for published posts if needed
     let published_clause = if published_only {
         "AND p.published = 1"
@@ -586,10 +590,9 @@ pub fn search_posts_optimized(conn: &Connection, query: &str, published_only: bo
         LEFT JOIN tags t ON pt.tag_id = t.id
         LEFT JOIN post_metadata pm ON p.id = pm.post_id
         WHERE fts.title MATCH ?1 OR fts.content MATCH ?1 OR fts.excerpt MATCH ?1
-        {}
+        {published_clause}
         ORDER BY p.date DESC
-        ",
-        published_clause
+        "
     );
 
     let mut stmt = conn.prepare(&sql)?;

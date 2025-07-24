@@ -837,7 +837,7 @@ impl Database {
     pub fn blog_repository(&self) -> BlogRepository {
         BlogRepository::new(Arc::clone(&self.pool))
     }
-    
+
     /// Get a repository for user operations
     #[allow(dead_code)]
     pub fn user_repository(&self) -> UserRepository {

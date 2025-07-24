@@ -6,8 +6,8 @@
 
 use anyhow::{Result, anyhow};
 use argon2::{
-    password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
     Argon2,
+    password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString, rand_core::OsRng},
 };
 use im::Vector;
 use r2d2::Pool;
@@ -389,7 +389,7 @@ impl UserRepository {
         task::spawn_blocking(move || {
             let salt = SaltString::generate(&mut OsRng);
             let argon2 = Argon2::default();
-            
+
             argon2
                 .hash_password(password.as_bytes(), &salt)
                 .map(|hash| hash.to_string())
@@ -407,7 +407,7 @@ impl UserRepository {
         task::spawn_blocking(move || {
             let parsed_hash = PasswordHash::new(&password_hash)
                 .map_err(|e| anyhow!("Password hash parsing error: {}", e))?;
-            
+
             Ok(Argon2::default()
                 .verify_password(password.as_bytes(), &parsed_hash)
                 .is_ok())
@@ -427,7 +427,7 @@ impl UserRepository {
     ) -> Result<i64> {
         // Hash the password
         let password_hash = self.hash_password(password).await?;
-        
+
         // Create the user
         let now = chrono::Local::now().to_rfc3339();
         let user = User {
@@ -440,7 +440,7 @@ impl UserRepository {
             created_at: now.clone(),
             updated_at: now,
         };
-        
+
         // Save the user
         self.save_user(&user).await
     }
@@ -453,17 +453,17 @@ impl UserRepository {
             Some(user) => user,
             None => return Err(anyhow!("User not found")),
         };
-        
+
         // Hash the new password
         let password_hash = self.hash_password(new_password).await?;
-        
+
         // Update the user
         let updated_user = User {
             password_hash,
             updated_at: chrono::Local::now().to_rfc3339(),
             ..user
         };
-        
+
         // Save the updated user
         self.update_user(&updated_user).await
     }

@@ -3,7 +3,7 @@
  * This module provides middleware for protecting API routes with authentication
  */
 
-use crate::auth::{AuthService, AuthUser, AuthError, extract_and_validate_token};
+use crate::auth::{AuthError, AuthService, AuthUser, extract_and_validate_token};
 use axum::{
     body::Body,
     extract::FromRequestParts,
@@ -195,7 +195,10 @@ pub async fn require_editor(
 
     // Check if the user is an editor, author, or admin
     if auth_user.role != "Editor" && auth_user.role != "Author" && auth_user.role != "Admin" {
-        debug!("User is not an editor, author, or admin: {}", auth_user.username);
+        debug!(
+            "User is not an editor, author, or admin: {}",
+            auth_user.username
+        );
         return Err(StatusCode::FORBIDDEN);
     }
 

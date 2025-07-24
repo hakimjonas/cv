@@ -6,7 +6,7 @@ use crate::check_db_permissions::secure_db_permissions;
 use crate::db::{BlogRepository, Database};
 use crate::feature_flags::FeatureFlags;
 use crate::feature_flags::rollback::RollbackManager;
-use crate::feed::{FeedConfig, generate_rss_feed, generate_atom_feed};
+use crate::feed::{FeedConfig, generate_atom_feed, generate_rss_feed};
 use crate::image_api::create_image_api_router;
 use chrono::Datelike;
 // Adding back rate limiting
@@ -16,13 +16,13 @@ use crate::rate_limiter::{RateLimiterConfig, create_rate_limiter_layer};
 type ApiResult<T> = std::result::Result<T, ApiError>;
 use axum::{
     Router,
-    extract::{Path, State, Extension, Query},
+    extract::{Extension, Path, Query, State},
     http::{Method, StatusCode},
     response::{IntoResponse, Json, Response},
     routing::{delete, get, post, put},
 };
-use std::collections::HashMap;
 use im::Vector;
+use std::collections::HashMap;
 use std::{path::PathBuf, sync::Arc};
 use thiserror::Error;
 use tower_http::{
@@ -39,7 +39,7 @@ fn repo_to_api_post(repo_post: crate::db::repository::BlogPost) -> BlogPost {
         Some(format) if format == "markdown" => crate::blog_data::ContentFormat::Markdown,
         _ => crate::blog_data::ContentFormat::HTML,
     };
-    
+
     BlogPost {
         id: repo_post.id,
         title: repo_post.title,
@@ -66,14 +66,14 @@ fn api_to_repo_post(api_post: &BlogPost) -> crate::db::repository::BlogPost {
         .iter()
         .map(|(k, v)| (k.clone(), v.clone()))
         .collect::<im::HashMap<String, String>>();
-    
+
     // Store the content format in the metadata
     let format_str = match api_post.content_format {
         crate::blog_data::ContentFormat::Markdown => "markdown",
         crate::blog_data::ContentFormat::HTML => "html",
     };
     metadata.insert("content_format".to_string(), format_str.to_string());
-    
+
     crate::db::repository::BlogPost {
         id: api_post.id,
         title: api_post.title.clone(),
@@ -212,8 +212,11 @@ async fn create_post(
     Extension(auth_user): Extension<AuthUser>,
     Json(mut post): Json<BlogPost>,
 ) -> ApiResult<(StatusCode, Json<BlogPost>)> {
-    info!("Creating new blog post with slug: {} by user: {}", post.slug, auth_user.username);
-    
+    info!(
+        "Creating new blog post with slug: {} by user: {}",
+        post.slug, auth_user.username
+    );
+
     // Associate the post with the authenticated user
     post = post.with_updated_user(auth_user.user_id, &auth_user.username);
 
@@ -313,7 +316,10 @@ async fn update_post(
     Extension(auth_user): Extension<AuthUser>,
     Json(mut post): Json<BlogPost>,
 ) -> ApiResult<Json<BlogPost>> {
-    info!("Updating blog post with slug: {} by user: {}", slug, auth_user.username);
+    info!(
+        "Updating blog post with slug: {} by user: {}",
+        slug, auth_user.username
+    );
 
     // Check if the post exists
     let existing_post = match state.blog_repo.get_post_by_slug(&slug).await {
@@ -332,8 +338,13 @@ async fn update_post(
 
     // Check if the user is the owner of the post or an admin
     if auth_user.role != "Admin" && existing_post.user_id != Some(auth_user.user_id) {
-        warn!("User {} is not authorized to update post with slug: {}", auth_user.username, slug);
-        return Err(ApiError::ValidationError("You are not authorized to update this post".to_string()));
+        warn!(
+            "User {} is not authorized to update post with slug: {}",
+            auth_user.username, slug
+        );
+        return Err(ApiError::ValidationError(
+            "You are not authorized to update this post".to_string(),
+        ));
     }
 
     // Preserve the original user_id and author if the user is not an admin
@@ -431,12 +442,20 @@ async fn delete_post(
     Path(slug): Path<String>,
     Extension(auth_user): Extension<AuthUser>,
 ) -> ApiResult<StatusCode> {
-    info!("Deleting blog post with slug: {} by admin: {}", slug, auth_user.username);
+    info!(
+        "Deleting blog post with slug: {} by admin: {}",
+        slug, auth_user.username
+    );
 
     // Verify that the user is an admin (this is redundant with the middleware check, but adds extra security)
     if auth_user.role != "Admin" {
-        warn!("User {} is not authorized to delete posts", auth_user.username);
-        return Err(ApiError::ValidationError("Only administrators can delete posts".to_string()));
+        warn!(
+            "User {} is not authorized to delete posts",
+            auth_user.username
+        );
+        return Err(ApiError::ValidationError(
+            "Only administrators can delete posts".to_string(),
+        ));
     }
 
     // First, check if post exists
@@ -537,15 +556,15 @@ async fn search_posts(
 ) -> ApiResult<Json<Vector<BlogPost>>> {
     // Extract the search query from the request parameters
     let query = params.get("q").cloned().unwrap_or_default();
-    
+
     // Extract the published_only parameter (default to true for public-facing search)
     let published_only = params
         .get("published_only")
         .map(|value| value == "true")
         .unwrap_or(true);
-    
+
     info!("Searching for posts matching query: {}", query);
-    
+
     // Call the search_posts method on the blog repository
     match state.blog_repo.search_posts(&query, published_only).await {
         Ok(repo_posts) => {
@@ -564,17 +583,14 @@ async fn search_posts(
 /// Generates an RSS feed of published blog posts
 #[axum::debug_handler]
 #[instrument(skip(state), err)]
-async fn get_rss_feed(
-    State(state): State<Arc<ApiState>>,
-) -> Result<impl IntoResponse, ApiError> {
+async fn get_rss_feed(State(state): State<Arc<ApiState>>) -> Result<impl IntoResponse, ApiError> {
     info!("Generating RSS feed");
 
     // Get published blog posts
-    let repo_posts = state.blog_repo.get_published_posts().await
-        .map_err(|e| {
-            error!("Failed to get published posts for RSS feed: {}", e);
-            ApiError::DatabaseError(format!("Failed to get published posts: {}", e))
-        })?;
+    let repo_posts = state.blog_repo.get_published_posts().await.map_err(|e| {
+        error!("Failed to get published posts for RSS feed: {}", e);
+        ApiError::DatabaseError(format!("Failed to get published posts: {e}"))
+    })?;
 
     // Convert repository posts to API posts
     let posts: Vector<BlogPost> = repo_posts.into_iter().map(repo_to_api_post).collect();
@@ -593,11 +609,10 @@ async fn get_rss_feed(
     };
 
     // Generate RSS feed
-    let feed_xml = generate_rss_feed(&posts, &config)
-        .map_err(|e| {
-            error!("Failed to generate RSS feed: {}", e);
-            ApiError::InternalError(format!("Failed to generate RSS feed: {}", e))
-        })?;
+    let feed_xml = generate_rss_feed(&posts, &config).map_err(|e| {
+        error!("Failed to generate RSS feed: {}", e);
+        ApiError::InternalError(format!("Failed to generate RSS feed: {e}"))
+    })?;
 
     // Return the feed as XML
     Ok((
@@ -613,17 +628,14 @@ async fn get_rss_feed(
 /// Generates an Atom feed of published blog posts
 #[axum::debug_handler]
 #[instrument(skip(state), err)]
-async fn get_atom_feed(
-    State(state): State<Arc<ApiState>>,
-) -> Result<impl IntoResponse, ApiError> {
+async fn get_atom_feed(State(state): State<Arc<ApiState>>) -> Result<impl IntoResponse, ApiError> {
     info!("Generating Atom feed");
 
     // Get published blog posts
-    let repo_posts = state.blog_repo.get_published_posts().await
-        .map_err(|e| {
-            error!("Failed to get published posts for Atom feed: {}", e);
-            ApiError::DatabaseError(format!("Failed to get published posts: {}", e))
-        })?;
+    let repo_posts = state.blog_repo.get_published_posts().await.map_err(|e| {
+        error!("Failed to get published posts for Atom feed: {}", e);
+        ApiError::DatabaseError(format!("Failed to get published posts: {e}"))
+    })?;
 
     // Convert repository posts to API posts
     let posts: Vector<BlogPost> = repo_posts.into_iter().map(repo_to_api_post).collect();
@@ -642,11 +654,10 @@ async fn get_atom_feed(
     };
 
     // Generate Atom feed
-    let feed_xml = generate_atom_feed(&posts, &config)
-        .map_err(|e| {
-            error!("Failed to generate Atom feed: {}", e);
-            ApiError::InternalError(format!("Failed to generate Atom feed: {}", e))
-        })?;
+    let feed_xml = generate_atom_feed(&posts, &config).map_err(|e| {
+        error!("Failed to generate Atom feed: {}", e);
+        ApiError::InternalError(format!("Failed to generate Atom feed: {e}"))
+    })?;
 
     // Return the feed as XML
     Ok((
@@ -810,24 +821,24 @@ pub fn create_blog_api_router(db_path: PathBuf) -> std::result::Result<Router, B
     // Create the database and blog repository
     let db = Database::new(&db_path)?;
     let blog_repo = db.blog_repository();
-    
+
     // Create the authentication service
     // Using a secure random JWT secret (in production, this should be loaded from environment or config)
     let jwt_secret = "secure_jwt_secret_for_development_only".to_string();
     // Token expiration time in seconds (24 hours)
     let token_expiration = 86400;
     let auth_service = Arc::new(AuthService::new(&db, jwt_secret, token_expiration));
-    
+
     // Create feature flags and rollback manager
-    let feature_flags = Arc::new(FeatureFlags::default());
+    let feature_flags = Arc::new(Default::default());
     let rollback_manager = Arc::new(RollbackManager::default());
-    
-    let state = Arc::new(ApiState { 
-        blog_repo, 
-        db, 
+
+    let state = Arc::new(ApiState {
+        blog_repo,
+        db,
         auth_service,
         feature_flags,
-        rollback_manager
+        rollback_manager,
     });
 
     // Create a static file service for the static directory (blog tools)
@@ -960,7 +971,7 @@ pub fn create_blog_api_router(db_path: PathBuf) -> std::result::Result<Router, B
                 .unwrap(),
         }
     }
-    
+
     /// Wrapper for login handler that uses ApiState
     #[instrument(skip(state, login_request), err)]
     async fn api_login_handler(
@@ -969,15 +980,15 @@ pub fn create_blog_api_router(db_path: PathBuf) -> std::result::Result<Router, B
     ) -> Result<Json<crate::auth::LoginResponse>, crate::auth::AuthError> {
         // Extract the auth service from the state
         let auth_service = &state.auth_service;
-        
+
         // Call the original login handler
         let response = auth_service
             .login(&login_request.username, &login_request.password)
             .await?;
-            
+
         Ok(Json(response))
     }
-    
+
     /// Wrapper for register handler that uses ApiState
     #[instrument(skip(state, register_request), err)]
     async fn api_register_handler(
@@ -986,7 +997,7 @@ pub fn create_blog_api_router(db_path: PathBuf) -> std::result::Result<Router, B
     ) -> Result<Json<crate::auth::LoginResponse>, crate::auth::AuthError> {
         // Extract the auth service from the state
         let auth_service = &state.auth_service;
-        
+
         // Call the original register handler
         let response = auth_service
             .register(
@@ -996,14 +1007,14 @@ pub fn create_blog_api_router(db_path: PathBuf) -> std::result::Result<Router, B
                 &register_request.password,
             )
             .await?;
-            
+
         Ok(Json(response))
     }
 
     // Create the image API router
     let base_url = "http://localhost:3000"; // This should be configurable in production
     let image_router = create_image_api_router(base_url);
-    
+
     // Route order matters! More specific routes need to come before less specific ones
     // to avoid route conflicts, especially with path parameters
     let router = Router::new()
@@ -1077,7 +1088,7 @@ pub fn create_blog_api_router(db_path: PathBuf) -> std::result::Result<Router, B
         // .layer(crate::content_security_policy::create_referrer_policy_layer())
         // .layer(crate::content_security_policy::create_permissions_policy_layer())
         .with_state(state);
-        
+
     // Merge the image API router with the main router
     let router = router.merge(image_router);
 

@@ -58,7 +58,7 @@ pub fn get_all_posts_optimized(conn: &Connection) -> Result<Vector<BlogPost>> {
     let mut stmt = conn.prepare(
         "
         SELECT 
-            p.id, p.title, p.slug, p.date, p.author, p.excerpt, p.content, 
+            p.id, p.title, p.slug, p.date, p.user_id, p.author, p.excerpt, p.content, 
             p.published, p.featured, p.image,
             t.id as tag_id, t.name as tag_name, t.slug as tag_slug,
             pm.key as meta_key, pm.value as meta_value
@@ -78,25 +78,26 @@ pub fn get_all_posts_optimized(conn: &Connection) -> Result<Vector<BlogPost>> {
                 title: row.get(1)?,
                 slug: row.get(2)?,
                 date: row.get(3)?,
-                author: row.get(4)?,
-                excerpt: row.get(5)?,
-                content: row.get(6)?,
-                published: row.get(7)?,
-                featured: row.get(8)?,
-                image: row.get(9)?,
+                user_id: row.get(4)?,
+                author: row.get(5)?,
+                excerpt: row.get(6)?,
+                content: row.get(7)?,
+                published: row.get(8)?,
+                featured: row.get(9)?,
+                image: row.get(10)?,
             },
             // Tag data (may be NULL)
-            match row.get::<_, Option<i64>>(10)? {
+            match row.get::<_, Option<i64>>(11)? {
                 Some(tag_id) => Some(TagData {
                     id: tag_id,
-                    name: row.get(11)?,
-                    slug: row.get(12)?,
+                    name: row.get(12)?,
+                    slug: row.get(13)?,
                 }),
                 None => None,
             },
             // Metadata (may be NULL)
-            match row.get::<_, Option<String>>(13)? {
-                Some(key) => Some((key, row.get::<_, String>(14)?)),
+            match row.get::<_, Option<String>>(14)? {
+                Some(key) => Some((key, row.get::<_, String>(15)?)),
                 None => None,
             },
         ))
@@ -147,6 +148,7 @@ pub fn get_all_posts_optimized(conn: &Connection) -> Result<Vector<BlogPost>> {
                 title: post_data.title,
                 slug: post_data.slug,
                 date: post_data.date,
+                user_id: post_data.user_id,
                 author: post_data.author,
                 excerpt: post_data.excerpt,
                 content: post_data.content,
@@ -202,7 +204,7 @@ pub fn get_post_by_slug_optimized(conn: &Connection, slug: &str) -> Result<Optio
     let mut stmt = conn.prepare(
         "
         SELECT 
-            p.id, p.title, p.slug, p.date, p.author, p.excerpt, p.content, 
+            p.id, p.title, p.slug, p.date, p.user_id, p.author, p.excerpt, p.content, 
             p.published, p.featured, p.image,
             t.id as tag_id, t.name as tag_name, t.slug as tag_slug,
             pm.key as meta_key, pm.value as meta_value
@@ -222,25 +224,26 @@ pub fn get_post_by_slug_optimized(conn: &Connection, slug: &str) -> Result<Optio
                 title: row.get(1)?,
                 slug: row.get(2)?,
                 date: row.get(3)?,
-                author: row.get(4)?,
-                excerpt: row.get(5)?,
-                content: row.get(6)?,
-                published: row.get(7)?,
-                featured: row.get(8)?,
-                image: row.get(9)?,
+                user_id: row.get(4)?,
+                author: row.get(5)?,
+                excerpt: row.get(6)?,
+                content: row.get(7)?,
+                published: row.get(8)?,
+                featured: row.get(9)?,
+                image: row.get(10)?,
             },
             // Tag data (may be NULL)
-            match row.get::<_, Option<i64>>(10)? {
+            match row.get::<_, Option<i64>>(11)? {
                 Some(tag_id) => Some(TagData {
                     id: tag_id,
-                    name: row.get(11)?,
-                    slug: row.get(12)?,
+                    name: row.get(12)?,
+                    slug: row.get(13)?,
                 }),
                 None => None,
             },
             // Metadata (may be NULL)
-            match row.get::<_, Option<String>>(13)? {
-                Some(key) => Some((key, row.get::<_, String>(14)?)),
+            match row.get::<_, Option<String>>(14)? {
+                Some(key) => Some((key, row.get::<_, String>(15)?)),
                 None => None,
             },
         ))
@@ -295,6 +298,7 @@ pub fn get_post_by_slug_optimized(conn: &Connection, slug: &str) -> Result<Optio
         title: post_data.title,
         slug: post_data.slug,
         date: post_data.date,
+        user_id: post_data.user_id,
         author: post_data.author,
         excerpt: post_data.excerpt,
         content: post_data.content,
@@ -351,7 +355,7 @@ pub fn get_published_posts_optimized(conn: &Connection) -> Result<Vector<BlogPos
     let mut stmt = conn.prepare(
         "
         SELECT 
-            p.id, p.title, p.slug, p.date, p.author, p.excerpt, p.content, 
+            p.id, p.title, p.slug, p.date, p.user_id, p.author, p.excerpt, p.content, 
             p.published, p.featured, p.image,
             t.id as tag_id, t.name as tag_name, t.slug as tag_slug,
             pm.key as meta_key, pm.value as meta_value
@@ -372,25 +376,26 @@ pub fn get_published_posts_optimized(conn: &Connection) -> Result<Vector<BlogPos
                 title: row.get(1)?,
                 slug: row.get(2)?,
                 date: row.get(3)?,
-                author: row.get(4)?,
-                excerpt: row.get(5)?,
-                content: row.get(6)?,
-                published: row.get(7)?,
-                featured: row.get(8)?,
-                image: row.get(9)?,
+                user_id: row.get(4)?,
+                author: row.get(5)?,
+                excerpt: row.get(6)?,
+                content: row.get(7)?,
+                published: row.get(8)?,
+                featured: row.get(9)?,
+                image: row.get(10)?,
             },
             // Tag data (may be NULL)
-            match row.get::<_, Option<i64>>(10)? {
+            match row.get::<_, Option<i64>>(11)? {
                 Some(tag_id) => Some(TagData {
                     id: tag_id,
-                    name: row.get(11)?,
-                    slug: row.get(12)?,
+                    name: row.get(12)?,
+                    slug: row.get(13)?,
                 }),
                 None => None,
             },
             // Metadata (may be NULL)
-            match row.get::<_, Option<String>>(13)? {
-                Some(key) => Some((key, row.get::<_, String>(14)?)),
+            match row.get::<_, Option<String>>(14)? {
+                Some(key) => Some((key, row.get::<_, String>(15)?)),
                 None => None,
             },
         ))
@@ -441,6 +446,7 @@ pub fn get_published_posts_optimized(conn: &Connection) -> Result<Vector<BlogPos
                 title: post_data.title,
                 slug: post_data.slug,
                 date: post_data.date,
+                user_id: post_data.user_id,
                 author: post_data.author,
                 excerpt: post_data.excerpt,
                 content: post_data.content,
@@ -478,6 +484,8 @@ struct PostData {
     slug: String,
     /// Publication date in ISO format
     date: String,
+    /// ID of the user who authored the post
+    user_id: Option<i64>,
     /// Author of the post
     author: String,
     /// Short summary of the post
@@ -508,4 +516,179 @@ struct TagData {
     name: String,
     /// URL-friendly version of the name (unique)
     slug: String,
+}
+
+/// Searches for blog posts matching a query using the FTS5 virtual table
+///
+/// This function uses the FTS5 virtual table to search for posts matching a query,
+/// and joins with the posts, tags, and post_metadata tables to get all the necessary data.
+/// It then processes the results to construct BlogPost objects.
+///
+/// ## Performance Optimization
+///
+/// This function uses the same optimization approach as the other optimized query functions,
+/// but with an additional JOIN to the FTS5 virtual table and a WHERE clause to filter for
+/// posts matching the search query. It solves the N+1 query problem:
+/// 1. Without optimization: Search for posts (1 query) + fetch tags for each post (N queries) +
+///    fetch metadata for each post (N queries) = 2N+1 queries
+/// 2. With optimization: Search for posts with tags and metadata (1 query)
+///
+/// ## Algorithm
+///
+/// The algorithm is similar to the other optimized query functions:
+/// 1. Execute a single SQL query with JOINs to fetch posts matching the search query, along with their tags and metadata
+/// 2. For each row in the result:
+///    - Extract post data, tag data (if present), and metadata (if present)
+///    - Use a map keyed by post ID to group related data
+///    - For each post ID, maintain a collection of tags and metadata
+/// 3. Convert the map to a Vector of BlogPost objects
+///
+/// ## Search Capabilities
+///
+/// The FTS5 virtual table provides powerful full-text search capabilities, including:
+/// - Word stemming (e.g., "running" matches "run")
+/// - Stop word filtering (common words like "the", "and", etc. are ignored)
+/// - Phrase matching (exact phrases can be searched using quotes)
+/// - Boolean operators (AND, OR, NOT)
+/// - Wildcards (e.g., "run*" matches "running", "runner", etc.)
+///
+/// The search is performed across the title, content, and excerpt columns of the posts.
+///
+/// # Arguments
+///
+/// * `conn` - A reference to a SQLite connection
+/// * `query` - The search query
+/// * `published_only` - Whether to return only published posts
+///
+/// # Returns
+///
+/// A Result containing a Vector of BlogPost objects matching the search query
+#[instrument(skip(conn), err)]
+pub fn search_posts_optimized(conn: &Connection, query: &str, published_only: bool) -> Result<Vector<BlogPost>> {
+    // Construct the SQL query with a WHERE clause for published posts if needed
+    let published_clause = if published_only {
+        "AND p.published = 1"
+    } else {
+        ""
+    };
+
+    // Use a single query with JOINs to fetch posts matching the search query, along with their tags and metadata
+    let sql = format!(
+        "
+        SELECT 
+            p.id, p.title, p.slug, p.date, p.user_id, p.author, p.excerpt, p.content, 
+            p.published, p.featured, p.image,
+            t.id as tag_id, t.name as tag_name, t.slug as tag_slug,
+            pm.key as meta_key, pm.value as meta_value
+        FROM posts_fts fts
+        JOIN posts p ON fts.rowid = p.id
+        LEFT JOIN post_tags pt ON p.id = pt.post_id
+        LEFT JOIN tags t ON pt.tag_id = t.id
+        LEFT JOIN post_metadata pm ON p.id = pm.post_id
+        WHERE fts.title MATCH ?1 OR fts.content MATCH ?1 OR fts.excerpt MATCH ?1
+        {}
+        ORDER BY p.date DESC
+        ",
+        published_clause
+    );
+
+    let mut stmt = conn.prepare(&sql)?;
+
+    let rows = stmt.query_map([query], |row| {
+        Ok((
+            // Post data
+            PostData {
+                id: row.get(0)?,
+                title: row.get(1)?,
+                slug: row.get(2)?,
+                date: row.get(3)?,
+                user_id: row.get(4)?,
+                author: row.get(5)?,
+                excerpt: row.get(6)?,
+                content: row.get(7)?,
+                published: row.get(8)?,
+                featured: row.get(9)?,
+                image: row.get(10)?,
+            },
+            // Tag data (may be NULL)
+            match row.get::<_, Option<i64>>(11)? {
+                Some(tag_id) => Some(TagData {
+                    id: tag_id,
+                    name: row.get(12)?,
+                    slug: row.get(13)?,
+                }),
+                None => None,
+            },
+            // Metadata (may be NULL)
+            match row.get::<_, Option<String>>(14)? {
+                Some(key) => Some((key, row.get::<_, String>(15)?)),
+                None => None,
+            },
+        ))
+    })?;
+
+    // Process the rows to construct BlogPost objects
+    let mut posts_map: PostsMap = BTreeMap::new();
+
+    for row_result in rows {
+        let (post_data, tag_data_opt, metadata_opt) = row_result?;
+
+        // Get or insert the post entry
+        let entry = posts_map
+            .entry(post_data.id)
+            .or_insert_with(|| (post_data, Vector::new(), HashMap::new()));
+
+        // Add tag if present
+        if let Some(tag_data) = tag_data_opt {
+            // Only add if not already present
+            if !entry.1.iter().any(|t| t.id == tag_data.id) {
+                entry.1.push_back(tag_data);
+            }
+        }
+
+        // Add metadata if present
+        if let Some((key, value)) = metadata_opt {
+            entry.2 = entry.2.update(key, value);
+        }
+    }
+
+    // Convert the map to a Vector of BlogPost objects
+    let posts: Vector<BlogPost> = posts_map
+        .into_iter()
+        .map(|(_, (post_data, tags_data, metadata))| {
+            // Convert TagData to Tag
+            let tags = tags_data
+                .into_iter()
+                .map(|tag_data| Tag {
+                    id: Some(tag_data.id),
+                    name: tag_data.name,
+                    slug: tag_data.slug,
+                })
+                .collect();
+
+            // Create the BlogPost
+            BlogPost {
+                id: Some(post_data.id),
+                title: post_data.title,
+                slug: post_data.slug,
+                date: post_data.date,
+                user_id: post_data.user_id,
+                author: post_data.author,
+                excerpt: post_data.excerpt,
+                content: post_data.content,
+                published: post_data.published,
+                featured: post_data.featured,
+                image: post_data.image,
+                tags,
+                metadata,
+            }
+        })
+        .collect();
+
+    debug!(
+        "Found {} blog posts matching query '{}' with optimized search",
+        posts.len(),
+        query
+    );
+    Ok(posts)
 }

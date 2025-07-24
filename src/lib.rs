@@ -15,6 +15,8 @@ pub mod db;
 // Blog-related modules
 pub mod api_docs;
 pub mod api_models;
+pub mod auth;
+pub mod auth_middleware;
 pub mod blog_api;
 pub mod blog_converters;
 pub mod blog_data;
@@ -24,6 +26,11 @@ pub mod blog_validation;
 pub mod check_db_permissions;
 pub mod content_security_policy;
 pub mod csrf_protection;
+pub mod feature_flags;
+pub mod feed;
+pub mod image_api;
+pub mod image_storage;
+pub mod markdown_editor;
 pub mod rate_limiter;
 
 // Utility modules

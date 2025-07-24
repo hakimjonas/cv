@@ -16,7 +16,7 @@ serde = { version = "1.0.219", features = ["derive"] }
 anyhow = "1.0.98"
 dirs = "6.0.0"
 chrono = { version = "0.4.41", features = ["serde"] }
-axum = { version = "0.8.4", features = ["json", "macros"] }
+axum = { version = "0.8.4", features = ["json", "macros", "multipart"] }
 rusqlite = { version = "0.37.0", features = ["bundled"] }
 whoami = "2.0.0-pre.2"
 keyring = "3.6.2"
@@ -42,6 +42,13 @@ axum_csrf = { version = "0.11.0", features = ["layer"] }
 utoipa = { version = "5.4.0", features = ["axum_extras"] }
 utoipa-axum = "0.2.0"
 utoipa-swagger-ui = { version = "9.0.2", features = ["axum"] }
+argon2 = "0.5.3"
+jsonwebtoken = "9.2.0"
+async-trait = "0.1.77"
+rss = "2.0.7"
+atom_syndication = "0.12.2"
+uuid = { version = "1.7.0", features = ["v4"] }
+pulldown-cmark = "0.10.0"
 
 
 

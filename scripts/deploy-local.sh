@@ -65,7 +65,7 @@ show_usage() {
 # Function to start the local development environment
 start_local_env() {
     print_header "Building and starting local development environment"
-    $DOCKER_COMPOSE -f docker-compose.local.yml up -d --build --remove-orphans
+    $DOCKER_COMPOSE -f ../docker/docker-compose.local.yml up -d --build --remove-orphans
 
     print_info "Waiting for services to start..."
 
@@ -74,14 +74,14 @@ start_local_env() {
     local max_attempts=10
     local wait_time=3
     for i in $(seq 1 $max_attempts); do
-        if $DOCKER_COMPOSE -f docker-compose.local.yml ps | grep -q "blog-api.*Up"; then
+        if $DOCKER_COMPOSE -f ../docker/docker-compose.local.yml ps | grep -q "blog-api.*Up"; then
             print_info "Container is up and running."
             break
         fi
         if [ $i -eq $max_attempts ]; then
             print_error "Failed to start container after $max_attempts attempts."
             print_info "Checking logs for potential issues:"
-            $DOCKER_COMPOSE -f docker-compose.local.yml logs
+            $DOCKER_COMPOSE -f ../docker/docker-compose.local.yml logs
             exit 1
         fi
         print_info "Waiting for container to start... (attempt $i/$max_attempts)"
@@ -93,7 +93,7 @@ start_local_env() {
     local health_max_attempts=30  # Reduced from 40 to 30
     local health_wait_time=10
     for i in $(seq 1 $health_max_attempts); do
-        HEALTH_STATUS=$(docker inspect --format='{{.State.Health.Status}}' $($DOCKER_COMPOSE -f docker-compose.local.yml ps -q blog-api) 2>/dev/null)
+        HEALTH_STATUS=$(docker inspect --format='{{.State.Health.Status}}' $($DOCKER_COMPOSE -f ../docker/docker-compose.local.yml ps -q blog-api) 2>/dev/null)
         if [ "$HEALTH_STATUS" = "healthy" ]; then
             print_header "Application is ready!"
             print_info "Local development environment is running!"
@@ -118,9 +118,9 @@ start_local_env() {
     print_warning "Application failed to become ready in the expected time."
     print_info "This is normal for the first run as Rust needs to compile the application."
     print_info "Check the logs to see the compilation progress:"
-    echo "  ./deploy-local.sh logs"
+    echo "  ./scripts/deploy-local.sh logs"
     print_info "You can also check the status with:"
-    echo "  ./deploy-local.sh status"
+    echo "  ./scripts/deploy-local.sh status"
     echo
     print_info "The application should be available at the following URLs once compilation is complete:"
     echo ""
@@ -140,45 +140,45 @@ start_local_env() {
 # Function to stop the local development environment
 stop_local_env() {
     print_header "Stopping local development environment"
-    $DOCKER_COMPOSE -f docker-compose.local.yml down --remove-orphans
+    $DOCKER_COMPOSE -f ../docker/docker-compose.local.yml down --remove-orphans
     print_info "Local development environment stopped."
 }
 
 # Function to show logs
 show_logs() {
     print_header "Showing logs from local development environment"
-    $DOCKER_COMPOSE -f docker-compose.local.yml logs -f
+    $DOCKER_COMPOSE -f ../docker/docker-compose.local.yml logs -f
 }
 
 # Function to show status
 show_status() {
     print_header "Status of local development environment"
-    $DOCKER_COMPOSE -f docker-compose.local.yml ps
+    $DOCKER_COMPOSE -f ../docker/docker-compose.local.yml ps
 }
 
 # Function to prune unused Docker resources
 prune_resources() {
     print_header "Pruning unused Docker resources"
-    
+
     print_info "This will remove all unused containers, networks, images, and volumes."
     read -p "Are you sure you want to continue? [y/N] " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         print_info "Stopping any running containers first..."
-        $DOCKER_COMPOSE -f docker-compose.local.yml down --remove-orphans
-        
+        $DOCKER_COMPOSE -f ../docker/docker-compose.local.yml down --remove-orphans
+
         print_info "Pruning containers..."
         docker container prune -f
-        
+
         print_info "Pruning networks..."
         docker network prune -f
-        
+
         print_info "Pruning images..."
         docker image prune -f
-        
+
         print_info "Pruning volumes (unused)..."
         docker volume prune -f
-        
+
         print_info "Docker resources pruned successfully."
     else
         print_info "Pruning cancelled."
@@ -188,16 +188,16 @@ prune_resources() {
 # Function to rebuild the application
 rebuild_app() {
     print_header "Rebuilding the application"
-    
+
     print_info "This will stop the current containers, rebuild the images, and restart the application."
     print_info "Any data in volumes will be preserved."
-    
+
     print_info "Stopping containers..."
-    $DOCKER_COMPOSE -f docker-compose.local.yml down
-    
+    $DOCKER_COMPOSE -f ../docker/docker-compose.local.yml down
+
     print_info "Rebuilding images..."
-    $DOCKER_COMPOSE -f docker-compose.local.yml build --no-cache
-    
+    $DOCKER_COMPOSE -f ../docker/docker-compose.local.yml build --no-cache
+
     print_info "Starting containers..."
     start_local_env
 }

@@ -119,14 +119,27 @@ pub fn domain_to_api_post(post: &blog_data::BlogPost) -> ApiBlogPost {
 
 /// Convert an API BlogPost to a domain BlogPost
 pub fn api_to_domain_post(post: &ApiBlogPost) -> blog_data::BlogPost {
+    // Determine content format from metadata or default to HTML
+    let content_format = if let Some(format) = post.metadata.get("content_format") {
+        if format == "markdown" {
+            blog_data::ContentFormat::Markdown
+        } else {
+            blog_data::ContentFormat::HTML
+        }
+    } else {
+        blog_data::ContentFormat::HTML
+    };
+
     blog_data::BlogPost {
         id: post.id,
         title: post.title.clone(),
         slug: post.slug.clone(),
         date: post.date.clone(),
+        user_id: None, // No user ID in API model, so default to None
         author: post.author.clone(),
         excerpt: post.excerpt.clone(),
         content: post.content.clone(),
+        content_format,
         published: post.published,
         featured: post.featured,
         image: post.image.clone(),

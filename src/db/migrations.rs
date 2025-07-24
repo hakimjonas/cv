@@ -156,4 +156,107 @@ const MIGRATIONS: &[(i64, &str, &str)] = &[
         SELECT id, title, content, excerpt FROM posts;
         ",
     ),
+    (
+        3,
+        "Add user authentication",
+        "
+        -- Create users table
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY,
+            username TEXT NOT NULL UNIQUE,
+            display_name TEXT NOT NULL,
+            email TEXT NOT NULL UNIQUE,
+            password_hash TEXT NOT NULL,
+            role TEXT NOT NULL DEFAULT 'Author',
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        );
+
+        -- Add user_id column to posts table
+        ALTER TABLE posts ADD COLUMN user_id INTEGER;
+
+        -- Create index on user_id
+        CREATE INDEX IF NOT EXISTS idx_posts_user_id ON posts(user_id);
+
+        -- Create a default admin user with password 'admin'
+        -- In production, this password should be changed immediately
+        INSERT INTO users (
+            username, 
+            display_name, 
+            email, 
+            password_hash, 
+            role, 
+            created_at, 
+            updated_at
+        ) 
+        VALUES (
+            'admin', 
+            'Administrator', 
+            'admin@example.com', 
+            '$argon2id$v=19$m=16,t=2,p=1$MTIzNDU2Nzg$2dIiQwpZKLvQhbKZ8j+6Yw', 
+            'Admin', 
+            datetime('now'), 
+            datetime('now')
+        );
+
+        -- Get the ID of the admin user
+        UPDATE posts SET user_id = (SELECT id FROM users WHERE username = 'admin');
+
+        -- Add foreign key constraint
+        -- SQLite doesn't support adding foreign key constraints to existing tables directly,
+        -- so we need to create a new table with the constraint and copy the data
+        CREATE TABLE posts_new (
+            id INTEGER PRIMARY KEY,
+            title TEXT NOT NULL,
+            slug TEXT NOT NULL UNIQUE,
+            date TEXT NOT NULL,
+            user_id INTEGER,
+            author TEXT NOT NULL,
+            excerpt TEXT NOT NULL,
+            content TEXT NOT NULL,
+            published BOOLEAN NOT NULL DEFAULT 0,
+            featured BOOLEAN NOT NULL DEFAULT 0,
+            image TEXT,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+        );
+
+        -- Copy data from posts to posts_new
+        INSERT INTO posts_new (id, title, slug, date, user_id, author, excerpt, content, published, featured, image)
+        SELECT id, title, slug, date, user_id, author, excerpt, content, published, featured, image FROM posts;
+
+        -- Drop the old table
+        DROP TABLE posts;
+
+        -- Rename the new table to posts
+        ALTER TABLE posts_new RENAME TO posts;
+
+        -- Recreate indexes
+        CREATE INDEX IF NOT EXISTS idx_posts_published ON posts(published);
+        CREATE INDEX IF NOT EXISTS idx_posts_featured ON posts(featured);
+        CREATE INDEX IF NOT EXISTS idx_posts_date ON posts(date);
+        CREATE INDEX IF NOT EXISTS idx_posts_user_id ON posts(user_id);
+
+        -- Update FTS triggers to include the new posts table structure
+        DROP TRIGGER IF EXISTS posts_ai;
+        DROP TRIGGER IF EXISTS posts_ad;
+        DROP TRIGGER IF EXISTS posts_au;
+
+        CREATE TRIGGER IF NOT EXISTS posts_ai AFTER INSERT ON posts BEGIN
+            INSERT INTO posts_fts(rowid, title, content, excerpt) 
+            VALUES (new.id, new.title, new.content, new.excerpt);
+        END;
+
+        CREATE TRIGGER IF NOT EXISTS posts_ad AFTER DELETE ON posts BEGIN
+            INSERT INTO posts_fts(posts_fts, rowid, title, content, excerpt) 
+            VALUES('delete', old.id, old.title, old.content, old.excerpt);
+        END;
+
+        CREATE TRIGGER IF NOT EXISTS posts_au AFTER UPDATE ON posts BEGIN
+            INSERT INTO posts_fts(posts_fts, rowid, title, content, excerpt) 
+            VALUES('delete', old.id, old.title, old.content, old.excerpt);
+            INSERT INTO posts_fts(rowid, title, content, excerpt) 
+            VALUES (new.id, new.title, new.content, new.excerpt);
+        END;
+        ",
+    ),
 ];

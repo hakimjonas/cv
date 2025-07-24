@@ -1,9 +1,187 @@
 use crate::blog_error::{BlogError, Result};
+use crate::markdown_editor::utils::markdown_to_html;
 use im::Vector;
 use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 use utoipa::ToSchema;
+use argon2::{
+    password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
+    Argon2,
+};
+
+/// Represents a user role in the system
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, ToSchema)]
+#[schema(description = "User role for authorization")]
+pub enum UserRole {
+    /// Administrator with full access
+    Admin,
+    /// Author who can create and edit their own posts
+    Author,
+    /// Editor who can edit but not create posts
+    Editor,
+    /// Viewer who can only view content
+    Viewer,
+}
+
+impl Default for UserRole {
+    fn default() -> Self {
+        Self::Author
+    }
+}
+
+/// Represents a user in the system
+#[derive(Debug, Serialize, Deserialize, Clone, ToSchema)]
+#[schema(description = "A user account in the system")]
+pub struct User {
+    /// Unique identifier for the user (null for new users)
+    #[schema(example = 1)]
+    pub id: Option<i64>,
+
+    /// Username for login
+    #[schema(example = "johndoe")]
+    pub username: String,
+
+    /// Display name of the user
+    #[schema(example = "John Doe")]
+    pub display_name: String,
+
+    /// Email address
+    #[schema(example = "john.doe@example.com")]
+    pub email: String,
+
+    /// Password hash (not returned in API responses)
+    #[serde(skip_serializing)]
+    pub password_hash: String,
+
+    /// User role for authorization
+    pub role: UserRole,
+
+    /// When the user was created
+    pub created_at: String,
+
+    /// When the user was last updated
+    pub updated_at: String,
+}
+
+impl User {
+    /// Creates a new user with default values
+    pub fn new() -> Self {
+        Self {
+            id: None,
+            username: String::new(),
+            display_name: String::new(),
+            email: String::new(),
+            password_hash: String::new(),
+            role: UserRole::default(),
+            created_at: chrono::Local::now().to_rfc3339(),
+            updated_at: chrono::Local::now().to_rfc3339(),
+        }
+    }
+
+    /// Creates a new user with the given username, email, and password
+    pub fn with_credentials(username: &str, display_name: &str, email: &str, password: &str) -> Result<Self> {
+        let password_hash = Self::hash_password(password)?;
+        
+        Ok(Self {
+            username: username.to_string(),
+            display_name: display_name.to_string(),
+            email: email.to_string(),
+            password_hash,
+            ..Self::new()
+        })
+    }
+
+    /// Hashes a password using Argon2
+    pub fn hash_password(password: &str) -> Result<String> {
+        let salt = SaltString::generate(&mut OsRng);
+        let argon2 = Argon2::default();
+        
+        argon2
+            .hash_password(password.as_bytes(), &salt)
+            .map(|hash| hash.to_string())
+            .map_err(|e| BlogError::Internal(format!("Password hashing error: {}", e)))
+    }
+
+    /// Verifies a password against the stored hash
+    pub fn verify_password(&self, password: &str) -> Result<bool> {
+        let parsed_hash = PasswordHash::new(&self.password_hash)
+            .map_err(|e| BlogError::Internal(format!("Password hash parsing error: {}", e)))?;
+        
+        Ok(Argon2::default()
+            .verify_password(password.as_bytes(), &parsed_hash)
+            .is_ok())
+    }
+
+    /// Returns a new user with updated username
+    pub fn with_updated_username(self, username: &str) -> Self {
+        Self {
+            username: username.to_string(),
+            updated_at: chrono::Local::now().to_rfc3339(),
+            ..self
+        }
+    }
+
+    /// Returns a new user with updated display name
+    pub fn with_updated_display_name(self, display_name: &str) -> Self {
+        Self {
+            display_name: display_name.to_string(),
+            updated_at: chrono::Local::now().to_rfc3339(),
+            ..self
+        }
+    }
+
+    /// Returns a new user with updated email
+    pub fn with_updated_email(self, email: &str) -> Self {
+        Self {
+            email: email.to_string(),
+            updated_at: chrono::Local::now().to_rfc3339(),
+            ..self
+        }
+    }
+
+    /// Returns a new user with updated password
+    pub fn with_updated_password(self, password: &str) -> Result<Self> {
+        let password_hash = Self::hash_password(password)?;
+        
+        Ok(Self {
+            password_hash,
+            updated_at: chrono::Local::now().to_rfc3339(),
+            ..self
+        })
+    }
+
+    /// Returns a new user with updated role
+    pub fn with_updated_role(self, role: UserRole) -> Self {
+        Self {
+            role,
+            updated_at: chrono::Local::now().to_rfc3339(),
+            ..self
+        }
+    }
+}
+
+impl Default for User {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// Content format for blog posts
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, ToSchema)]
+#[schema(description = "Format of the blog post content")]
+pub enum ContentFormat {
+    /// HTML content
+    HTML,
+    /// Markdown content
+    Markdown,
+}
+
+impl Default for ContentFormat {
+    fn default() -> Self {
+        Self::HTML
+    }
+}
 
 /// Represents a blog post tag
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, ToSchema)]
@@ -29,9 +207,14 @@ pub struct BlogPost {
     pub title: String,
     pub slug: String,
     pub date: String,
+    /// ID of the user who authored the post
+    pub user_id: Option<i64>,
+    /// Display name of the author (for backward compatibility and display purposes)
     pub author: String,
     pub excerpt: String,
     pub content: String,
+    /// Format of the content (HTML or Markdown)
+    pub content_format: ContentFormat,
     pub published: bool,
     pub featured: bool,
     pub image: Option<String>,
@@ -48,9 +231,11 @@ impl BlogPost {
             title: String::new(),
             slug: String::new(),
             date: chrono::Local::now().format("%Y-%m-%d").to_string(),
+            user_id: None,
             author: String::new(),
             excerpt: String::new(),
             content: String::new(),
+            content_format: ContentFormat::default(),
             published: false,
             featured: false,
             image: None,
@@ -103,6 +288,23 @@ impl BlogPost {
             ..self
         }
     }
+    
+    /// Returns a new blog post with updated content and format
+    pub fn with_updated_content_and_format(self, content: &str, format: ContentFormat) -> Self {
+        Self {
+            content: content.to_string(),
+            content_format: format,
+            ..self
+        }
+    }
+    
+    /// Returns a new blog post with updated content format
+    pub fn with_updated_content_format(self, format: ContentFormat) -> Self {
+        Self {
+            content_format: format,
+            ..self
+        }
+    }
 
     /// Returns a new blog post with updated excerpt
     pub fn with_updated_excerpt(self, excerpt: &str) -> Self {
@@ -124,6 +326,23 @@ impl BlogPost {
     pub fn with_updated_author(self, author: &str) -> Self {
         Self {
             author: author.to_string(),
+            ..self
+        }
+    }
+    
+    /// Returns a new blog post with updated user ID and author name
+    pub fn with_updated_user(self, user_id: i64, display_name: &str) -> Self {
+        Self {
+            user_id: Some(user_id),
+            author: display_name.to_string(),
+            ..self
+        }
+    }
+    
+    /// Returns a new blog post with updated user ID
+    pub fn with_updated_user_id(self, user_id: i64) -> Self {
+        Self {
+            user_id: Some(user_id),
             ..self
         }
     }
@@ -190,6 +409,28 @@ impl BlogPost {
         Self {
             metadata: new_metadata,
             ..self
+        }
+    }
+    
+    /// Renders the content based on its format
+    /// 
+    /// If the content is in Markdown format, it will be converted to HTML.
+    /// If the content is already in HTML format, it will be returned as is.
+    /// 
+    /// # Returns
+    /// 
+    /// A Result containing the rendered HTML content
+    pub fn render_content(&self) -> Result<String> {
+        match self.content_format {
+            ContentFormat::HTML => {
+                // Content is already in HTML format
+                Ok(self.content.clone())
+            }
+            ContentFormat::Markdown => {
+                // Convert Markdown to HTML
+                markdown_to_html(&self.content)
+                    .map_err(|e| BlogError::Internal(format!("Failed to render Markdown: {}", e)))
+            }
         }
     }
 }

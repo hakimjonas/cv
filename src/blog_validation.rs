@@ -2,7 +2,8 @@
 ///
 /// This module provides validation and sanitization functions for blog post content
 /// to prevent XSS attacks and ensure data integrity.
-use crate::blog_data::{BlogPost, Tag};
+use crate::blog_data::{BlogPost, ContentFormat, Tag};
+use crate::markdown_editor::utils::markdown_to_html;
 use ammonia::{Builder, Url};
 use regex::Regex;
 use std::collections::HashSet;
@@ -166,8 +167,29 @@ pub fn sanitize_blog_post(post: &BlogPost) -> BlogPost {
     // Sanitize excerpt (no HTML allowed)
     sanitized_post.excerpt = sanitize_text(&post.excerpt);
 
-    // Sanitize content (limited HTML allowed)
-    sanitized_post.content = sanitize_html(&post.content);
+    // Sanitize content based on format
+    match post.content_format {
+        ContentFormat::HTML => {
+            // For HTML content, use the existing sanitize_html function
+            sanitized_post.content = sanitize_html(&post.content);
+        }
+        ContentFormat::Markdown => {
+            // For Markdown content, first convert to HTML, then sanitize
+            match markdown_to_html(&post.content) {
+                Ok(html) => {
+                    sanitized_post.content = sanitize_html(&html);
+                    // Set content format to HTML since we've converted it
+                    sanitized_post.content_format = ContentFormat::HTML;
+                }
+                Err(e) => {
+                    // If Markdown conversion fails, sanitize the raw Markdown as text
+                    debug!("Failed to convert Markdown to HTML: {}", e);
+                    sanitized_post.content = sanitize_text(&post.content);
+                    // Keep the content format as Markdown
+                }
+            }
+        }
+    }
 
     // Sanitize author (no HTML allowed)
     sanitized_post.author = sanitize_text(&post.author);

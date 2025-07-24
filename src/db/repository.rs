@@ -4,12 +4,44 @@
  * following functional programming principles
  */
 
-// Define the BlogPost and Tag structs directly in this module
+// Define the BlogPost, Tag, and User structs directly in this module
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct Tag {
     pub id: Option<i64>,
     pub name: String,
     pub slug: String,
+}
+
+/// User role for authorization
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub enum UserRole {
+    /// Administrator with full access
+    Admin,
+    /// Author who can create and edit their own posts
+    Author,
+    /// Editor who can edit but not create posts
+    Editor,
+    /// Viewer who can only view content
+    Viewer,
+}
+
+impl Default for UserRole {
+    fn default() -> Self {
+        Self::Author
+    }
+}
+
+/// User in the system
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct User {
+    pub id: Option<i64>,
+    pub username: String,
+    pub display_name: String,
+    pub email: String,
+    pub password_hash: String,
+    pub role: UserRole,
+    pub created_at: String,
+    pub updated_at: String,
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -18,6 +50,7 @@ pub struct BlogPost {
     pub title: String,
     pub slug: String,
     pub date: String,
+    pub user_id: Option<i64>,
     pub author: String,
     pub excerpt: String,
     pub content: String,
@@ -156,6 +189,7 @@ impl BlogRepository {
                             title,
                             slug,
                             date,
+                            user_id: None,            // Default to None
                             author,
                             excerpt,
                             content,
@@ -389,6 +423,40 @@ impl BlogRepository {
         Ok(featured_posts)
     }
 
+    /// Search for posts matching a query
+    ///
+    /// This method uses the FTS5 virtual table to search for posts matching a query.
+    /// The search is performed across the title, content, and excerpt columns of the posts.
+    ///
+    /// # Arguments
+    ///
+    /// * `query` - The search query
+    /// * `published_only` - Whether to return only published posts
+    ///
+    /// # Returns
+    ///
+    /// A Result containing a Vector of BlogPost objects matching the search query
+    #[instrument(skip(self), err)]
+    pub async fn search_posts(&self, query: &str, published_only: bool) -> Result<Vector<BlogPost>> {
+        let query = query.to_string();
+        let pool = Arc::clone(&self.pool);
+
+        task::spawn_blocking(move || {
+            let conn = pool.get()?;
+
+            // Use the optimized query function
+            let posts = super::optimized_queries::search_posts_optimized(&conn, &query, published_only)?;
+
+            debug!(
+                "Found {} blog posts matching query '{}' using optimized search",
+                posts.len(),
+                query
+            );
+            Ok(posts)
+        })
+        .await?
+    }
+
     /// Get posts by tag
     #[instrument(skip(self), err)]
     pub async fn get_posts_by_tag(&self, tag_slug: &str) -> Result<Vector<BlogPost>> {
@@ -426,6 +494,7 @@ impl BlogRepository {
                     title,
                     slug,
                     date,
+                    user_id: None,            // Default to None
                     author,
                     excerpt,
                     content,
@@ -585,14 +654,15 @@ impl BlogRepository {
         tx.execute(
             "
             INSERT INTO posts (
-                title, slug, date, author, excerpt, content, 
+                title, slug, date, user_id, author, excerpt, content, 
                 published, featured, image
-            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
+            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)
         ",
             params![
                 &post.title,
                 &post.slug,
                 &post.date,
+                &post.user_id,
                 &post.author,
                 &post.excerpt,
                 &post.content,

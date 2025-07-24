@@ -32,9 +32,11 @@ fn create_test_post() -> BlogPost {
         title: format!("Test Post {timestamp}"),
         slug: unique_slug,
         date: chrono::Local::now().format("%Y-%m-%d").to_string(),
+        user_id: None,
         author: "Test Author".to_string(),
         excerpt: "This is a test excerpt".to_string(),
         content: "This is the full content of the test post.".to_string(),
+        content_format: cv::blog_data::ContentFormat::HTML,
         published: true,
         featured: false,
         image: None,
@@ -50,6 +52,7 @@ fn api_to_repo_post(api_post: &BlogPost) -> cv::db::repository::BlogPost {
         title: api_post.title.clone(),
         slug: api_post.slug.clone(),
         date: api_post.date.clone(),
+        user_id: api_post.user_id,
         author: api_post.author.clone(),
         excerpt: api_post.excerpt.clone(),
         content: api_post.content.clone(),
@@ -76,14 +79,27 @@ fn api_to_repo_tag(api_tag: &Tag) -> cv::db::repository::Tag {
 
 // Convert from repository::BlogPost to blog_data::BlogPost
 fn repo_to_api_post(repo_post: cv::db::repository::BlogPost) -> BlogPost {
+    // Determine content format from metadata or default to HTML
+    let content_format = if let Some(format) = repo_post.metadata.get("content_format") {
+        if format == "markdown" {
+            cv::blog_data::ContentFormat::Markdown
+        } else {
+            cv::blog_data::ContentFormat::HTML
+        }
+    } else {
+        cv::blog_data::ContentFormat::HTML
+    };
+
     BlogPost {
         id: repo_post.id,
         title: repo_post.title,
         slug: repo_post.slug,
         date: repo_post.date,
+        user_id: repo_post.user_id,
         author: repo_post.author,
         excerpt: repo_post.excerpt,
         content: repo_post.content,
+        content_format,
         published: repo_post.published,
         featured: repo_post.featured,
         image: repo_post.image,

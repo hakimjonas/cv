@@ -14,6 +14,7 @@ pub fn data_to_repo(post: &blog_data::BlogPost) -> repository::BlogPost {
         title: post.title.clone(),
         slug: post.slug.clone(),
         date: post.date.clone(),
+        user_id: post.user_id,
         author: post.author.clone(),
         excerpt: post.excerpt.clone(),
         content: post.content.clone(),
@@ -27,14 +28,27 @@ pub fn data_to_repo(post: &blog_data::BlogPost) -> repository::BlogPost {
 
 /// Convert a repository::BlogPost to a blog_data::BlogPost
 pub fn repo_to_data(post: &repository::BlogPost) -> blog_data::BlogPost {
+    // Determine content format from metadata or default to HTML
+    let content_format = if let Some(format) = post.metadata.get("content_format") {
+        if format == "markdown" {
+            blog_data::ContentFormat::Markdown
+        } else {
+            blog_data::ContentFormat::HTML
+        }
+    } else {
+        blog_data::ContentFormat::HTML
+    };
+
     blog_data::BlogPost {
         id: post.id,
         title: post.title.clone(),
         slug: post.slug.clone(),
         date: post.date.clone(),
+        user_id: post.user_id,
         author: post.author.clone(),
         excerpt: post.excerpt.clone(),
         content: post.content.clone(),
+        content_format,
         published: post.published,
         featured: post.featured,
         image: post.image.clone(),

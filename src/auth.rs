@@ -157,7 +157,7 @@ impl AuthService {
         let user = match self.user_repo.authenticate(username, password).await? {
             Some(user) => user,
             None => {
-                warn!("Authentication failed for user: {}", username);
+                warn!("AUTH: Authentication failed for user: {}", username);
                 return Err(AuthError::InvalidCredentials);
             }
         };
@@ -166,7 +166,7 @@ impl AuthService {
         let user_id = match user.id {
             Some(id) => id,
             None => {
-                error!("User has no ID: {}", username);
+                error!("AUTH: User has no ID: {}", username);
                 return Err(AuthError::Internal("User has no ID".to_string()));
             }
         };
@@ -184,7 +184,7 @@ impl AuthService {
             crate::db::repository::UserRole::Viewer => "Viewer",
         };
 
-        info!("User logged in: {}", username);
+        info!("AUTH: User logged in: {}", username);
         Ok(LoginResponse {
             token,
             user_id,
@@ -210,7 +210,7 @@ impl AuthService {
             .await?
             .is_some()
         {
-            warn!("Username already exists: {}", username);
+            warn!("AUTH: Username already exists: {}", username);
             return Err(AuthError::Internal("Username already exists".to_string()));
         }
 
@@ -231,7 +231,7 @@ impl AuthService {
             .generate_token(user_id, username, &crate::db::repository::UserRole::Author)
             .await?;
 
-        info!("User registered: {}", username);
+        info!("AUTH: User registered: {}", username);
         Ok(LoginResponse {
             token,
             user_id,
@@ -279,7 +279,7 @@ impl AuthService {
         )
         .map_err(|e| AuthError::Internal(format!("Failed to generate token: {e}")))?;
 
-        debug!("Generated JWT token for user: {}", username);
+        info!("AUTH: Generated JWT token for user: {}", username);
         Ok(token)
     }
 
@@ -293,8 +293,8 @@ impl AuthService {
             &Validation::default(),
         )?;
 
-        debug!(
-            "Validated JWT token for user: {}",
+        info!(
+            "AUTH: Validated JWT token for user: {}",
             token_data.claims.username
         );
         Ok(token_data.claims)

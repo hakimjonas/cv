@@ -1,0 +1,249 @@
+Using existing CV data file
+Generating website files...
+[2m2025-07-25T17:45:10.707126Z[0m [32m INFO[0m [2mcv[0m[2m:[0m Logging initialized with tracing
+[2m2025-07-25T17:45:10.707456Z[0m [32m INFO[0m [2mcv::unified_config[0m[2m:[0m Loading application configuration from all available sources
+[2m2025-07-25T17:45:10.707860Z[0m [32m INFO[0m [2mcv::unified_config[0m[2m:[0m Configuration file config.toml not found, using defaults
+[2m2025-07-25T17:45:10.708435Z[0m [32m INFO[0m [2mcv::unified_config[0m[2m:[0m Checking for environment variables with prefix CV__
+[2m2025-07-25T17:45:10.709263Z[0m [32m INFO[0m [2mcv::unified_config[0m[2m:[0m Configuration successfully loaded and deserialized
+[2m2025-07-25T17:45:10.709285Z[0m [32m INFO[0m [2mcv::unified_config[0m[2m:[0m Set derived output paths
+[2m2025-07-25T17:45:10.709329Z[0m [34mDEBUG[0m [2mkeyring[0m[2m:[0m creating entry with service cv-generator, user github-token, and no target    
+[2m2025-07-25T17:45:10.709596Z[0m [34mDEBUG[0m [2mkeyring[0m[2m:[0m created entry MockCredential { inner: Mutex { data: RefCell { value: MockData { secret: None, error: None } }, poisoned: false, .. } }    
+[2m2025-07-25T17:45:10.709615Z[0m [34mDEBUG[0m [2mkeyring[0m[2m:[0m get password from entry MockCredential { inner: Mutex { data: RefCell { value: MockData { secret: None, error: None } }, poisoned: false, .. } }    
+[2m2025-07-25T17:45:10.709703Z[0m [32m INFO[0m [2mcv::unified_config[0m[2m:[0m Consider setting a GitHub token to avoid API rate limiting
+[2m2025-07-25T17:45:10.709710Z[0m [32m INFO[0m [2mcv::unified_config[0m[2m:[0m You can set a token with: cv --set-token <your-token>
+[2m2025-07-25T17:45:10.710227Z[0m [32m INFO[0m [2mcv[0m[2m:[0m Loading CV data from JSON: data/cv_data.json
+[2m2025-07-25T17:45:10.711445Z[0m [34mDEBUG[0m [2mkeyring[0m[2m:[0m creating entry with service cv-generator, user github-token, and no target    
+[2m2025-07-25T17:45:10.711465Z[0m [34mDEBUG[0m [2mkeyring[0m[2m:[0m created entry MockCredential { inner: Mutex { data: RefCell { value: MockData { secret: None, error: None } }, poisoned: false, .. } }    
+[2m2025-07-25T17:45:10.711479Z[0m [34mDEBUG[0m [2mkeyring[0m[2m:[0m get password from entry MockCredential { inner: Mutex { data: RefCell { value: MockData { secret: None, error: None } }, poisoned: false, .. } }    
+[2m2025-07-25T17:45:10.711548Z[0m [33m WARN[0m [2mcv[0m[2m:[0m No GitHub API token found. API requests will be subject to lower rate limits.
+[2m2025-07-25T17:45:10.711556Z[0m [32m INFO[0m [2mcv[0m[2m:[0m To avoid rate limiting, set the token with: cv --set-token <your-token>
+[2m2025-07-25T17:45:10.711563Z[0m [32m INFO[0m [2mcv[0m[2m:[0m Or set the GITHUB_TOKEN environment variable.
+[2m2025-07-25T17:45:10.711583Z[0m [32m INFO[0m [2mcv[0m[2m:[0m Fetching GitHub projects from sources defined in CV data asynchronously
+[2m2025-07-25T17:45:10.711604Z[0m [32m INFO[0m [2mcv[0m[2m:[0m Found 0 GitHub projects
+[2m2025-07-25T17:45:10.711624Z[0m [32m INFO[0m [2mcv[0m[2m:[0m Updated CV with 0 total projects
+[2m2025-07-25T17:45:10.711633Z[0m [32m INFO[0m [2mcv[0m[2m:[0m Loading language icons
+[2m2025-07-25T17:45:10.712179Z[0m [33m WARN[0m [2mcv[0m[2m:[0m Failed to load language icons: Failed to read language icons from data/language_icons.json
+[2m2025-07-25T17:45:10.712216Z[0m [32m INFO[0m [2mcv[0m[2m:[0m Continuing without language icons
+[2m2025-07-25T17:45:10.712240Z[0m [32m INFO[0m [2mcv[0m[2m:[0m Filtering CV data based on public_data configuration
+[2m2025-07-25T17:45:10.712308Z[0m [32m INFO[0m [2mcv[0m[2m:[0m Generating HTML files
+[2m2025-07-25T17:45:10.713089Z[0m [32m INFO[0m [2mcv[0m[2m:[0m Copying static assets
+Skipping excluded file: index.html
+[2m2025-07-25T17:45:10.742459Z[0m [32m INFO[0m [2mcv[0m[2m:[0m Generating PDF CV
+Warning: CV generator failed, but continuing with deployment
+This is likely due to missing Typst CLI for PDF generation
+The website should still be functional without the PDF
+Starting blog API server...
+Waiting for server to start...
+Creating default users...
+[2m2025-07-25T17:46:01.703972Z[0m [32m INFO[0m [2mblog_api_server[0m[2m:[0m Logging initialized with tracing
+[2m2025-07-25T17:46:01.704616Z[0m [32m INFO[0m [2mblog_api_server[0m[2m:[0m Initializing SQLite global configuration...
+[2m2025-07-25T17:46:01.706831Z[0m [32m INFO[0m [2mblog_api_server[0m[2m:[0m Configuring SQLite for better concurrency
+[2m2025-07-25T17:46:01.707049Z[0m [32m INFO[0m [2mcv::unified_config[0m[2m:[0m Loading application configuration from all available sources
+[2m2025-07-25T17:46:01.707116Z[0m [34mDEBUG[0m [2mcv::unified_config[0m[2m:[0m Starting with default configuration values
+[2m2025-07-25T17:46:01.707202Z[0m [34mDEBUG[0m [2mcv::unified_config[0m[2m:[0m Default data path: data/cv_data.json
+[2m2025-07-25T17:46:01.707209Z[0m [34mDEBUG[0m [2mcv::unified_config[0m[2m:[0m Default output directory: dist
+[2m2025-07-25T17:46:01.707214Z[0m [34mDEBUG[0m [2mcv::unified_config[0m[2m:[0m Default static directory: static
+[2m2025-07-25T17:46:01.707232Z[0m [32m INFO[0m [2mcv::unified_config[0m[2m:[0m Configuration file config.toml not found, using defaults
+[2m2025-07-25T17:46:01.707238Z[0m [34mDEBUG[0m [2mcv::unified_config[0m[2m:[0m To create a configuration file, create a config.toml file in the project root
+[2m2025-07-25T17:46:01.707472Z[0m [32m INFO[0m [2mcv::unified_config[0m[2m:[0m Checking for environment variables with prefix CV__
+[2m2025-07-25T17:46:01.707479Z[0m [34mDEBUG[0m [2mcv::unified_config[0m[2m:[0m Environment variable format example: CV_PATHS__DATA_PATH=/path/to/data.json
+[2m2025-07-25T17:46:01.708212Z[0m [32m INFO[0m [2mcv::unified_config[0m[2m:[0m Configuration successfully loaded and deserialized
+[2m2025-07-25T17:46:01.708228Z[0m [34mDEBUG[0m [2mcv::unified_config[0m[2m:[0m Loaded data path: data/cv_data.json
+[2m2025-07-25T17:46:01.708233Z[0m [34mDEBUG[0m [2mcv::unified_config[0m[2m:[0m Loaded output directory: dist
+[2m2025-07-25T17:46:01.708238Z[0m [34mDEBUG[0m [2mcv::unified_config[0m[2m:[0m Loaded static directory: static
+[2m2025-07-25T17:46:01.708253Z[0m [34mDEBUG[0m [2mcv::unified_config[0m[2m:[0m API port range: 3000-3010
+[2m2025-07-25T17:46:01.708260Z[0m [32m INFO[0m [2mcv::unified_config[0m[2m:[0m Set derived output paths
+[2m2025-07-25T17:46:01.708264Z[0m [34mDEBUG[0m [2mcv::unified_config[0m[2m:[0m HTML output path: dist/cv.html
+[2m2025-07-25T17:46:01.708268Z[0m [34mDEBUG[0m [2mcv::unified_config[0m[2m:[0m PDF output path: dist/cv.pdf
+[2m2025-07-25T17:46:01.708839Z[0m [34mDEBUG[0m [2mkeyring[0m[2m:[0m creating entry with service cv-generator, user github-token, and no target    
+[2m2025-07-25T17:46:01.708873Z[0m [34mDEBUG[0m [2mkeyring[0m[2m:[0m created entry MockCredential { inner: Mutex { data: RefCell { value: MockData { secret: None, error: None } }, poisoned: false, .. } }    
+[2m2025-07-25T17:46:01.708913Z[0m [34mDEBUG[0m [2mkeyring[0m[2m:[0m get password from entry MockCredential { inner: Mutex { data: RefCell { value: MockData { secret: None, error: None } }, poisoned: false, .. } }    
+[2m2025-07-25T17:46:01.708960Z[0m [34mDEBUG[0m [2mcv::unified_config[0m[2m:[0m No GitHub API token found in secure storage
+[2m2025-07-25T17:46:01.708968Z[0m [32m INFO[0m [2mcv::unified_config[0m[2m:[0m Consider setting a GitHub token to avoid API rate limiting
+[2m2025-07-25T17:46:01.708975Z[0m [32m INFO[0m [2mcv::unified_config[0m[2m:[0m You can set a token with: cv --set-token <your-token>
+[2m2025-07-25T17:46:01.708983Z[0m [34mDEBUG[0m [2mcv::unified_config[0m[2m:[0m Configuration loaded successfully
+✅ Directory is writable
+[2m2025-07-25T17:46:01.709432Z[0m [32m INFO[0m [2mblog_api_server[0m[2m:[0m Using database at: "./test_data/blog_test.db"
+[2m2025-07-25T17:46:01.709455Z[0m [32m INFO[0m [2mcv::check_db_permissions[0m[2m:[0m Setting secure permissions for database: "./test_data/blog_test.db"
+[2m2025-07-25T17:46:01.709467Z[0m [34mDEBUG[0m [2mcv::check_db_permissions[0m[2m:[0m Setting secure permissions on parent directory: "./test_data"
+[2m2025-07-25T17:46:01.709484Z[0m [32m INFO[0m [2mcv::check_db_permissions[0m[2m:[0m ✅ Set directory permissions to 0700 (owner read/write/execute only)
+[2m2025-07-25T17:46:01.709491Z[0m [34mDEBUG[0m [2mcv::check_db_permissions[0m[2m:[0m Database file doesn't exist yet, will be created by SQLite
+[2m2025-07-25T17:46:01.715289Z[0m [32m INFO[0m [2mcv::db::migrations[0m[2m:[0m Latest migration applied: 0
+[2m2025-07-25T17:46:01.715340Z[0m [32m INFO[0m [2mcv::db::migrations[0m[2m:[0m Applying migration 1: Initial schema
+[2m2025-07-25T17:46:01.716952Z[0m [32m INFO[0m [2mcv::db::migrations[0m[2m:[0m Migration 1 applied successfully
+[2m2025-07-25T17:46:01.716974Z[0m [32m INFO[0m [2mcv::db::migrations[0m[2m:[0m Applying migration 2: Add full-text search
+[2m2025-07-25T17:46:01.717719Z[0m [32m INFO[0m [2mcv::db::migrations[0m[2m:[0m Migration 2 applied successfully
+[2m2025-07-25T17:46:01.717738Z[0m [32m INFO[0m [2mcv::db::migrations[0m[2m:[0m Applying migration 3: Add user authentication
+[2m2025-07-25T17:46:01.720127Z[0m [32m INFO[0m [2mcv::db::migrations[0m[2m:[0m Migration 3 applied successfully
+[2m2025-07-25T17:46:01.720228Z[0m [32m INFO[0m [2mcv::db::migrations[0m[2m:[0m All migrations applied successfully
+[2m2025-07-25T17:46:01.720415Z[0m [32m INFO[0m [2mcv::db::pool_metrics[0m[2m:[0m Initializing database connection pool metrics for 'db-./test_data/blog_test.db'
+[2m2025-07-25T17:46:01.772496Z[0m [32m INFO[0m [2mblog_api_server[0m[2m:[0m API documentation available at /api-docs
+[2m2025-07-25T17:46:01.772542Z[0m [32m INFO[0m [2mblog_api_server[0m[2m:[0m Attempting to start server on ports 3000-3010
+[2m2025-07-25T17:46:01.772617Z[0m [32m INFO[0m [2mblog_api_server[0m[2m:[0m Blog API server running at http://0.0.0.0:3000
+[2m2025-07-25T17:46:01.772628Z[0m [32m INFO[0m [2mblog_api_server[0m[2m:[0m Starting server on http://0.0.0.0:3000
+Creating default user accounts...
+Admin user already exists, skipping creation
+Author user already exists, skipping creation
+Editor user already exists, skipping creation
+Default user accounts created successfully!
+You can now log in with the following credentials:
+Admin: username=admin, password=admin123
+Author: username=author, password=author123
+Editor: username=editor, password=editor123
+Resetting admin password directly in the database...
+Running reset_admin_password script...
+[2m2025-07-25T17:46:47.119334Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m [2mcv::blog_api[0m[2m:[0m enter
+[2m2025-07-25T17:46:47.122268Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m enter
+[2m2025-07-25T17:46:47.122723Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:46:47.122942Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mget_user_by_username[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:46:47.127870Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mget_user_by_username[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:46:47.129347Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:46:47.129607Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m exit
+[2m2025-07-25T17:46:47.129711Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m [2mcv::blog_api[0m[2m:[0m exit
+[2m2025-07-25T17:46:47.130161Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m [2mcv::blog_api[0m[2m:[0m enter
+[2m2025-07-25T17:46:47.169163Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m enter
+[2m2025-07-25T17:46:47.169774Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:46:47.169910Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mget_user_by_username[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:46:47.170228Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mget_user_by_username[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:46:47.170327Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:46:47.170394Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m exit
+[2m2025-07-25T17:46:47.170484Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m [2mcv::blog_api[0m[2m:[0m exit
+[2m2025-07-25T17:46:47.183221Z[0m [34mDEBUG[0m [2mcv::db::user_repository[0m[2m:[0m Loaded user with username: admin
+[2m2025-07-25T17:46:47.185040Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m [2mcv::blog_api[0m[2m:[0m enter
+[2m2025-07-25T17:46:47.185276Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m enter
+[2m2025-07-25T17:46:47.185374Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:46:47.185493Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mget_user_by_username[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:46:47.185732Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mget_user_by_username[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:46:47.185825Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mget_user_by_username[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:46:47.185910Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mget_user_by_username[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:46:47.186839Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mverify_password[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:46:47.187274Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mverify_password[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:46:47.187430Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:46:47.187571Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m exit
+[2m2025-07-25T17:46:47.187693Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m [2mcv::blog_api[0m[2m:[0m exit
+[2m2025-07-25T17:46:47.201158Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m [2mcv::blog_api[0m[2m:[0m enter
+[2m2025-07-25T17:46:47.201396Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m enter
+[2m2025-07-25T17:46:47.201499Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:46:47.201649Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mverify_password[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:46:47.201873Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mverify_password[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:46:47.201984Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mverify_password[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:46:47.202159Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mverify_password[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:46:47.202387Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m AUTH: Authentication failed for user: admin
+[2m2025-07-25T17:46:47.202523Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:46:47.202650Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:46:47.202757Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:46:47.203081Z[0m [33m WARN[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m AUTH: Authentication failed for user: admin
+[2m2025-07-25T17:46:47.203200Z[0m [31mERROR[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m [3merror[0m[2m=[0mInvalid credentials
+[2m2025-07-25T17:46:47.203321Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m exit
+[2m2025-07-25T17:46:47.203411Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m enter
+[2m2025-07-25T17:46:47.203486Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m exit
+[2m2025-07-25T17:46:47.203641Z[0m [31mERROR[0m [1mapi_login_handler[0m[2m:[0m [2mcv::blog_api[0m[2m:[0m [3merror[0m[2m=[0mInvalid credentials
+[2m2025-07-25T17:46:47.203970Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m [2mcv::blog_api[0m[2m:[0m exit
+[2m2025-07-25T17:46:47.204037Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m [2mcv::blog_api[0m[2m:[0m enter
+[2m2025-07-25T17:46:47.204115Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m [2mcv::blog_api[0m[2m:[0m exit
+Resetting admin user password...
+Successfully reset password for admin user (ID: 1)
+Password reset complete!
+You can now log in with the following credentials:
+Username: admin
+Password: admin123
+Admin password reset complete!
+Server is running. Press Ctrl+C to stop.
+[2m2025-07-25T17:48:17.312049Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m [2mcv::blog_api[0m[2m:[0m enter
+[2m2025-07-25T17:48:17.312320Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m enter
+[2m2025-07-25T17:48:17.312429Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:48:17.312600Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mget_user_by_username[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:48:17.313450Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mget_user_by_username[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:48:17.313672Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:48:17.313770Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m exit
+[2m2025-07-25T17:48:17.313850Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m [2mcv::blog_api[0m[2m:[0m exit
+[2m2025-07-25T17:48:17.314119Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m [2mcv::blog_api[0m[2m:[0m enter
+[2m2025-07-25T17:48:17.314122Z[0m [34mDEBUG[0m [2mcv::db::user_repository[0m[2m:[0m Loaded user with username: admin
+[2m2025-07-25T17:48:17.314210Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m enter
+[2m2025-07-25T17:48:17.314290Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:48:17.314387Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mget_user_by_username[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:48:17.314601Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mget_user_by_username[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:48:17.314728Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mget_user_by_username[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:48:17.314841Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mget_user_by_username[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:48:17.315310Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mverify_password[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:48:17.316011Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mverify_password[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:48:17.316164Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:48:17.316262Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m exit
+[2m2025-07-25T17:48:17.316354Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m [2mcv::blog_api[0m[2m:[0m exit
+[2m2025-07-25T17:48:17.316633Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m [2mcv::blog_api[0m[2m:[0m enter
+[2m2025-07-25T17:48:17.316712Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m enter
+[2m2025-07-25T17:48:17.316789Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:48:17.316886Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mverify_password[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:48:17.317216Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mverify_password[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:48:17.317503Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:48:17.317657Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m exit
+[2m2025-07-25T17:48:17.317745Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m [2mcv::blog_api[0m[2m:[0m exit
+[2m2025-07-25T17:48:17.325503Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m [2mcv::blog_api[0m[2m:[0m enter
+[2m2025-07-25T17:48:17.325736Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m enter
+[2m2025-07-25T17:48:17.325833Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:48:17.325937Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mverify_password[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:48:17.326133Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mverify_password[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:48:17.326371Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mverify_password[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:48:17.326586Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mverify_password[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:48:17.326757Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m AUTH: Authentication failed for user: admin
+[2m2025-07-25T17:48:17.326863Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:48:17.326955Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:48:17.327056Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:48:17.327161Z[0m [33m WARN[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m AUTH: Authentication failed for user: admin
+[2m2025-07-25T17:48:17.327243Z[0m [31mERROR[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m [3merror[0m[2m=[0mInvalid credentials
+[2m2025-07-25T17:48:17.327425Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m exit
+[2m2025-07-25T17:48:17.327505Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m enter
+[2m2025-07-25T17:48:17.327610Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m exit
+[2m2025-07-25T17:48:17.327730Z[0m [31mERROR[0m [1mapi_login_handler[0m[2m:[0m [2mcv::blog_api[0m[2m:[0m [3merror[0m[2m=[0mInvalid credentials
+[2m2025-07-25T17:48:17.327822Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m [2mcv::blog_api[0m[2m:[0m exit
+[2m2025-07-25T17:48:17.327889Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m [2mcv::blog_api[0m[2m:[0m enter
+[2m2025-07-25T17:48:17.327958Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m [2mcv::blog_api[0m[2m:[0m exit
+[2m2025-07-25T17:50:24.386092Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m [2mcv::blog_api[0m[2m:[0m enter
+[2m2025-07-25T17:50:24.386995Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m enter
+[2m2025-07-25T17:50:24.387178Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:50:24.387274Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mget_user_by_username[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:50:24.389385Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mget_user_by_username[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:50:24.389658Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:50:24.389679Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m exit
+[2m2025-07-25T17:50:24.389699Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m [2mcv::blog_api[0m[2m:[0m exit
+[2m2025-07-25T17:50:24.389868Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m [2mcv::blog_api[0m[2m:[0m enter
+[2m2025-07-25T17:50:24.389898Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m enter
+[2m2025-07-25T17:50:24.389913Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:50:24.389929Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mget_user_by_username[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:50:24.389951Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mget_user_by_username[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:50:24.389972Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:50:24.389993Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m exit
+[2m2025-07-25T17:50:24.390011Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m [2mcv::blog_api[0m[2m:[0m exit
+[2m2025-07-25T17:50:24.393265Z[0m [34mDEBUG[0m [2mcv::db::user_repository[0m[2m:[0m Loaded user with username: admin
+[2m2025-07-25T17:50:24.393708Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m [2mcv::blog_api[0m[2m:[0m enter
+[2m2025-07-25T17:50:24.393758Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m enter
+[2m2025-07-25T17:50:24.393775Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:50:24.393790Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mget_user_by_username[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:50:24.393834Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mget_user_by_username[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:50:24.393852Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mget_user_by_username[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:50:24.393908Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mget_user_by_username[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:50:24.394153Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mverify_password[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:50:24.394200Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mverify_password[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:50:24.394212Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:50:24.394257Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m exit
+[2m2025-07-25T17:50:24.394271Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m [2mcv::blog_api[0m[2m:[0m exit
+[2m2025-07-25T17:50:24.396312Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m [2mcv::blog_api[0m[2m:[0m enter
+[2m2025-07-25T17:50:24.396358Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m enter
+[2m2025-07-25T17:50:24.396373Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:50:24.396386Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mverify_password[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:50:24.396429Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mverify_password[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:50:24.396442Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mverify_password[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:50:24.396453Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mverify_password[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:50:24.396485Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m AUTH: Authentication failed for user: admin
+[2m2025-07-25T17:50:24.396505Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:50:24.396518Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m enter
+[2m2025-07-25T17:50:24.396540Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m[1mauthenticate[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::db::user_repository[0m[2m:[0m exit
+[2m2025-07-25T17:50:24.396557Z[0m [33m WARN[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m AUTH: Authentication failed for user: admin
+[2m2025-07-25T17:50:24.396572Z[0m [31mERROR[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m [3merror[0m[2m=[0mInvalid credentials
+[2m2025-07-25T17:50:24.396588Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m exit
+[2m2025-07-25T17:50:24.396597Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m enter
+[2m2025-07-25T17:50:24.396606Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m[1mlogin[0m[1m{[0m[3musername[0m[2m=[0m"admin"[1m}[0m[2m:[0m [2mcv::auth[0m[2m:[0m exit
+[2m2025-07-25T17:50:24.396621Z[0m [31mERROR[0m [1mapi_login_handler[0m[2m:[0m [2mcv::blog_api[0m[2m:[0m [3merror[0m[2m=[0mInvalid credentials
+[2m2025-07-25T17:50:24.396701Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m [2mcv::blog_api[0m[2m:[0m exit
+[2m2025-07-25T17:50:24.396709Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m [2mcv::blog_api[0m[2m:[0m enter
+[2m2025-07-25T17:50:24.396715Z[0m [32m INFO[0m [1mapi_login_handler[0m[2m:[0m [2mcv::blog_api[0m[2m:[0m exit

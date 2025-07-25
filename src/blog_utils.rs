@@ -18,7 +18,7 @@ pub fn create_test_database() -> Result<PathBuf> {
     let test_dir = create_test_directory()?;
     let db_path = test_dir.join("blog_test.db");
 
-    // If database file exists and seems to be locked, remove it
+    // If database file exists, check if it's locked but don't remove it
     if db_path.exists() {
         // Try to open the database exclusively to check if it's locked
         match rusqlite::Connection::open_with_flags(
@@ -34,13 +34,9 @@ pub fn create_test_database() -> Result<PathBuf> {
             Err(e) => {
                 if e.to_string().contains("locked") {
                     println!(
-                        "⚠️ Existing database appears to be locked, removing it to start fresh"
+                        "⚠️ Existing database appears to be locked, but we'll try to use it anyway"
                     );
-                    // Try to remove the database file and its WAL files
-                    let _ = std::fs::remove_file(&db_path);
-                    let _ = std::fs::remove_file(db_path.with_extension("db-shm"));
-                    let _ = std::fs::remove_file(db_path.with_extension("db-wal"));
-                    // Wait a moment for the OS to release the files
+                    // Don't remove the database, just wait a moment for it to be released
                     std::thread::sleep(std::time::Duration::from_millis(500));
                 }
             }

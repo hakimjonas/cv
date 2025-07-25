@@ -52,8 +52,9 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=5 \
 # Switch back to root for the CMD to allow cargo to work with mounted volumes
 USER root
 
-# Copy the startup script
+# Copy the startup script and SQL script
 COPY docker/startup.sh /app/startup.sh
+COPY docker/reset_admin_password.sql /app/docker/reset_admin_password.sql
 RUN chmod +x /app/startup.sh
 
 # The actual source code will be mounted as volumes in docker-compose.local.yml

@@ -5,25 +5,29 @@ set -e
 mkdir -p data
 mkdir -p test_data
 
-# Always create a fresh cv_data.json file with the correct structure
-echo "Creating CV data file with the correct structure..."
-# Create a minimal sample that matches the expected structure
-echo '{
-  "personal_info": {
-    "name": "John Doe",
-    "title": "Software Engineer",
-    "email": "john.doe@example.com",
-    "summary": "Sample CV data for testing",
-    "social_links": {}
-  },
-  "experiences": [],
-  "education": [],
-  "skill_categories": [],
-  "projects": [],
-  "languages": {},
-  "certifications": [],
-  "github_sources": []
-}' > data/cv_data.json
+# Check if cv_data.json exists, if not, create a sample one
+if [ ! -f "data/cv_data.json" ]; then
+    echo "CV data file not found, creating a sample one..."
+    # Create a minimal sample that matches the expected structure
+    echo '{
+      "personal_info": {
+        "name": "John Doe",
+        "title": "Software Engineer",
+        "email": "john.doe@example.com",
+        "summary": "Sample CV data for testing",
+        "social_links": {}
+      },
+      "experiences": [],
+      "education": [],
+      "skill_categories": [],
+      "projects": [],
+      "languages": {},
+      "certifications": [],
+      "github_sources": []
+    }' > data/cv_data.json
+else
+    echo "Using existing CV data file"
+fi
 
 echo "Generating website files..."
 # Run CV generator but don't fail if PDF generation fails (due to missing Typst CLI)
@@ -33,8 +37,26 @@ cargo run --bin cv || {
     echo "The website should still be functional without the PDF"
 }
 
+echo "Starting blog API server..."
+# Start the blog API server in the background
+cargo run --bin blog_api_server &
+SERVER_PID=$!
+
+# Wait a moment for the server to start
+echo "Waiting for server to start..."
+sleep 10
+
 echo "Creating default users..."
 cargo run --bin create_default_users -- --db-path="./test_data/blog_test.db"
 
-echo "Starting blog API server..."
-exec cargo run --bin blog_api_server
+echo "Resetting admin password directly in the database..."
+# Wait a bit more to ensure database is fully initialized with tables
+sleep 5
+# Use the direct reset script to reset the admin password
+echo "Running reset_admin_password_direct script..."
+cargo run --bin reset_admin_password_direct -- --db-path="./test_data/blog_test.db"
+echo "Admin password reset complete!"
+
+# Wait for the server process to complete
+echo "Server is running. Press Ctrl+C to stop."
+wait $SERVER_PID

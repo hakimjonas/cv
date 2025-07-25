@@ -1,106 +1,196 @@
 {
   "personal_info": {
-    "name": "John Doe",
-    "title": "Software Engineer",
-    "email": "john.doe@example.com",
-    "phone": "+1 (555) 123-4567",
-    "website": "https://johndoe.example.com",
-    "summary": "Experienced software engineer with a passion for building scalable and maintainable systems.",
-    "location": "San Francisco, CA",
+    "name": "Hakim Jonas Ghoula",
+    "title": "Data Engineer",
+    "email": "hakim@walkthisway.dk",
+    "phone": "+45 26335577",
+    "website": null,
+    "location": "Hothers Plads 11, 3, 2200 Cph. N",
+    "summary": "Data Engineer with 3+ years of experience designing, optimizing, and managing large-scale data pipelines using Scala, Spark, and Python. Skilled in building robust ETL processes, implementing test-driven development, and leveraging AWS cloud services. Key projects at LiveIntent (acquired by Zeta Global) include Dormant Email Reactivation and PersonID/offline graph pipelines. Currently exploring compiler and language design through a personal functional programming language project in Rust, focusing on type systems and parsing techniques.",
     "social_links": {
-      "GitHub": "https://github.com/johndoe",
-      "LinkedIn": "https://linkedin.com/in/johndoe"
+      "LinkedIn": "https://linkedin.com/in/hakimghoula",
+      "GitHub": "https://github.com/hakimjonas"
     }
   },
   "experiences": [
     {
-      "company": "Example Corp",
-      "position": "Senior Software Engineer",
-      "start_date": "2020-01-01",
+      "company": "LiveIntent (acquired by Zeta Global in November 2024)",
+      "position": "Data Engineer",
+      "start_date": "2022",
       "end_date": null,
-      "location": "San Francisco, CA",
-      "description": "Leading development of cloud-native applications",
+      "location": "Copenhagen, Denmark",
+      "description": "Designed and maintained large-scale ETL pipelines using Scala and Spark, improving data processing efficiency.",
       "achievements": [
-        "Designed and implemented microservices architecture",
-        "Reduced system latency by 40%",
-        "Mentored junior engineers"
+        "Collaborated on data ingestion and delivery processes for external partners",
+        "Contributed to Dormant Email Reactivation and PersonID/offline graph projects, supporting business objectives",
+        "Emphasized functional programming and TDD to create maintainable and reliable code"
       ],
-      "technologies": ["Rust", "Docker", "Kubernetes", "AWS"]
+      "technologies": [
+        "Scala", "Spark", "AWS", "Functional Programming", "TDD"
+      ]
     },
     {
-      "company": "Previous Inc",
-      "position": "Software Engineer",
-      "start_date": "2017-01-01",
-      "end_date": "2019-12-31",
-      "location": "New York, NY",
-      "description": "Developed backend services for e-commerce platform",
+      "company": "LiveIntent (acquired by Zeta Global in November 2024)",
+      "position": "Associate Data Scientist",
+      "start_date": "2022",
+      "end_date": "2022",
+      "location": "Copenhagen, Denmark",
+      "description": "Supported the development of analytical pipelines using Scala-based systems.",
+      "achievements": [],
+      "technologies": [
+        "Scala", "Data Analysis"
+      ]
+    },
+    {
+      "company": "Ocean.io",
+      "position": "Python Back End Developer",
+      "start_date": "2018",
+      "end_date": "2019",
+      "location": "Copenhagen, Denmark",
+      "description": "Developed email prediction and language detection modules for the Growth Intelligence platform.",
       "achievements": [
-        "Implemented payment processing system",
-        "Optimized database queries for better performance",
-        "Contributed to open source projects"
+        "Maintained and optimized internal APIs to ensure seamless data integration"
       ],
-      "technologies": ["Java", "Spring", "PostgreSQL", "Redis"]
+      "technologies": [
+        "Python", "APIs", "NLP"
+      ]
+    },
+    {
+      "company": "Købstædernes Forsikring",
+      "position": "Front End Developer / Data Engineer",
+      "start_date": "2017",
+      "end_date": "2018",
+      "location": "Copenhagen, Denmark",
+      "description": "Contributed to the development of a new data model for the insurance customer database.",
+      "achievements": [
+        "Implemented white-label solutions and managed web projects for external partners"
+      ],
+      "technologies": [
+        "Front End", "Data Modeling"
+      ]
+    },
+    {
+      "company": "LETSMT! / University of Copenhagen",
+      "position": "Research Assistant",
+      "start_date": "2012",
+      "end_date": "2012",
+      "location": "Copenhagen, Denmark",
+      "description": "Conducted data acquisition and analysis for an EU-funded machine translation project.",
+      "achievements": [],
+      "technologies": [
+        "Data Analysis", "Machine Translation"
+      ]
+    },
+    {
+      "company": "Self-employed",
+      "position": "Independent Web Developer",
+      "start_date": "2004",
+      "end_date": "2010",
+      "location": "Copenhagen, Denmark",
+      "description": "Designed and built websites and portals for a range of clients.",
+      "achievements": [],
+      "technologies": [
+        "Web Development", "HTML/CSS"
+      ]
     }
   ],
   "education": [
     {
-      "institution": "University of Technology",
+      "institution": "University of Copenhagen",
+      "degree": "MSc",
+      "field": "IT and Cognition",
+      "start_date": "2014",
+      "end_date": "2016",
+      "location": "Copenhagen, Denmark",
+      "gpa": null,
+      "achievements": []
+    },
+    {
+      "institution": "University of Copenhagen",
       "degree": "Bachelor",
-      "field": "Computer Science",
-      "start_date": "2013-09-01",
-      "end_date": "2017-06-30",
-      "gpa": "3.8",
-      "achievements": [
-        "Data Structures and Algorithms",
-        "Operating Systems",
-        "Database Systems",
-        "Computer Networks"
-      ]
+      "field": "Philosophy",
+      "start_date": "2008",
+      "end_date": "2011",
+      "location": "Copenhagen, Denmark",
+      "gpa": null,
+      "achievements": []
+    },
+    {
+      "institution": "The Royal Danish Conservatory",
+      "degree": "Diploma",
+      "field": "Music Management",
+      "start_date": "2009",
+      "end_date": "2011",
+      "location": "Copenhagen, Denmark",
+      "gpa": null,
+      "achievements": []
     }
   ],
   "skill_categories": [
     {
-      "name": "Programming Languages",
-      "skills": ["Rust", "JavaScript", "Python", "Java"]
+      "name": "Languages",
+      "skills": [
+        "Scala: Functional & OOP, strongly typed systems, TDD",
+        "Python: Airflow (DAGs), data processing (Pandas, NumPy), machine learning, NLP",
+        "SQL: AWS Athena, performance tuning, complex queries",
+        "Rust: Compiler/language design project & more"
+      ]
     },
     {
-      "name": "Web Technologies",
-      "skills": ["HTML", "CSS", "React", "Node.js"]
-    },
-    {
-      "name": "DevOps",
-      "skills": ["Docker", "Kubernetes", "CI/CD", "AWS"]
+      "name": "Data Engineering & Big Data",
+      "skills": [
+        "Apache Spark: ETL, transformations, performance optimizations",
+        "Apache Airflow: DAG creation, scheduling, orchestration",
+        "AWS: S3, Athena, EC2, data warehousing, analytics",
+        "Docker & Kubernetes: Containerization, orchestration, deployment"
+      ]
     }
-  ],
-  "languages": {
-    "English": "Native",
-    "Spanish": "Intermediate"
-  },
-  "certifications": [
-    "AWS Certified Solutions Architect",
-    "Certified Kubernetes Administrator",
-    "Certified Rust Developer"
   ],
   "projects": [
     {
-      "name": "Personal Website",
-      "description": "A responsive personal website built with modern web technologies",
-      "highlights": [
-        "Implemented with React and TypeScript",
-        "Responsive design for all devices",
-        "Integrated with GitHub API"
+      "name": "Functional Programming Language",
+      "description": "A personal project exploring compiler and language design in Rust, focusing on type systems and parsing techniques.",
+      "url": null,
+      "repository": "https://github.com/hakimjonas/fp-language",
+      "technologies": [
+        "Rust", "Compiler Design", "Type Systems", "Parsing"
       ],
-      "technologies": ["React", "TypeScript", "CSS"],
-      "startDate": "2022-01-01",
-      "endDate": "2022-02-28",
-      "url": "https://johndoe.example.com",
-      "repository": "https://github.com/johndoe/personal-website"
+      "highlights": [
+        "Implementing a strongly typed functional language",
+        "Exploring advanced type system features",
+        "Building a robust parser and compiler pipeline"
+      ]
+    },
+    {
+      "name": "Personal CV Website",
+      "description": "A responsive personal website built with Rust for content generation, HTML/CSS for the web interface, and Typst for PDF output.",
+      "url": null,
+      "repository": "https://github.com/hakimjonas/cv-website",
+      "technologies": [
+        "Rust", "HTML/CSS", "Typst", "Functional Programming"
+      ],
+      "highlights": [
+        "Single source of truth for CV data",
+        "Responsive design that works on all devices",
+        "Automated build process for HTML and PDF outputs"
+      ]
     }
+  ],
+  "languages": {
+    "Danish": "Native",
+    "English": "Fluent"
+  },
+  "certifications": [
+    "Python Certified Developer Professional – Superusers (2020)"
   ],
   "github_sources": [
     {
-      "username": "johndoe",
+      "username": "hakimjonas",
       "organization": null
+    },
+    {
+      "username": null,
+      "organization": "fungal-lang"
     }
   ]
 }

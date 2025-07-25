@@ -169,7 +169,27 @@
             text-decoration: underline;
         }
     </style>
-    <script src="/static/js/blog-debug.js"></script>
+    <script>
+        // Add debugging to check if the script is loaded
+        console.log("Admin page is loading...");
+        window.addEventListener('error', function(event) {
+            console.error('Global error:', event.error);
+            document.getElementById('api-status').textContent = 'Error: ' + event.error.message;
+            document.getElementById('api-status').className = 'error';
+        });
+    </script>
+    <script src="/static/js/blog-debug.js" onerror="console.error('Failed to load blog-debug.js'); document.getElementById('api-status').textContent = 'Error: Failed to load blog-debug.js'; document.getElementById('api-status').className = 'error';"></script>
+    <script>
+        // Check if testApiConnection is defined after loading the script
+        console.log("Checking if testApiConnection is defined:", typeof window.testApiConnection);
+        if (typeof window.testApiConnection !== 'function') {
+            console.error('testApiConnection is not defined after loading blog-debug.js');
+            document.getElementById('api-status').textContent = 'Error: testApiConnection is not defined';
+            document.getElementById('api-status').className = 'error';
+        } else {
+            console.log("testApiConnection is defined correctly");
+        }
+    </script>
 </head>
 <body>
     <header>

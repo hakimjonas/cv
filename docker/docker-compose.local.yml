@@ -10,7 +10,8 @@ services:
     ports:
       - "${HOST_PORT:-3002}:3000"
     volumes:
-      - blog-data:/app/data
+      # Mount data directory from host instead of using a volume
+      - ../data:/app/data
       # Mount source code for hot reloading
       - ../src:/app/src
       - ../static:/app/static
@@ -58,10 +59,4 @@ networks:
       - "app=blog-api"
       - "environment=development"
 
-volumes:
-  blog-data:
-    # Add driver specification for better compatibility
-    driver: local
-    labels:
-      - "app=blog-api"
-      - "environment=development"
+# No volumes needed since we're mounting directories from the host

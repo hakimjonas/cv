@@ -373,10 +373,10 @@ impl UserRepository {
         let is_valid = self.verify_password(&user, password).await?;
 
         if is_valid {
-            debug!("Authentication successful for user: {}", username);
+            info!("AUTH: Authentication successful for user: {}", username);
             Ok(Some(user))
         } else {
-            debug!("Authentication failed for user: {}", username);
+            info!("AUTH: Authentication failed for user: {}", username);
             Ok(None)
         }
     }

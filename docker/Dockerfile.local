@@ -18,7 +18,12 @@ RUN groupadd -r appuser && useradd -r -g appuser appuser
 COPY Cargo.toml Cargo.lock ./
 
 # Pre-build dependencies (creates better Docker layer caching)
-RUN mkdir src && echo "fn main() {}" > src/main.rs && \
+RUN mkdir -p src/bin && \
+    echo "fn main() {}" > src/main.rs && \
+    echo "fn main() {}" > src/bin/blog_tester.rs && \
+    echo "fn main() {}" > src/bin/security_test.rs && \
+    echo "fn main() {}" > src/bin/test_blog_core.rs && \
+    echo "fn main() {}" > src/bin/blog_api_server.rs && \
     cargo build && \
     cargo build --release && \
     rm -rf src target/release/deps/cv* target/debug/deps/cv*

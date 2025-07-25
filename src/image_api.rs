@@ -209,7 +209,7 @@ pub fn create_image_api_router(base_url: &str) -> Router {
     Router::new()
         .route("/api/images", post(upload_image))
         .route("/api/images", get(list_images))
-        .route("/api/images/:filename", get(get_image))
-        .route("/api/images/:filename", delete(delete_image))
+        .route("/api/images/{filename}", get(get_image))
+        .route("/api/images/{filename}", delete(delete_image))
         .with_state(state)
 }

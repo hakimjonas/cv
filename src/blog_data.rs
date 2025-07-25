@@ -219,6 +219,7 @@ pub struct BlogPost {
     pub excerpt: String,
     pub content: String,
     /// Format of the content (HTML or Markdown)
+    #[serde(default)]
     pub content_format: ContentFormat,
     pub published: bool,
     pub featured: bool,

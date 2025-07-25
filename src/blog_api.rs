@@ -1,4 +1,4 @@
-use crate::auth::{AuthService, AuthUser};
+use crate::auth::AuthService;
 use crate::blog_data::{BlogPost, Tag};
 use crate::blog_error::BlogError;
 use crate::blog_validation::{BlogValidationError, validate_and_sanitize_blog_post};
@@ -16,7 +16,7 @@ use crate::rate_limiter::{RateLimiterConfig, create_rate_limiter_layer};
 type ApiResult<T> = std::result::Result<T, ApiError>;
 use axum::{
     Router,
-    extract::{Extension, Path, Query, State},
+    extract::{Path, Query, State},
     http::{Method, StatusCode},
     response::{IntoResponse, Json, Response},
     routing::{delete, get, post, put},
@@ -205,13 +205,29 @@ async fn get_post_by_slug(
 }
 
 /// Creates a new blog post
+///
+/// This function manually extracts and validates the authentication token from the request headers
+/// rather than relying on middleware to add the AuthUser extension.
 #[axum::debug_handler]
-#[instrument(skip(state, post, auth_user), err)]
+#[instrument(skip(state, post, headers), err)]
 async fn create_post(
     State(state): State<Arc<ApiState>>,
-    Extension(auth_user): Extension<AuthUser>,
+    headers: axum::http::HeaderMap,
     Json(mut post): Json<BlogPost>,
 ) -> ApiResult<(StatusCode, Json<BlogPost>)> {
+    // Extract and validate the authentication token
+    let auth_header = headers.get("Authorization");
+    let auth_user =
+        match crate::auth::extract_and_validate_token(&state.auth_service, auth_header).await {
+            Ok(user) => user,
+            Err(e) => {
+                warn!("Authentication failed: {:?}", e);
+                return Err(ApiError::ValidationError(
+                    "Authentication required".to_string(),
+                ));
+            }
+        };
+
     info!(
         "Creating new blog post with slug: {} by user: {}",
         post.slug, auth_user.username
@@ -308,14 +324,30 @@ async fn create_post(
 }
 
 /// Updates an existing blog post
+///
+/// This function manually extracts and validates the authentication token from the request headers
+/// rather than relying on middleware to add the AuthUser extension.
 #[axum::debug_handler]
-#[instrument(skip(state, post, auth_user), err)]
+#[instrument(skip(state, post, headers), err)]
 async fn update_post(
     State(state): State<Arc<ApiState>>,
     Path(slug): Path<String>,
-    Extension(auth_user): Extension<AuthUser>,
+    headers: axum::http::HeaderMap,
     Json(mut post): Json<BlogPost>,
 ) -> ApiResult<Json<BlogPost>> {
+    // Extract and validate the authentication token
+    let auth_header = headers.get("Authorization");
+    let auth_user =
+        match crate::auth::extract_and_validate_token(&state.auth_service, auth_header).await {
+            Ok(user) => user,
+            Err(e) => {
+                warn!("Authentication failed: {:?}", e);
+                return Err(ApiError::ValidationError(
+                    "Authentication required".to_string(),
+                ));
+            }
+        };
+
     info!(
         "Updating blog post with slug: {} by user: {}",
         slug, auth_user.username
@@ -435,13 +467,29 @@ async fn update_post(
 }
 
 /// Deletes a blog post
+///
+/// This function manually extracts and validates the authentication token from the request headers
+/// rather than relying on middleware to add the AuthUser extension.
 #[axum::debug_handler]
-#[instrument(skip(state, auth_user), err)]
+#[instrument(skip(state, headers), err)]
 async fn delete_post(
     State(state): State<Arc<ApiState>>,
     Path(slug): Path<String>,
-    Extension(auth_user): Extension<AuthUser>,
+    headers: axum::http::HeaderMap,
 ) -> ApiResult<StatusCode> {
+    // Extract and validate the authentication token
+    let auth_header = headers.get("Authorization");
+    let auth_user =
+        match crate::auth::extract_and_validate_token(&state.auth_service, auth_header).await {
+            Ok(user) => user,
+            Err(e) => {
+                warn!("Authentication failed: {:?}", e);
+                return Err(ApiError::ValidationError(
+                    "Authentication required".to_string(),
+                ));
+            }
+        };
+
     info!(
         "Deleting blog post with slug: {} by admin: {}",
         slug, auth_user.username
@@ -700,115 +748,18 @@ async fn get_posts_by_tag(
     }
 }
 
-/// Serves a simple HTML page at the root
+/// Serves the admin page
 async fn root_handler() -> impl axum::response::IntoResponse {
-    axum::response::Html(
-        r#"
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Blog API Server</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                line-height: 1.6;
-                margin: 0;
-                padding: 30px;
-                max-width: 800px;
-                margin: 0 auto;
-            }
-            h1 {
-                color: #333;
-                border-bottom: 1px solid #eee;
-                padding-bottom: 10px;
-            }
-            ul {
-                padding-left: 20px;
-            }
-            li {
-                margin-bottom: 10px;
-            }
-            code {
-                background-color: #f4f4f4;
-                padding: 2px 5px;
-                border-radius: 3px;
-            }
-            .endpoint {
-                font-weight: bold;
-            }
-            #api-results {
-                background-color: #f9f9f9;
-                padding: 15px;
-                border-radius: 5px;
-                border: 1px solid #ddd;
-                margin-top: 20px;
-                white-space: pre-wrap;
-                font-family: monospace;
-                max-height: 300px;
-                overflow-y: auto;
-            }
-            button {
-                background-color: #4CAF50;
-                color: white;
-                padding: 8px 15px;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-                font-size: 14px;
-                margin-top: 10px;
-            }
-            button:hover {
-                background-color: #45a049;
-            }
-        </style>
-        <script src="/static/js/blog-debug.js"></script>
-    </head>
-    <body>
-        <h1>Blog API Server</h1>
-        <p>Welcome to the Blog API Server. The following endpoints are available:</p>
-
-        <ul>
-            <li><span class="endpoint">GET /api/blog</span> - Get all blog posts</li>
-            <li><span class="endpoint">POST /api/blog</span> - Create a new blog post</li>
-            <li><span class="endpoint">GET /api/blog/{slug}</span> - Get a blog post by slug</li>
-            <li><span class="endpoint">PUT /api/blog/{slug}</span> - Update a blog post</li>
-            <li><span class="endpoint">DELETE /api/blog/{slug}</span> - Delete a blog post</li>
-            <li><span class="endpoint">GET /api/blog/tags</span> - Get all tags</li>
-            <li><span class="endpoint">GET /api/blog/published</span> - Get all published posts</li>
-            <li><span class="endpoint">GET /api/blog/featured</span> - Get all featured posts</li>
-            <li><span class="endpoint">GET /api/blog/tag/{tag_slug}</span> - Get posts by tag</li>
-        </ul>
-
-        <p>Try accessing <a href="/api/blog">/api/blog</a> to see all blog posts.</p>
-        <p>For a more user-friendly interface, check out the <a href="/static/blog-client.html">Blog Client</a>.</p>
-        <p>Having issues? Use the <a href="/static/blog-debug.html">Blog Debug Tool</a> to diagnose problems.</p>
-
-        <div>
-            <button onclick="testAndDisplayConnection()">Test API Connection</button>
-            <div id="api-results">API results will appear here...</div>
-        </div>
-
-        <script>
-            async function testAndDisplayConnection() {
-                const resultsDiv = document.getElementById('api-results');
-                resultsDiv.textContent = 'Testing API connection...';
-
-                try {
-                    const result = await testApiConnection();
-                    if (result.success) {
-                        resultsDiv.textContent = `Connection successful!\nSource: ${result.source}\nFound ${result.posts.length} posts.\n\nFirst post: ${JSON.stringify(result.posts[0], null, 2)}`;
-                    } else {
-                        resultsDiv.textContent = 'Could not connect to any data source.';
-                    }
-                } catch (error) {
-                    resultsDiv.textContent = `Error: ${error.message}`;
-                }
-            }
-        </script>
-    </body>
-    </html>
-    "#,
-    )
+    // Try to read the static admin/index.html file
+    match tokio::fs::read_to_string("static/admin/index.html").await {
+        Ok(content) => axum::response::Html(content),
+        Err(_) => {
+            // Fallback to a simple message if the file doesn't exist
+            axum::response::Html(
+                r#"<html><body><h1>Admin page not found</h1><p>The admin page could not be loaded.</p></body></html>"#.to_string()
+            )
+        }
+    }
 }
 
 /// Creates the blog API router
@@ -1042,7 +993,8 @@ pub fn create_blog_api_router(db_path: PathBuf) -> std::result::Result<Router, B
         .route("/api/blog", get(get_all_posts))
         .route("/api/blog/{slug}", get(get_post_by_slug))
         // Protected blog routes (require authentication)
-        // Authentication is handled within the route handlers
+        // Authentication is now handled directly in the route handlers by extracting
+        // and validating the Authorization header, rather than relying on middleware
         .route("/api/blog", post(create_post))
         .route("/api/blog/{slug}", put(update_post))
         .route("/api/blog/{slug}", delete(delete_post))

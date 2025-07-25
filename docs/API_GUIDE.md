@@ -63,6 +63,10 @@ Currently, the API does not require authentication. This will be added in a futu
 
 ### Blog Post Object
 
+The Blog Post object has the following fields:
+
+- `content_format`: The format of the content, either "HTML" or "Markdown". This field is optional and defaults to "HTML" if not provided.
+
 ```json
 {
   "id": 1,
@@ -72,6 +76,7 @@ Currently, the API does not require authentication. This will be added in a futu
   "author": "Jane Doe",
   "excerpt": "A short summary of the post",
   "content": "The full content of the blog post...",
+  "content_format": "HTML",
   "published": true,
   "featured": false,
   "image": "/images/blog-post.jpg",
@@ -210,6 +215,7 @@ curl -X POST http://localhost:3000/api/posts \
     "title": "Getting Started with Rust",
     "excerpt": "A beginner's guide to Rust programming language",
     "content": "# Introduction\n\nRust is a systems programming language...",
+    "content_format": "Markdown",
     "author": "Jane Doe",
     "published": true,
     "tags": [

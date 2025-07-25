@@ -129,10 +129,7 @@
                     console.log('Request completed with error');
                 }
 
-                // Log detailed information to console
-                console.log('Response status:', response.status);
-                console.log('Response headers:', Object.fromEntries([...response.headers]));
-                console.log('Response body:', responseJson || responseText);
+                // Detailed response logging is now handled by the BlogAPI client
 
             } catch (error) {
                 resultDiv.innerHTML = `

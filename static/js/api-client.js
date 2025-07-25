@@ -6,6 +6,44 @@
 const BlogAPI = (function() {
     // Determine base URL from current page
     const baseUrl = window.location.origin;
+    
+    // Authentication token storage key
+    const TOKEN_STORAGE_KEY = 'blog_auth_token';
+    const USER_STORAGE_KEY = 'blog_auth_user';
+    
+    // Get stored authentication token
+    function getAuthToken() {
+        return localStorage.getItem(TOKEN_STORAGE_KEY);
+    }
+    
+    // Store authentication token
+    function setAuthToken(token) {
+        if (token) {
+            localStorage.setItem(TOKEN_STORAGE_KEY, token);
+        } else {
+            localStorage.removeItem(TOKEN_STORAGE_KEY);
+        }
+    }
+    
+    // Get stored user info
+    function getUser() {
+        const userJson = localStorage.getItem(USER_STORAGE_KEY);
+        return userJson ? JSON.parse(userJson) : null;
+    }
+    
+    // Store user info
+    function setUser(user) {
+        if (user) {
+            localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+        } else {
+            localStorage.removeItem(USER_STORAGE_KEY);
+        }
+    }
+    
+    // Check if user is authenticated
+    function isAuthenticated() {
+        return !!getAuthToken();
+    }
 
     /**
      * Make an API request
@@ -28,6 +66,12 @@ const BlogAPI = (function() {
                 'Accept': 'application/json'
             }
         };
+        
+        // Add authentication token if available
+        const token = getAuthToken();
+        if (token) {
+            options.headers['Authorization'] = `Bearer ${token}`;
+        }
 
         if (data && (method === 'POST' || method === 'PUT')) {
             // Ensure all required fields are present for posts
@@ -117,6 +161,38 @@ const BlogAPI = (function() {
     }
 
     return {
+        // Authentication methods
+        login: async (username, password) => {
+            try {
+                const loginData = { username, password };
+                const response = await apiRequest('/api/auth/login', 'POST', loginData);
+                
+                // Store the token and user info
+                setAuthToken(response.token);
+                setUser({
+                    id: response.user_id,
+                    username: response.username,
+                    displayName: response.display_name,
+                    role: response.role
+                });
+                
+                return response;
+            } catch (error) {
+                console.error('Login failed:', error);
+                throw error;
+            }
+        },
+        
+        logout: () => {
+            // Clear the stored token and user info
+            setAuthToken(null);
+            setUser(null);
+        },
+        
+        isAuthenticated: isAuthenticated,
+        
+        getCurrentUser: getUser,
+        
         // Blog post methods
         getPosts: () => apiRequest('/api/blog'),
         getPost: (slug) => apiRequest(`/api/blog/${slug}`),

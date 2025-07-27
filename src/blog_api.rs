@@ -7,8 +7,11 @@ use crate::db::{BlogRepository, Database};
 use crate::feature_flags::FeatureFlags;
 use crate::feature_flags::rollback::RollbackManager;
 use crate::feed::{FeedConfig, generate_atom_feed, generate_rss_feed};
+use crate::github_oauth::GitHubOAuthService;
 use crate::image_api::create_image_api_router;
 use chrono::Datelike;
+use oauth2::{CsrfToken, PkceCodeVerifier};
+use std::sync::Mutex;
 // Adding back rate limiting
 use crate::rate_limiter::{RateLimiterConfig, create_rate_limiter_layer};
 
@@ -157,8 +160,11 @@ pub struct ApiState {
     pub blog_repo: BlogRepository,
     pub db: Database,
     pub auth_service: Arc<AuthService>,
+    pub github_oauth_service: Arc<GitHubOAuthService>,
     pub feature_flags: Arc<FeatureFlags>,
     pub rollback_manager: Arc<RollbackManager>,
+    /// Storage for PKCE code verifiers and CSRF tokens
+    pub oauth_state: Arc<Mutex<HashMap<String, (PkceCodeVerifier, CsrfToken)>>>,
 }
 
 /// Gets all blog posts
@@ -778,7 +784,37 @@ pub fn create_blog_api_router(db_path: PathBuf) -> std::result::Result<Router, B
     let jwt_secret = "secure_jwt_secret_for_development_only".to_string();
     // Token expiration time in seconds (24 hours)
     let token_expiration = 86400;
-    let auth_service = Arc::new(AuthService::new(&db, jwt_secret, token_expiration));
+    let auth_service = Arc::new(AuthService::new(&db, jwt_secret.clone(), token_expiration));
+
+    // Load the application configuration
+    let app_config = match crate::unified_config::AppConfig::load() {
+        Ok(config) => config,
+        Err(e) => {
+            error!("Failed to load application configuration: {}", e);
+            return Err(BlogError::Internal(format!(
+                "Failed to load application configuration: {e}"
+            )));
+        }
+    };
+
+    // Create the GitHub OAuth service using the unified configuration
+    let github_oauth_service = match GitHubOAuthService::new_with_config(
+        &db,
+        &app_config,
+        jwt_secret.clone(),
+        token_expiration,
+    ) {
+        Ok(service) => Arc::new(service),
+        Err(e) => {
+            error!("Failed to create GitHub OAuth service: {}", e);
+            return Err(BlogError::Internal(format!(
+                "Failed to create GitHub OAuth service: {e}"
+            )));
+        }
+    };
+
+    // Create storage for PKCE code verifiers and CSRF tokens
+    let oauth_state = Arc::new(Mutex::new(HashMap::new()));
 
     // Create feature flags and rollback manager
     let feature_flags = Arc::new(Default::default());
@@ -788,8 +824,10 @@ pub fn create_blog_api_router(db_path: PathBuf) -> std::result::Result<Router, B
         blog_repo,
         db,
         auth_service,
+        github_oauth_service,
         feature_flags,
         rollback_manager,
+        oauth_state,
     });
 
     // Create a static file service for the static directory (blog tools)
@@ -895,6 +933,136 @@ pub fn create_blog_api_router(db_path: PathBuf) -> std::result::Result<Router, B
         }
     }
 
+    // GitHub OAuth login handler
+    #[instrument(skip(state), err)]
+    async fn github_login_handler(
+        State(state): State<Arc<ApiState>>,
+    ) -> Result<impl axum::response::IntoResponse, ApiError> {
+        // Load the application configuration
+        let app_config = match crate::unified_config::AppConfig::load() {
+            Ok(config) => config,
+            Err(e) => {
+                error!("Failed to load application configuration: {}", e);
+                return Err(ApiError::InternalError(format!(
+                    "Failed to load application configuration: {e}"
+                )));
+            }
+        };
+
+        // Check if GitHub OAuth is properly configured
+        if !app_config.is_github_oauth_configured() {
+            error!("GitHub OAuth is not properly configured. Login with GitHub will not work.");
+            return Err(ApiError::ValidationError(
+                "GitHub OAuth is not properly configured. Please contact the administrator."
+                    .to_string(),
+            ));
+        }
+
+        // Generate the authorization URL
+        let (auth_url, csrf_token, pkce_verifier) = state.github_oauth_service.authorize_url();
+
+        // Store the PKCE code verifier and CSRF token
+        let csrf_state = csrf_token.secret().clone();
+        {
+            let mut oauth_state = state.oauth_state.lock().unwrap();
+            oauth_state.insert(csrf_state.clone(), (pkce_verifier, csrf_token));
+        }
+
+        // Redirect to the GitHub authorization URL
+        let redirect = axum::response::Redirect::to(auth_url.as_str());
+        Ok(redirect)
+    }
+
+    // GitHub OAuth callback handler
+    #[instrument(skip(state), err)]
+    async fn github_callback_handler(
+        State(state): State<Arc<ApiState>>,
+        Query(params): Query<HashMap<String, String>>,
+    ) -> Result<impl axum::response::IntoResponse, ApiError> {
+        // Extract the authorization code and state from the query parameters
+        let code = params.get("code").ok_or_else(|| {
+            error!("Missing code parameter in GitHub callback");
+            ApiError::ValidationError("Missing code parameter".to_string())
+        })?;
+
+        let state_param = params.get("state").ok_or_else(|| {
+            error!("Missing state parameter in GitHub callback");
+            ApiError::ValidationError("Missing state parameter".to_string())
+        })?;
+
+        // Retrieve the PKCE code verifier and CSRF token
+        let (pkce_verifier, csrf_token) = {
+            let mut oauth_state = state.oauth_state.lock().unwrap();
+            oauth_state.remove(state_param).ok_or_else(|| {
+                error!("Invalid state parameter in GitHub callback");
+                ApiError::ValidationError("Invalid state parameter".to_string())
+            })?
+        };
+
+        // Verify the CSRF token
+        if csrf_token.secret() != state_param {
+            error!("CSRF token mismatch");
+            return Err(ApiError::ValidationError("CSRF token mismatch".to_string()));
+        }
+
+        // Exchange the authorization code for an access token
+        let access_token = match state
+            .github_oauth_service
+            .exchange_code(code.clone(), pkce_verifier)
+            .await
+        {
+            Ok(token) => token,
+            Err(e) => {
+                error!("Failed to exchange code for token: {}", e);
+                return Err(ApiError::InternalError(format!(
+                    "Failed to exchange code for token: {e}"
+                )));
+            }
+        };
+
+        // Get the GitHub user information
+        let github_user = match state
+            .github_oauth_service
+            .get_github_user(&access_token)
+            .await
+        {
+            Ok(user) => user,
+            Err(e) => {
+                error!("Failed to get GitHub user: {}", e);
+                return Err(ApiError::InternalError(format!(
+                    "Failed to get GitHub user: {e}"
+                )));
+            }
+        };
+
+        // Login or register the user
+        let login_response = match state
+            .github_oauth_service
+            .login_with_github(github_user)
+            .await
+        {
+            Ok(response) => response,
+            Err(e) => {
+                error!("Failed to login with GitHub: {}", e);
+                return Err(ApiError::InternalError(format!(
+                    "Failed to login with GitHub: {e}"
+                )));
+            }
+        };
+
+        // Redirect to the client with the token
+        let redirect_url = format!(
+            "/static/blog-client.html?token={}&username={}&display_name={}&role={}",
+            login_response.token,
+            login_response.username,
+            login_response.display_name,
+            login_response.role
+        );
+
+        let redirect = axum::response::Redirect::to(&redirect_url);
+        Ok(redirect)
+    }
+
     // Handler to serve USER_DOCUMENTATION.md
     async fn user_documentation_handler() -> impl axum::response::IntoResponse {
         match tokio::fs::read_to_string("USER_DOCUMENTATION.md").await {
@@ -981,6 +1149,9 @@ pub fn create_blog_api_router(db_path: PathBuf) -> std::result::Result<Router, B
         // Authentication endpoints
         .route("/api/auth/login", post(api_login_handler))
         .route("/api/auth/register", post(api_register_handler))
+        // GitHub OAuth endpoints
+        .route("/api/auth/github", get(github_login_handler))
+        .route("/api/auth/github/callback", get(github_callback_handler))
         // Blog specific routes need to come before routes with parameters
         .route("/api/blog/tags", get(get_all_tags))
         .route("/api/blog/published", get(get_published_posts))

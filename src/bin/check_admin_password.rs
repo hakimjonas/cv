@@ -7,7 +7,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // Parse command-line arguments for database path
     let args: Vec<String> = env::args().collect();
     let mut db_path = "data/blog.db".to_string();
-    
+
     // Look for --db-path argument
     for i in 0..args.len() {
         if args[i] == "--db-path" && i + 1 < args.len() {
@@ -16,7 +16,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             break;
         }
     }
-    
+
     // Initialize the database
     let db = Database::new(&db_path)?;
     let user_repo = db.user_repository();
@@ -32,12 +32,16 @@ async fn main() -> Result<(), Box<dyn Error>> {
             println!("Email: {}", user.email);
             println!("Password hash: {}", user.password_hash);
             println!("Role: {:?}", user.role);
-            
+
             // Test password verification
             let test_password = "admin123";
             let is_valid = user_repo.verify_password(&user, test_password).await?;
-            println!("Password verification for '{}': {}", test_password, if is_valid { "SUCCESS" } else { "FAILED" });
-        },
+            println!(
+                "Password verification for '{}': {}",
+                test_password,
+                if is_valid { "SUCCESS" } else { "FAILED" }
+            );
+        }
         None => {
             println!("Admin user not found!");
         }

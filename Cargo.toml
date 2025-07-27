@@ -47,6 +47,9 @@ rss = "2.0.7"
 atom_syndication = "0.12.2"
 uuid = { version = "1.7.0", features = ["v4"] }
 pulldown-cmark = "0.13.0"
+# GitHub OAuth dependencies
+oauth2 = { version = "4.4.2", features = ["reqwest"] }
+url = "2.5.0"
 
 [[bin]]
 name = "blog_tester"

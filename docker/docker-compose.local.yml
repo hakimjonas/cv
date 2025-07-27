@@ -12,6 +12,8 @@ services:
     volumes:
       # Mount data directory from host instead of using a volume
       - ../data:/app/data
+      # Mount test_data directory for database persistence
+      - ../test_data:/app/test_data
       # Mount source code for hot reloading
       - ../src:/app/src
       - ../static:/app/static
@@ -23,6 +25,14 @@ services:
       - RUST_LOG=debug  # More verbose logging for development
       - RUST_BACKTRACE=1  # Full backtraces for debugging
       - APP_VERSION=${BUILD_VERSION:-0.1.0-dev}
+    # Add DNS configuration for better network resilience
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    # Add extra hosts for better hostname resolution
+    extra_hosts:
+      - "deb.debian.org:151.101.0.204"
+      - "security.debian.org:151.101.0.204"
     networks:
       - blog-network
     # Simplified health check for development

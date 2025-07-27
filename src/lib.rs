@@ -4,6 +4,7 @@ pub mod cv_data;
 pub mod cv_db;
 pub mod github;
 pub mod github_cache;
+pub mod github_oauth;
 pub mod html_generator;
 pub mod language_icons;
 pub mod typst_generator;

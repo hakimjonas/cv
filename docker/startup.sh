@@ -5,28 +5,36 @@ set -e
 mkdir -p data
 mkdir -p test_data
 
-# Check if cv_data.json exists, if not, create a sample one
+# Check if cv_data.json exists, if not, check for a backup or create a sample one
 if [ ! -f "data/cv_data.json" ]; then
-    echo "CV data file not found, creating a sample one..."
-    # Create a minimal sample that matches the expected structure
-    echo '{
-      "personal_info": {
-        "name": "John Doe",
-        "title": "Software Engineer",
-        "email": "john.doe@example.com",
-        "summary": "Sample CV data for testing",
-        "social_links": {}
-      },
-      "experiences": [],
-      "education": [],
-      "skill_categories": [],
-      "projects": [],
-      "languages": {},
-      "certifications": [],
-      "github_sources": []
-    }' > data/cv_data.json
+    # Check if there's a backup file in the mounted volume
+    if [ -f "/app/data/cv_data.json.bak" ]; then
+        echo "CV data file not found, but backup exists. Restoring from backup..."
+        cp /app/data/cv_data.json.bak /app/data/cv_data.json
+    else
+        echo "CV data file not found, creating a sample one..."
+        # Create a minimal sample that matches the expected structure
+        echo '{
+          "personal_info": {
+            "name": "John Doe",
+            "title": "Software Engineer",
+            "email": "john.doe@example.com",
+            "summary": "Sample CV data for testing",
+            "social_links": {}
+          },
+          "experiences": [],
+          "education": [],
+          "skill_categories": [],
+          "projects": [],
+          "languages": {},
+          "certifications": [],
+          "github_sources": []
+        }' > data/cv_data.json
+    fi
 else
     echo "Using existing CV data file"
+    # Create a backup of the existing file
+    cp data/cv_data.json data/cv_data.json.bak
 fi
 
 echo "Generating website files..."

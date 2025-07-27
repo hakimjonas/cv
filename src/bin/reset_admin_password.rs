@@ -7,7 +7,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // Parse command-line arguments for database path
     let args: Vec<String> = env::args().collect();
     let mut db_path = "data/blog.db".to_string();
-    
+
     // Look for --db-path argument
     for i in 0..args.len() {
         if args[i] == "--db-path" && i + 1 < args.len() {
@@ -16,7 +16,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             break;
         }
     }
-    
+
     // Initialize the database
     let db = Database::new(&db_path)?;
     let user_repo = db.user_repository();
@@ -35,7 +35,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             } else {
                 println!("Error: Admin user has no ID");
             }
-        },
+        }
         None => {
             println!("Admin user not found, creating it...");
             // Create admin user

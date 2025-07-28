@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV - Hakim Jonas Ghoula</title>
+    <link rel="stylesheet" href="/static/css/base/normalize.css">
+    <link rel="stylesheet" href="/static/css/base/typography.css">
+    <link rel="stylesheet" href="/static/css/layout/grid.css">
+    <link rel="stylesheet" href="/static/css/components/header.css">
+    <link rel="stylesheet" href="/static/css/components/footer.css">
+    <link rel="stylesheet" href="/static/css/components/cv.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <h1>Hakim Jonas Ghoula</h1>
+            <nav>
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/cv" class="active">CV</a></li>
+                    <li><a href="/projects">Projects</a></li>
+                    <li><a href="/blog">Blog</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="cv-section">
+            <h2>Curriculum Vitae</h2>
+            <p>This page displays my professional experience, education, and skills.</p>
+            
+            <div class="cv-download">
+                <a href="/dist/cv.pdf" class="button">Download PDF Version</a>
+            </div>
+            
+            <div class="cv-content">
+                <!-- CV content will be dynamically generated -->
+                <p>Loading CV content...</p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2025 Hakim Jonas Ghoula. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="/static/js/cv.js"></script>
+</body>
+</html>

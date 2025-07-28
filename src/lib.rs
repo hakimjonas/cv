@@ -4,11 +4,11 @@ pub mod cv_data;
 pub mod cv_db;
 pub mod github;
 pub mod github_cache;
-pub mod github_oauth;
 pub mod html_generator;
 pub mod language_icons;
 pub mod typst_generator;
 pub mod unified_config;
+pub mod git_identity;
 
 // Database module
 pub mod db;
@@ -17,8 +17,9 @@ pub mod db;
 pub mod api_docs;
 pub mod api_models;
 pub mod auth;
-pub mod auth_middleware;
-pub mod blog_api;
+pub mod simple_auth;
+pub mod simple_auth_middleware;
+pub mod simple_blog_api;
 pub mod blog_converters;
 pub mod blog_data;
 pub mod blog_error;
@@ -35,7 +36,6 @@ pub mod markdown_editor;
 pub mod rate_limiter;
 
 // Utility modules
-pub mod credentials;
 pub mod logging;
 
 // Re-export dependencies that are commonly used in the codebase

@@ -1,0 +1,695 @@
+    Checking cv v0.1.0 (/home/hakim/personal/cv)
+warning: unused import: `std::sync::Arc`
+ --> src/simple_auth.rs:9:5
+  |
+9 | use std::sync::Arc;
+  |     ^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `tracing::debug`
+  --> src/simple_auth_middleware.rs:10:5
+   |
+10 | use tracing::debug;
+   |     ^^^^^^^^^^^^^^
+
+warning: unused import: `require_auth`
+  --> src/simple_blog_api.rs:13:56
+   |
+13 | use crate::simple_auth_middleware::{AuthenticatedUser, require_auth, require_author};
+   |                                                        ^^^^^^^^^^^^
+
+warning: unused import: `crate::auth::AuthUser`
+  --> src/simple_blog_api.rs:14:5
+   |
+14 | use crate::auth::AuthUser;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `HeaderMap`
+  --> src/simple_blog_api.rs:17:12
+   |
+17 |     http::{HeaderMap, StatusCode},
+   |            ^^^^^^^^^
+
+warning: unused import: `Mutex`
+  --> src/simple_blog_api.rs:25:22
+   |
+25 | use std::sync::{Arc, Mutex};
+   |                      ^^^^^
+
+warning: unused imports: `debug`, `error`, `info`, and `warn`
+  --> src/simple_blog_api.rs:27:15
+   |
+27 | use tracing::{debug, error, info, warn};
+   |               ^^^^^  ^^^^^  ^^^^  ^^^^
+
+error[E0308]: mismatched types
+   --> src/simple_blog_api.rs:182:20
+    |
+182 |     post.user_id = auth_user.0.user_id;
+    |     ------------   ^^^^^^^^^^^^^^^^^^^ expected `Option<i64>`, found `i64`
+    |     |
+    |     expected due to the type of this binding
+    |
+    = note: expected enum `std::option::Option<i64>`
+               found type `i64`
+help: try wrapping the expression in `Some`
+    |
+182 |     post.user_id = Some(auth_user.0.user_id);
+    |                    +++++                   +
+
+error[E0308]: mismatched types
+   --> src/simple_blog_api.rs:183:19
+    |
+183 |     post.author = auth_user.0.display_name.clone();
+    |     -----------   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `String`, found `Option<String>`
+    |     |
+    |     expected due to the type of this binding
+    |
+    = note: expected struct `std::string::String`
+                 found enum `std::option::Option<std::string::String>`
+help: consider using `Option::expect` to unwrap the `std::option::Option<std::string::String>` value, panicking if the value is an `Option::None`
+    |
+183 |     post.author = auth_user.0.display_name.clone().expect("REASON");
+    |                                                   +++++++++++++++++
+
+error[E0599]: no variant or associated item named `InvalidTitle` found for enum `blog_validation::BlogValidationError` in the current scope
+   --> src/simple_blog_api.rs:188:34
+    |
+188 |             BlogValidationError::InvalidTitle(msg) => ApiError::ValidationError(msg),
+    |                                  ^^^^^^^^^^^^ variant or associated item not found in `BlogValidationError`
+    |
+   ::: src/blog_validation.rs:14:1
+    |
+14  | pub enum BlogValidationError {
+    | ---------------------------- variant or associated item `InvalidTitle` not found for this enum
+
+error[E0599]: no variant or associated item named `InvalidContent` found for enum `blog_validation::BlogValidationError` in the current scope
+   --> src/simple_blog_api.rs:189:34
+    |
+189 |             BlogValidationError::InvalidContent(msg) => ApiError::ValidationError(msg),
+    |                                  ^^^^^^^^^^^^^^ variant or associated item not found in `BlogValidationError`
+    |
+   ::: src/blog_validation.rs:14:1
+    |
+14  | pub enum BlogValidationError {
+    | ---------------------------- variant or associated item `InvalidContent` not found for this enum
+
+error[E0599]: no variant or associated item named `InvalidSlug` found for enum `blog_validation::BlogValidationError` in the current scope
+   --> src/simple_blog_api.rs:190:34
+    |
+190 |             BlogValidationError::InvalidSlug(msg) => ApiError::ValidationError(msg),
+    |                                  ^^^^^^^^^^^ variant or associated item not found in `BlogValidationError`
+    |
+   ::: src/blog_validation.rs:14:1
+    |
+14  | pub enum BlogValidationError {
+    | ---------------------------- variant or associated item `InvalidSlug` not found for this enum
+
+error[E0599]: no variant or associated item named `InvalidExcerpt` found for enum `blog_validation::BlogValidationError` in the current scope
+   --> src/simple_blog_api.rs:191:34
+    |
+191 |             BlogValidationError::InvalidExcerpt(msg) => ApiError::ValidationError(msg),
+    |                                  ^^^^^^^^^^^^^^ variant or associated item not found in `BlogValidationError`
+    |
+   ::: src/blog_validation.rs:14:1
+    |
+14  | pub enum BlogValidationError {
+    | ---------------------------- variant or associated item `InvalidExcerpt` not found for this enum
+
+error[E0599]: no variant or associated item named `InvalidTags` found for enum `blog_validation::BlogValidationError` in the current scope
+   --> src/simple_blog_api.rs:192:34
+    |
+192 |             BlogValidationError::InvalidTags(msg) => ApiError::ValidationError(msg),
+    |                                  ^^^^^^^^^^^ variant or associated item not found in `BlogValidationError`
+    |
+   ::: src/blog_validation.rs:14:1
+    |
+14  | pub enum BlogValidationError {
+    | ---------------------------- variant or associated item `InvalidTags` not found for this enum
+
+error[E0599]: no variant or associated item named `InvalidImageUrl` found for enum `blog_validation::BlogValidationError` in the current scope
+   --> src/simple_blog_api.rs:193:34
+    |
+193 |             BlogValidationError::InvalidImageUrl(msg) => ApiError::ValidationError(msg),
+    |                                  ^^^^^^^^^^^^^^^ variant or associated item not found in `BlogValidationError`
+    |
+   ::: src/blog_validation.rs:14:1
+    |
+14  | pub enum BlogValidationError {
+    | ---------------------------- variant or associated item `InvalidImageUrl` not found for this enum
+
+error[E0308]: mismatched types
+   --> src/simple_blog_api.rs:205:52
+    |
+205 |     Ok((StatusCode::CREATED, Json(repo_to_api_post(saved_post))))
+    |                                   ---------------- ^^^^^^^^^^ expected `BlogPost`, found `i64`
+    |                                   |
+    |                                   arguments to this function are incorrect
+    |
+note: function defined here
+   --> src/simple_blog_api.rs:30:4
+    |
+30  | fn repo_to_api_post(repo_post: crate::db::repository::BlogPost) -> BlogPost {
+    |    ^^^^^^^^^^^^^^^^ ------------------------------------------
+
+error[E0609]: no field `id` on type `auth::AuthUser`
+   --> src/simple_blog_api.rs:224:45
+    |
+224 |     if existing_post.user_id != auth_user.0.id && auth_user.0.role != "Admin" {
+    |                                             ^^ unknown field
+    |
+    = note: available fields are: `user_id`, `username`, `role`, `display_name`
+
+error[E0308]: mismatched types
+   --> src/simple_blog_api.rs:234:23
+    |
+234 |         post.author = auth_user.0.display_name.clone();
+    |         -----------   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `String`, found `Option<String>`
+    |         |
+    |         expected due to the type of this binding
+    |
+    = note: expected struct `std::string::String`
+                 found enum `std::option::Option<std::string::String>`
+help: consider using `Option::expect` to unwrap the `std::option::Option<std::string::String>` value, panicking if the value is an `Option::None`
+    |
+234 |         post.author = auth_user.0.display_name.clone().expect("REASON");
+    |                                                       +++++++++++++++++
+
+error[E0599]: no variant or associated item named `InvalidTitle` found for enum `blog_validation::BlogValidationError` in the current scope
+   --> src/simple_blog_api.rs:240:34
+    |
+240 |             BlogValidationError::InvalidTitle(msg) => ApiError::ValidationError(msg),
+    |                                  ^^^^^^^^^^^^ variant or associated item not found in `BlogValidationError`
+    |
+   ::: src/blog_validation.rs:14:1
+    |
+14  | pub enum BlogValidationError {
+    | ---------------------------- variant or associated item `InvalidTitle` not found for this enum
+
+error[E0599]: no variant or associated item named `InvalidContent` found for enum `blog_validation::BlogValidationError` in the current scope
+   --> src/simple_blog_api.rs:241:34
+    |
+241 |             BlogValidationError::InvalidContent(msg) => ApiError::ValidationError(msg),
+    |                                  ^^^^^^^^^^^^^^ variant or associated item not found in `BlogValidationError`
+    |
+   ::: src/blog_validation.rs:14:1
+    |
+14  | pub enum BlogValidationError {
+    | ---------------------------- variant or associated item `InvalidContent` not found for this enum
+
+error[E0599]: no variant or associated item named `InvalidSlug` found for enum `blog_validation::BlogValidationError` in the current scope
+   --> src/simple_blog_api.rs:242:34
+    |
+242 |             BlogValidationError::InvalidSlug(msg) => ApiError::ValidationError(msg),
+    |                                  ^^^^^^^^^^^ variant or associated item not found in `BlogValidationError`
+    |
+   ::: src/blog_validation.rs:14:1
+    |
+14  | pub enum BlogValidationError {
+    | ---------------------------- variant or associated item `InvalidSlug` not found for this enum
+
+error[E0599]: no variant or associated item named `InvalidExcerpt` found for enum `blog_validation::BlogValidationError` in the current scope
+   --> src/simple_blog_api.rs:243:34
+    |
+243 |             BlogValidationError::InvalidExcerpt(msg) => ApiError::ValidationError(msg),
+    |                                  ^^^^^^^^^^^^^^ variant or associated item not found in `BlogValidationError`
+    |
+   ::: src/blog_validation.rs:14:1
+    |
+14  | pub enum BlogValidationError {
+    | ---------------------------- variant or associated item `InvalidExcerpt` not found for this enum
+
+error[E0599]: no variant or associated item named `InvalidTags` found for enum `blog_validation::BlogValidationError` in the current scope
+   --> src/simple_blog_api.rs:244:34
+    |
+244 |             BlogValidationError::InvalidTags(msg) => ApiError::ValidationError(msg),
+    |                                  ^^^^^^^^^^^ variant or associated item not found in `BlogValidationError`
+    |
+   ::: src/blog_validation.rs:14:1
+    |
+14  | pub enum BlogValidationError {
+    | ---------------------------- variant or associated item `InvalidTags` not found for this enum
+
+error[E0599]: no variant or associated item named `InvalidImageUrl` found for enum `blog_validation::BlogValidationError` in the current scope
+   --> src/simple_blog_api.rs:245:34
+    |
+245 |             BlogValidationError::InvalidImageUrl(msg) => ApiError::ValidationError(msg),
+    |                                  ^^^^^^^^^^^^^^^ variant or associated item not found in `BlogValidationError`
+    |
+   ::: src/blog_validation.rs:14:1
+    |
+14  | pub enum BlogValidationError {
+    | ---------------------------- variant or associated item `InvalidImageUrl` not found for this enum
+
+error[E0308]: mismatched types
+   --> src/simple_blog_api.rs:257:30
+    |
+257 |     Ok(Json(repo_to_api_post(updated_post)))
+    |             ---------------- ^^^^^^^^^^^^ expected `BlogPost`, found `()`
+    |             |
+    |             arguments to this function are incorrect
+    |
+note: function defined here
+   --> src/simple_blog_api.rs:30:4
+    |
+30  | fn repo_to_api_post(repo_post: crate::db::repository::BlogPost) -> BlogPost {
+    |    ^^^^^^^^^^^^^^^^ ------------------------------------------
+
+error[E0609]: no field `id` on type `auth::AuthUser`
+   --> src/simple_blog_api.rs:275:45
+    |
+275 |     if existing_post.user_id != auth_user.0.id && auth_user.0.role != "Admin" {
+    |                                             ^^ unknown field
+    |
+    = note: available fields are: `user_id`, `username`, `role`, `display_name`
+
+error[E0308]: mismatched types
+   --> src/simple_blog_api.rs:285:22
+    |
+285 |         .delete_post(existing_post.id)
+    |          ----------- ^^^^^^^^^^^^^^^^ expected `i64`, found `Option<i64>`
+    |          |
+    |          arguments to this method are incorrect
+    |
+    = note: expected type `i64`
+               found enum `std::option::Option<i64>`
+note: method defined here
+   --> src/db/repository.rs:345:18
+    |
+345 |     pub async fn delete_post(&self, post_id: i64) -> Result<()> {
+    |                  ^^^^^^^^^^^        ------------
+help: consider using `Option::expect` to unwrap the `std::option::Option<i64>` value, panicking if the value is an `Option::None`
+    |
+285 |         .delete_post(existing_post.id.expect("REASON"))
+    |                                      +++++++++++++++++
+
+error[E0061]: this method takes 2 arguments but 3 arguments were supplied
+   --> src/simple_blog_api.rs:339:10
+    |
+339 |         .search_posts(&query, tag.as_deref(), published_only)
+    |          ^^^^^^^^^^^^         -------------- unexpected argument #2 of type `std::option::Option<&str>`
+    |
+note: method defined here
+   --> src/db/repository.rs:440:18
+    |
+440 |     pub async fn search_posts(
+    |                  ^^^^^^^^^^^^
+help: remove the extra argument
+    |
+339 -         .search_posts(&query, tag.as_deref(), published_only)
+339 +         .search_posts(&query, published_only)
+    |
+
+error[E0063]: missing fields `base_url`, `email` and `language` in initializer of `feed::FeedConfig`
+   --> src/simple_blog_api.rs:360:18
+    |
+360 |     let config = FeedConfig {
+    |                  ^^^^^^^^^^ missing `base_url`, `email` and `language`
+
+error[E0308]: arguments to this function are incorrect
+   --> src/simple_blog_api.rs:369:20
+    |
+369 |     let rss_feed = generate_rss_feed(&config, &posts)
+    |                    ^^^^^^^^^^^^^^^^^ -------  ------ unexpected argument #2 of type `&im::Vector<db::repository::BlogPost>`
+    |                                      |
+    |                                      argument #1 of type `&im::Vector<blog_data::BlogPost>` is missing
+    |
+note: function defined here
+   --> src/feed.rs:58:8
+    |
+58  | pub fn generate_rss_feed(
+    |        ^^^^^^^^^^^^^^^^^
+59  |     posts: &Vector<BlogPost>,
+    |     ------------------------
+help: did you mean
+    |
+369 -     let rss_feed = generate_rss_feed(&config, &posts)
+369 +     let rss_feed = generate_rss_feed(/* &im::Vector<blog_data::BlogPost> */, &config)
+    |
+
+error[E0063]: missing fields `base_url`, `email` and `language` in initializer of `feed::FeedConfig`
+   --> src/simple_blog_api.rs:393:18
+    |
+393 |     let config = FeedConfig {
+    |                  ^^^^^^^^^^ missing `base_url`, `email` and `language`
+
+error[E0308]: arguments to this function are incorrect
+   --> src/simple_blog_api.rs:402:21
+    |
+402 |     let atom_feed = generate_atom_feed(&config, &posts)
+    |                     ^^^^^^^^^^^^^^^^^^ -------  ------ unexpected argument #2 of type `&im::Vector<db::repository::BlogPost>`
+    |                                        |
+    |                                        argument #1 of type `&im::Vector<blog_data::BlogPost>` is missing
+    |
+note: function defined here
+   --> src/feed.rs:122:8
+    |
+122 | pub fn generate_atom_feed(
+    |        ^^^^^^^^^^^^^^^^^^
+123 |     posts: &Vector<BlogPost>,
+    |     ------------------------
+help: did you mean
+    |
+402 -     let atom_feed = generate_atom_feed(&config, &posts)
+402 +     let atom_feed = generate_atom_feed(/* &im::Vector<blog_data::BlogPost> */, &config)
+    |
+
+error[E0277]: `std::result::Result<db::Database, anyhow::Error>` is not a future
+   --> src/simple_blog_api.rs:461:38
+    |
+461 |     let db = Database::new(&db_path).await?;
+    |              ------------------------^^^^^
+    |              |                      ||
+    |              |                      |`std::result::Result<db::Database, anyhow::Error>` is not a future
+    |              |                      help: remove the `.await`
+    |              this call returns `std::result::Result<db::Database, anyhow::Error>`
+    |
+    = help: the trait `std::future::Future` is not implemented for `std::result::Result<db::Database, anyhow::Error>`
+    = note: std::result::Result<db::Database, anyhow::Error> must be a future or must implement `IntoFuture` to be awaited
+    = note: required for `std::result::Result<db::Database, anyhow::Error>` to implement `std::future::IntoFuture`
+
+error[E0061]: this function takes 2 arguments but 0 arguments were supplied
+   --> src/simple_blog_api.rs:494:25
+    |
+494 |     let feature_flags = FeatureFlags::new();
+    |                         ^^^^^^^^^^^^^^^^^-- two arguments of type `feature_flags::FeatureFlagConfig` and `std::option::Option<std::string::String>` are missing
+    |
+note: associated function defined here
+   --> src/feature_flags.rs:48:12
+    |
+48  |     pub fn new(config: FeatureFlagConfig, config_path: Option<String>) -> Self {
+    |            ^^^ -------------------------  ---------------------------
+help: provide the arguments
+    |
+494 |     let feature_flags = FeatureFlags::new(/* feature_flags::FeatureFlagConfig */, /* std::option::Option<std::string::String> */);
+    |                                           ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+error[E0560]: struct `rate_limiter::RateLimiterConfig` has no field named `requests_per_minute`
+   --> src/simple_blog_api.rs:511:9
+    |
+511 |         requests_per_minute: 60,
+    |         ^^^^^^^^^^^^^^^^^^^ `rate_limiter::RateLimiterConfig` does not have this field
+    |
+    = note: available fields are: `max_requests`, `window_seconds`, `include_headers`, `status_code`
+
+error[E0560]: struct `rate_limiter::RateLimiterConfig` has no field named `burst_size`
+   --> src/simple_blog_api.rs:512:9
+    |
+512 |         burst_size: 10,
+    |         ^^^^^^^^^^ `rate_limiter::RateLimiterConfig` does not have this field
+    |
+    = note: available fields are: `max_requests`, `window_seconds`, `include_headers`, `status_code`
+
+error[E0061]: this function takes 1 argument but 2 arguments were supplied
+   --> src/simple_blog_api.rs:516:21
+    |
+516 |     let image_api = create_image_api_router(db.clone(), &db_path)?;
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^             -------- unexpected argument #2 of type `&std::path::PathBuf`
+    |
+note: function defined here
+   --> src/image_api.rs:196:8
+    |
+196 | pub fn create_image_api_router(base_url: &str) -> Router {
+    |        ^^^^^^^^^^^^^^^^^^^^^^^
+help: remove the extra argument
+    |
+516 -     let image_api = create_image_api_router(db.clone(), &db_path)?;
+516 +     let image_api = create_image_api_router(db.clone())?;
+    |
+
+error[E0277]: the `?` operator can only be applied to values that implement `std::ops::Try`
+   --> src/simple_blog_api.rs:516:21
+    |
+516 |     let image_api = create_image_api_router(db.clone(), &db_path)?;
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the `?` operator cannot be applied to type `axum::Router`
+    |
+    = help: the trait `std::ops::Try` is not implemented for `axum::Router`
+
+error[E0277]: the trait bound `FromFn<..., ..., ..., _>: Service<...>` is not satisfied
+   --> src/simple_blog_api.rs:534:43
+    |
+534 |               post(create_post).route_layer(axum::middleware::from_fn_with_state(
+    |  _______________________________-----------_^
+    | |                               |
+    | |                               required by a bound introduced by this call
+535 | |                 auth_service.clone(),
+536 | |                 require_author,
+537 | |             )),
+    | |_____________^ unsatisfied trait bound
+    |
+    = help: the trait `tower_service::Service<axum::http::Request<axum::body::Body>>` is not implemented for `FromFn<fn(Arc<...>, ..., ...) -> ... {require_author}, ..., ..., _>`
+    = help: the following other types implement trait `tower_service::Service<Request>`:
+              axum::middleware::FromFn<F, S, I, (T1, T2)>
+              axum::middleware::FromFn<F, S, I, (T1, T2, T3)>
+              axum::middleware::FromFn<F, S, I, (T1, T2, T3, T4)>
+              axum::middleware::FromFn<F, S, I, (T1, T2, T3, T4, T5)>
+              axum::middleware::FromFn<F, S, I, (T1, T2, T3, T4, T5, T6)>
+              axum::middleware::FromFn<F, S, I, (T1, T2, T3, T4, T5, T6, T7)>
+              axum::middleware::FromFn<F, S, I, (T1, T2, T3, T4, T5, T6, T7, T8)>
+              axum::middleware::FromFn<F, S, I, (T1, T2, T3, T4, T5, T6, T7, T8, T9)>
+            and 8 others
+note: required by a bound in `axum::routing::MethodRouter::<S, E>::route_layer`
+   --> /home/hakim/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/axum-0.8.4/src/routing/method_routing.rs:998:21
+    |
+995 |     pub fn route_layer<L>(mut self, layer: L) -> MethodRouter<S, E>
+    |            ----------- required by a bound in this associated function
+...
+998 |         L::Service: Service<Request, Error = E> + Clone + Send + Sync + 'static,
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `MethodRouter::<S, E>::route_layer`
+    = note: the full name for the type has been written to '/home/hakim/personal/cv/target/debug/deps/cv-a3a508c72a464e89.long-type-7757264409977039152.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+error[E0277]: the trait bound `FromFn<..., ..., ..., _>: Service<...>` is not satisfied
+   --> src/simple_blog_api.rs:541:42
+    |
+541 |               put(update_post).route_layer(axum::middleware::from_fn_with_state(
+    |  ______________________________-----------_^
+    | |                              |
+    | |                              required by a bound introduced by this call
+542 | |                 auth_service.clone(),
+543 | |                 require_author,
+544 | |             )),
+    | |_____________^ unsatisfied trait bound
+    |
+    = help: the trait `tower_service::Service<axum::http::Request<axum::body::Body>>` is not implemented for `FromFn<fn(Arc<...>, ..., ...) -> ... {require_author}, ..., ..., _>`
+    = help: the following other types implement trait `tower_service::Service<Request>`:
+              axum::middleware::FromFn<F, S, I, (T1, T2)>
+              axum::middleware::FromFn<F, S, I, (T1, T2, T3)>
+              axum::middleware::FromFn<F, S, I, (T1, T2, T3, T4)>
+              axum::middleware::FromFn<F, S, I, (T1, T2, T3, T4, T5)>
+              axum::middleware::FromFn<F, S, I, (T1, T2, T3, T4, T5, T6)>
+              axum::middleware::FromFn<F, S, I, (T1, T2, T3, T4, T5, T6, T7)>
+              axum::middleware::FromFn<F, S, I, (T1, T2, T3, T4, T5, T6, T7, T8)>
+              axum::middleware::FromFn<F, S, I, (T1, T2, T3, T4, T5, T6, T7, T8, T9)>
+            and 8 others
+note: required by a bound in `axum::routing::MethodRouter::<S, E>::route_layer`
+   --> /home/hakim/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/axum-0.8.4/src/routing/method_routing.rs:998:21
+    |
+995 |     pub fn route_layer<L>(mut self, layer: L) -> MethodRouter<S, E>
+    |            ----------- required by a bound in this associated function
+...
+998 |         L::Service: Service<Request, Error = E> + Clone + Send + Sync + 'static,
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `MethodRouter::<S, E>::route_layer`
+    = note: the full name for the type has been written to '/home/hakim/personal/cv/target/debug/deps/cv-a3a508c72a464e89.long-type-8192997900289084309.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+error[E0277]: the trait bound `FromFn<..., ..., ..., _>: Service<...>` is not satisfied
+   --> src/simple_blog_api.rs:548:45
+    |
+548 |               delete(delete_post).route_layer(axum::middleware::from_fn_with_state(
+    |  _________________________________-----------_^
+    | |                                 |
+    | |                                 required by a bound introduced by this call
+549 | |                 auth_service.clone(),
+550 | |                 require_author,
+551 | |             )),
+    | |_____________^ unsatisfied trait bound
+    |
+    = help: the trait `tower_service::Service<axum::http::Request<axum::body::Body>>` is not implemented for `FromFn<fn(Arc<...>, ..., ...) -> ... {require_author}, ..., ..., _>`
+    = help: the following other types implement trait `tower_service::Service<Request>`:
+              axum::middleware::FromFn<F, S, I, (T1, T2)>
+              axum::middleware::FromFn<F, S, I, (T1, T2, T3)>
+              axum::middleware::FromFn<F, S, I, (T1, T2, T3, T4)>
+              axum::middleware::FromFn<F, S, I, (T1, T2, T3, T4, T5)>
+              axum::middleware::FromFn<F, S, I, (T1, T2, T3, T4, T5, T6)>
+              axum::middleware::FromFn<F, S, I, (T1, T2, T3, T4, T5, T6, T7)>
+              axum::middleware::FromFn<F, S, I, (T1, T2, T3, T4, T5, T6, T7, T8)>
+              axum::middleware::FromFn<F, S, I, (T1, T2, T3, T4, T5, T6, T7, T8, T9)>
+            and 8 others
+note: required by a bound in `axum::routing::MethodRouter::<S, E>::route_layer`
+   --> /home/hakim/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/axum-0.8.4/src/routing/method_routing.rs:998:21
+    |
+995 |     pub fn route_layer<L>(mut self, layer: L) -> MethodRouter<S, E>
+    |            ----------- required by a bound in this associated function
+...
+998 |         L::Service: Service<Request, Error = E> + Clone + Send + Sync + 'static,
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `MethodRouter::<S, E>::route_layer`
+    = note: the full name for the type has been written to '/home/hakim/personal/cv/target/debug/deps/cv-a3a508c72a464e89.long-type-7784926543540129324.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+error[E0277]: the trait bound `std::sync::Arc<rate_limiter::RateLimiterState>: tower_layer::Layer<axum::routing::Route>` is not satisfied
+   --> src/simple_blog_api.rs:554:10
+    |
+554 |         .layer(create_rate_limiter_layer(rate_limiter_config));
+    |          ^^^^^ the trait `tower_layer::Layer<axum::routing::Route>` is not implemented for `std::sync::Arc<rate_limiter::RateLimiterState>`
+    |
+    = help: the following other types implement trait `tower_layer::Layer<S>`:
+              `&'a T` implements `tower_layer::Layer<S>`
+              `()` implements `tower_layer::Layer<S>`
+              `(L1, L2)` implements `tower_layer::Layer<S>`
+              `(L1, L2, L3)` implements `tower_layer::Layer<S>`
+              `(L1, L2, L3, L4)` implements `tower_layer::Layer<S>`
+              `(L1, L2, L3, L4, L5)` implements `tower_layer::Layer<S>`
+              `(L1, L2, L3, L4, L5, L6)` implements `tower_layer::Layer<S>`
+              `(L1, L2, L3, L4, L5, L6, L7)` implements `tower_layer::Layer<S>`
+            and 44 others
+    = note: required for `((), std::sync::Arc<rate_limiter::RateLimiterState>)` to implement `tower_layer::Layer<axum::routing::Route>`
+
+error[E0560]: struct `blog_data::BlogPost` has no field named `date_created`
+  --> src/simple_blog_api.rs:40:9
+   |
+40 |         date_created: repo_post.date_created,
+   |         ^^^^^^^^^^^^ `blog_data::BlogPost` does not have this field
+   |
+   = note: available fields are: `date`, `content_format`, `image`, `metadata`
+
+error[E0609]: no field `date_created` on type `db::repository::BlogPost`
+  --> src/simple_blog_api.rs:40:33
+   |
+40 |         date_created: repo_post.date_created,
+   |                                 ^^^^^^^^^^^^ unknown field
+   |
+   = note: available fields are: `id`, `title`, `slug`, `date`, `user_id` ... and 8 others
+
+error[E0560]: struct `blog_data::BlogPost` has no field named `date_updated`
+  --> src/simple_blog_api.rs:41:9
+   |
+41 |         date_updated: repo_post.date_updated,
+   |         ^^^^^^^^^^^^ `blog_data::BlogPost` does not have this field
+   |
+   = note: available fields are: `date`, `content_format`, `image`, `metadata`
+
+error[E0609]: no field `date_updated` on type `db::repository::BlogPost`
+  --> src/simple_blog_api.rs:41:33
+   |
+41 |         date_updated: repo_post.date_updated,
+   |                                 ^^^^^^^^^^^^ unknown field
+   |
+   = note: available fields are: `id`, `title`, `slug`, `date`, `user_id` ... and 8 others
+
+error[E0560]: struct `blog_data::BlogPost` has no field named `image_url`
+  --> src/simple_blog_api.rs:44:9
+   |
+44 |         image_url: repo_post.image_url,
+   |         ^^^^^^^^^ `blog_data::BlogPost` does not have this field
+   |
+   = note: available fields are: `date`, `content_format`, `image`, `metadata`
+
+error[E0609]: no field `image_url` on type `db::repository::BlogPost`
+  --> src/simple_blog_api.rs:44:30
+   |
+44 |         image_url: repo_post.image_url,
+   |                              ^^^^^^^^^ unknown field
+   |
+   = note: available fields are: `id`, `title`, `slug`, `date`, `user_id` ... and 8 others
+
+error[E0560]: struct `blog_data::BlogPost` has no field named `reading_time`
+  --> src/simple_blog_api.rs:45:9
+   |
+45 |         reading_time: repo_post.reading_time,
+   |         ^^^^^^^^^^^^ `blog_data::BlogPost` does not have this field
+   |
+   = note: available fields are: `date`, `content_format`, `image`, `metadata`
+
+error[E0609]: no field `reading_time` on type `db::repository::BlogPost`
+  --> src/simple_blog_api.rs:45:33
+   |
+45 |         reading_time: repo_post.reading_time,
+   |                                 ^^^^^^^^^^^^ unknown field
+   |
+   = note: available fields are: `id`, `title`, `slug`, `date`, `user_id` ... and 8 others
+
+error[E0560]: struct `db::repository::BlogPost` has no field named `date_created`
+  --> src/simple_blog_api.rs:60:9
+   |
+60 |         date_created: api_post.date_created,
+   |         ^^^^^^^^^^^^ `db::repository::BlogPost` does not have this field
+   |
+   = note: available fields are: `date`, `image`, `metadata`
+
+error[E0609]: no field `date_created` on type `&blog_data::BlogPost`
+  --> src/simple_blog_api.rs:60:32
+   |
+60 |         date_created: api_post.date_created,
+   |                                ^^^^^^^^^^^^ unknown field
+   |
+   = note: available fields are: `id`, `title`, `slug`, `date`, `user_id` ... and 9 others
+
+error[E0560]: struct `db::repository::BlogPost` has no field named `date_updated`
+  --> src/simple_blog_api.rs:61:9
+   |
+61 |         date_updated: api_post.date_updated,
+   |         ^^^^^^^^^^^^ `db::repository::BlogPost` does not have this field
+   |
+   = note: available fields are: `date`, `image`, `metadata`
+
+error[E0609]: no field `date_updated` on type `&blog_data::BlogPost`
+  --> src/simple_blog_api.rs:61:32
+   |
+61 |         date_updated: api_post.date_updated,
+   |                                ^^^^^^^^^^^^ unknown field
+   |
+   = note: available fields are: `id`, `title`, `slug`, `date`, `user_id` ... and 9 others
+
+error[E0560]: struct `db::repository::BlogPost` has no field named `image_url`
+  --> src/simple_blog_api.rs:64:9
+   |
+64 |         image_url: api_post.image_url.clone(),
+   |         ^^^^^^^^^ `db::repository::BlogPost` does not have this field
+   |
+   = note: available fields are: `date`, `image`, `metadata`
+
+error[E0609]: no field `image_url` on type `&blog_data::BlogPost`
+  --> src/simple_blog_api.rs:64:29
+   |
+64 |         image_url: api_post.image_url.clone(),
+   |                             ^^^^^^^^^ unknown field
+   |
+   = note: available fields are: `id`, `title`, `slug`, `date`, `user_id` ... and 9 others
+
+error[E0560]: struct `db::repository::BlogPost` has no field named `reading_time`
+  --> src/simple_blog_api.rs:65:9
+   |
+65 |         reading_time: api_post.reading_time,
+   |         ^^^^^^^^^^^^ `db::repository::BlogPost` does not have this field
+   |
+   = note: available fields are: `date`, `image`, `metadata`
+
+error[E0609]: no field `reading_time` on type `&blog_data::BlogPost`
+  --> src/simple_blog_api.rs:65:32
+   |
+65 |         reading_time: api_post.reading_time,
+   |                                ^^^^^^^^^^^^ unknown field
+   |
+   = note: available fields are: `id`, `title`, `slug`, `date`, `user_id` ... and 9 others
+
+error[E0308]: mismatched types
+   --> src/simple_blog_api.rs:119:65
+    |
+119 |             BlogError::Database(msg) => ApiError::DatabaseError(msg),
+    |                                         ----------------------- ^^^- help: try using a conversion method: `.to_string()`
+    |                                         |                       |
+    |                                         |                       expected `String`, found `DatabaseError`
+    |                                         arguments to this enum variant are incorrect
+    |
+note: tuple variant defined here
+   --> src/simple_blog_api.rs:93:5
+    |
+93  |     DatabaseError(String),
+    |     ^^^^^^^^^^^^^
+
+Some errors have detailed explanations: E0061, E0063, E0277, E0308, E0560, E0599, E0609.
+For more information about an error, try `rustc --explain E0061`.
+warning: `cv` (lib) generated 7 warnings
+error: could not compile `cv` (lib) due to 52 previous errors; 7 warnings emitted

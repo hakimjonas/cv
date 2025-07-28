@@ -47,8 +47,7 @@ rss = "2.0.7"
 atom_syndication = "0.12.2"
 uuid = { version = "1.7.0", features = ["v4"] }
 pulldown-cmark = "0.13.0"
-# GitHub OAuth dependencies
-oauth2 = { version = "4.4.2", features = ["reqwest"] }
+# URL parsing
 url = "2.5.0"
 
 [[bin]]
@@ -64,6 +63,7 @@ path = "src/bin/security_test.rs"
 name = "test_blog_core"
 path = "src/bin/test_blog_core.rs"
 
+
 [[bin]]
-name = "blog_api_server"
-path = "src/bin/blog_api_server.rs"
+name = "simple_blog_api_server"
+path = "src/bin/simple_blog_api_server.rs"

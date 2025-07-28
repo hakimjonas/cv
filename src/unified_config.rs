@@ -79,6 +79,36 @@ pub const DEFAULT_API_PORT: u16 = 3000;
 /// Default maximum port for the blog API server
 pub const DEFAULT_API_MAX_PORT: u16 = 3010;
 
+/// Configuration for the site owner
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OwnerConfig {
+    /// The owner's name
+    pub name: String,
+    
+    /// The owner's GitHub username
+    pub github_username: Option<String>,
+    
+    /// The owner's email
+    pub email: String,
+    
+    /// The owner's display name (optional, defaults to name)
+    #[serde(default)]
+    pub display_name: Option<String>,
+    
+    /// The owner's bio (optional)
+    #[serde(default)]
+    pub bio: Option<String>,
+    
+    /// The owner's role (defaults to Author)
+    #[serde(default)]
+    pub role: String,
+}
+
+/// Default function for development mode
+fn default_dev_mode() -> bool {
+    false
+}
+
 /// Represents the application configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppConfig {
@@ -130,15 +160,15 @@ pub struct AppConfig {
     #[serde(default = "default_github_rate_limit_strategy")]
     pub github_rate_limit_strategy: String,
 
-    /// GitHub OAuth client ID
+    /// GitHub OAuth client ID (deprecated, kept for backward compatibility)
     #[serde(default)]
     pub github_oauth_client_id: Option<String>,
 
-    /// GitHub OAuth client secret
+    /// GitHub OAuth client secret (deprecated, kept for backward compatibility)
     #[serde(default)]
     pub github_oauth_client_secret: Option<String>,
 
-    /// GitHub OAuth redirect URL
+    /// GitHub OAuth redirect URL (deprecated, kept for backward compatibility)
     #[serde(default = "default_github_oauth_redirect_url")]
     pub github_oauth_redirect_url: String,
 
@@ -157,6 +187,14 @@ pub struct AppConfig {
     /// Maximum port for the blog API server
     #[serde(default = "default_api_max_port")]
     pub api_max_port: u16,
+
+    /// Owner configuration (populated from Git identity)
+    #[serde(default)]
+    pub owner: Option<OwnerConfig>,
+    
+    /// Development mode flag
+    #[serde(default = "default_dev_mode")]
+    pub dev_mode: bool,
 
     /// Additional configuration options
     #[serde(skip)]
@@ -221,7 +259,6 @@ fn default_github_oauth_redirect_url() -> String {
 }
 
 impl Default for AppConfig {
-    /// Creates a default configuration
     fn default() -> Self {
         let output_dir = PathBuf::from("dist");
         let html_output = output_dir.join("cv.html");
@@ -247,6 +284,8 @@ impl Default for AppConfig {
             db_storage: default_db_storage(),
             api_port: default_api_port(),
             api_max_port: default_api_max_port(),
+            owner: None,
+            dev_mode: default_dev_mode(),
             options: HashMap::new(),
         }
     }
@@ -327,28 +366,21 @@ impl AppConfig {
         debug!("HTML output path: {}", app_config.html_output.display());
         debug!("PDF output path: {}", app_config.pdf_output.display());
 
-        // Try to get GitHub token from secure storage if not set
+        // Try to get GitHub token from environment variable if not set
         if app_config.github_token.is_none() {
-            match crate::credentials::get_github_token()
-                .context("Failed to access secure storage for GitHub token")
-            {
-                Ok(Some(token)) => {
-                    info!("Using GitHub API token from secure storage");
+            if let Ok(token) = std::env::var("GITHUB_TOKEN") {
+                if !token.is_empty() {
+                    info!("Using GitHub API token from environment variable");
                     app_config.github_token = Some(token);
-                    debug!("GitHub token successfully retrieved from secure storage");
+                    debug!("GitHub token successfully retrieved from environment");
+                } else {
+                    debug!("Empty GitHub API token found in environment variable");
+                    info!("Consider setting a valid GitHub token to avoid API rate limiting");
                 }
-                Ok(None) => {
-                    debug!("No GitHub API token found in secure storage");
-                    info!("Consider setting a GitHub token to avoid API rate limiting");
-                    info!("You can set a token with: cv --set-token <your-token>");
-                }
-                Err(e) => {
-                    warn!("Failed to read GitHub token from secure storage: {}", e);
-                    debug!("Will continue without GitHub token, which may result in rate limiting");
-                    info!(
-                        "To fix this issue, check your keyring system or set the token via environment variable GITHUB_TOKEN"
-                    );
-                }
+            } else {
+                debug!("No GitHub API token found in environment");
+                info!("Consider setting a GitHub token to avoid API rate limiting");
+                info!("You can set a token via environment variable GITHUB_TOKEN");
             }
         } else {
             debug!("Using GitHub token provided in configuration");

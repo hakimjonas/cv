@@ -1,6 +1,6 @@
 /**
- * Blog API Client
- * A shared library for interacting with the blog API
+ * Simple Blog API Client
+ * A shared library for interacting with the blog API using Git-based authentication
  */
 
 const BlogAPI = (function() {
@@ -52,7 +52,7 @@ const BlogAPI = (function() {
      * @param {object} data - Optional data to send
      * @returns {Promise} - Response promise
      */
-            async function apiRequest(endpoint, method = 'GET', data = null, retryCount = 0) {
+    async function apiRequest(endpoint, method = 'GET', data = null, retryCount = 0) {
         const url = `${baseUrl}${endpoint}`;
         console.log(`Making ${method} request to ${url}`);
 
@@ -75,20 +75,15 @@ const BlogAPI = (function() {
 
         if (data && (method === 'POST' || method === 'PUT')) {
             // Ensure all required fields are present for posts
-            if (endpoint.includes('/api/blog') && 
+            if (endpoint.includes('/api/posts') && 
                 (method === 'POST' || method === 'PUT')) {
-                if (!data.title || !data.slug || !data.content || !data.date || !data.author) {
-                    throw new Error('Missing required fields: title, slug, content, date, author must be non-empty');
+                if (!data.title || !data.slug || !data.content) {
+                    throw new Error('Missing required fields: title, slug, content must be non-empty');
                 }
 
                 // Ensure tags is always an array
                 if (!data.tags) {
                     data.tags = [];
-                }
-
-                // Ensure metadata is always an object
-                if (!data.metadata) {
-                    data.metadata = {};
                 }
             }
 
@@ -160,28 +155,37 @@ const BlogAPI = (function() {
         }
     }
 
-    return {
-        // Authentication methods
-        login: async (username, password) => {
-            try {
-                const loginData = { username, password };
-                const response = await apiRequest('/api/auth/login', 'POST', loginData);
+    // Automatically create a session when the API client is initialized
+    async function createSession() {
+        try {
+            if (!isAuthenticated()) {
+                console.log('Creating session based on Git identity...');
+                const response = await apiRequest('/api/session', 'POST');
                 
                 // Store the token and user info
                 setAuthToken(response.token);
                 setUser({
-                    id: response.user_id,
-                    username: response.username,
-                    displayName: response.display_name,
-                    role: response.role
+                    id: response.user.id,
+                    username: response.user.username,
+                    displayName: response.user.display_name,
+                    role: response.user.role
                 });
                 
+                console.log('Session created successfully:', response);
                 return response;
-            } catch (error) {
-                console.error('Login failed:', error);
-                throw error;
+            } else {
+                console.log('Already authenticated');
+                return { user: getUser() };
             }
-        },
+        } catch (error) {
+            console.error('Failed to create session:', error);
+            throw error;
+        }
+    }
+
+    return {
+        // Authentication methods
+        createSession: createSession,
         
         logout: () => {
             // Clear the stored token and user info
@@ -194,26 +198,32 @@ const BlogAPI = (function() {
         getCurrentUser: getUser,
         
         // Blog post methods
-        getPosts: () => apiRequest('/api/blog'),
-        getPost: (slug) => apiRequest(`/api/blog/${slug}`),
-        createPost: (postData) => apiRequest('/api/blog', 'POST', postData),
-        updatePost: (slug, postData) => apiRequest(`/api/blog/${slug}`, 'PUT', postData),
-        deletePost: (slug) => apiRequest(`/api/blog/${slug}`, 'DELETE'),
+        getPosts: () => apiRequest('/api/posts'),
+        getPost: (slug) => apiRequest(`/api/posts/${slug}`),
+        createPost: (postData) => apiRequest('/api/posts', 'POST', postData),
+        updatePost: (slug, postData) => apiRequest(`/api/posts/${slug}`, 'PUT', postData),
+        deletePost: (slug) => apiRequest(`/api/posts/${slug}`, 'DELETE'),
 
         // Special collections
-        getPublishedPosts: () => apiRequest('/api/blog/published'),
-        getFeaturedPosts: () => apiRequest('/api/blog/featured'),
-        getTags: () => apiRequest('/api/blog/tags'),
-        getPostsByTag: (tagSlug) => apiRequest(`/api/blog/tag/${tagSlug}`),
+        getPublishedPosts: () => apiRequest('/api/published'),
+        getFeaturedPosts: () => apiRequest('/api/featured'),
+        getTags: () => apiRequest('/api/tags'),
+        getPostsByTag: (tagSlug) => apiRequest(`/api/tags/${tagSlug}`),
 
         // Utility method to get current API URL
         getBaseUrl: () => baseUrl
     };
 })();
 
-// If we're in a CommonJS or ES module environment
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = BlogAPI;
-} else if (typeof define === 'function' && define.amd) {
-    define([], function() { return BlogAPI; });
-}
+// Automatically create a session when the page loads
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        await BlogAPI.createSession();
+        // If there's an updateAuthStatus function defined, call it
+        if (typeof updateAuthStatus === 'function') {
+            updateAuthStatus();
+        }
+    } catch (error) {
+        console.error('Failed to create session on page load:', error);
+    }
+});

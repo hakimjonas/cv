@@ -1,8 +1,9 @@
 use anyhow::{Context, Result};
 use cv::api_docs::add_swagger_ui;
-use cv::blog_api::create_blog_api_router;
 use cv::blog_utils::create_test_database;
+use cv::git_identity::GitIdentityService;
 use cv::logging;
+use cv::simple_blog_api::create_simple_blog_api_router;
 use cv::unified_config::AppConfig;
 use std::net::SocketAddr;
 use std::sync::Once;
@@ -16,7 +17,7 @@ static INIT: Once = Once::new();
 fn init_logging() {
     // Set up a logging configuration for the blog API server
     let config = logging::LoggingConfig {
-        app_name: "blog_api_server".to_string(),
+        app_name: "simple_blog_api_server".to_string(),
         level: tracing::Level::INFO,
         log_spans: true,
         ..Default::default()
@@ -53,6 +54,23 @@ fn configure_sqlite() {
     });
 }
 
+// Verify Git setup
+fn verify_git_setup() -> Result<()> {
+    let git_identity_service = GitIdentityService::new();
+    
+    // Verify Git is properly configured
+    match git_identity_service.verify_git_setup() {
+        Ok(_) => {
+            info!("Git is properly configured");
+            Ok(())
+        }
+        Err(e) => {
+            error!("Git configuration error: {}", e);
+            Err(e)
+        }
+    }
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     // Initialize logging
@@ -61,16 +79,64 @@ async fn main() -> Result<()> {
     // Configure SQLite for better concurrency
     configure_sqlite();
 
+    // Verify Git setup
+    verify_git_setup()?;
+
     // Load configuration from all available sources
-    let config = AppConfig::load().context("Failed to load configuration")?;
+    let mut config = AppConfig::load().context("Failed to load configuration")?;
     debug!("Loaded configuration: {:?}", config);
+
+    // Enable development mode for local testing
+    let dev_mode = std::env::var("DEV_MODE").map(|v| v == "1" || v.to_lowercase() == "true").unwrap_or(false);
+    if dev_mode {
+        info!("Development mode enabled");
+        config.dev_mode = true;
+    }
+
+    // Try to get Git identity for owner configuration
+    let git_identity_service = GitIdentityService::new();
+    if let Ok(identity) = git_identity_service.get_identity() {
+        info!("Git identity detected: {} <{}>", identity.name, identity.email);
+        
+        let owner = cv::unified_config::OwnerConfig {
+            name: identity.name.clone(),
+            github_username: identity.github_username.clone(),
+            email: identity.email.clone(),
+            display_name: None,
+            bio: None,
+            role: "Author".to_string(),
+        };
+        
+        config.owner = Some(owner);
+    } else {
+        warn!("Could not detect Git identity");
+    }
 
     // Create a test database
     let db_path = create_test_database()?;
     info!("Using database at: {:?}", db_path);
 
+    // JWT configuration
+    let jwt_secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| {
+        let secret = uuid::Uuid::new_v4().to_string();
+        info!("No JWT_SECRET environment variable found, using generated secret");
+        secret
+    });
+    
+    let token_expiration = std::env::var("TOKEN_EXPIRATION")
+        .ok()
+        .and_then(|s| s.parse::<i64>().ok())
+        .unwrap_or(86400); // Default to 24 hours
+    
+    info!("Token expiration set to {} seconds", token_expiration);
+
     // Create the API router
-    let app = create_blog_api_router(db_path)?;
+    let app = create_simple_blog_api_router(
+        db_path,
+        jwt_secret,
+        token_expiration,
+        config.dev_mode,
+    ).await?;
 
     // Add Swagger UI for API documentation
     let app = add_swagger_ui(app);
@@ -87,7 +153,7 @@ async fn main() -> Result<()> {
         let addr = SocketAddr::from(([0, 0, 0, 0], port));
         match TcpListener::bind(addr).await {
             Ok(l) => {
-                info!("Blog API server running at http://{}", addr);
+                info!("Simple Blog API server running at http://{}", addr);
                 listener = Some((l, addr));
                 break;
             }
@@ -115,6 +181,7 @@ async fn main() -> Result<()> {
 
     let (listener, addr) = listener.unwrap();
     info!("Starting server on http://{}", addr);
+    info!("Simple blog client available at http://{}/static/simple-blog-client.html", addr);
 
     axum::serve(listener, app).await.context("Server error")?;
 

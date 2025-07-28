@@ -17,12 +17,10 @@ pub mod migrations;
 pub mod optimized_queries;
 pub mod pool_metrics;
 pub mod repository;
-pub mod user_repository;
 
 #[allow(unused_imports)]
 pub use migrations::run_migrations;
 pub use repository::BlogRepository;
-pub use user_repository::UserRepository;
 
 /// Run migrations on a database pool
 #[allow(dead_code)]
@@ -838,11 +836,6 @@ impl Database {
         BlogRepository::new(Arc::clone(&self.pool))
     }
 
-    /// Get a repository for user operations
-    #[allow(dead_code)]
-    pub fn user_repository(&self) -> UserRepository {
-        UserRepository::new(Arc::clone(&self.pool))
-    }
 
     /// Get the metrics object for the connection pool
     #[allow(dead_code)]

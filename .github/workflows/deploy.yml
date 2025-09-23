@@ -87,7 +87,7 @@ jobs:
         uses: baptiste0928/cargo-install@v2
         with:
           crate: typst-cli
-          version: "^0.10.0"
+          version: "^0.13.0"
         if: steps.changes.outputs.build_type == 'full'
 
       - name: Build site (Full)

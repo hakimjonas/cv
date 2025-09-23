@@ -27,17 +27,17 @@ extract_field() {
 
     if [[ -f "$file" ]]; then
         # Extract field from YAML frontmatter
-        awk -v field="$field" -v default="$default" '
+        awk -v field="$field" -v default_val="$default" '
             /^---$/ && !in_fm { in_fm = 1; next }
             /^---$/ && in_fm { in_fm = 0; next }
             in_fm && $0 ~ "^" field ":" {
                 sub("^" field ": *", "")
-                gsub(/^["'\''']|["'\''']$/, "")  # Remove quotes
+                gsub(/^["'\'']|["'\'']$/, "")  # Remove quotes
                 print
                 found = 1
                 exit
             }
-            END { if (!found) print default }
+            END { if (!found) print default_val }
         ' "$file"
     else
         echo "$default"

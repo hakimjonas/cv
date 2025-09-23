@@ -43,7 +43,7 @@ main = ["js/scripts.js"]
 
 # Blog-specific JavaScript bundle
 blog = [
-    "js/api-client.js",
+    "js/simple-api-client.js",
     "js/blog-integration.js"
 ]
 

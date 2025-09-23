@@ -6,8 +6,6 @@ use crate::unified_config::AppConfig;
 use anyhow::Result;
 use std::path::PathBuf;
 
-/// Re-export constants from unified_config
-pub use crate::unified_config::GITHUB_TOKEN_KEY;
 
 /// Config struct that wraps AppConfig
 #[derive(Debug, Clone)]
@@ -18,14 +16,16 @@ pub struct Config {
     pub cache: im::HashMap<String, String>,
 }
 
-impl Config {
-    /// Create a new Config with default values
-    pub fn default() -> Self {
+impl Default for Config {
+    fn default() -> Self {
         Self {
             app_config: AppConfig::default(),
             cache: im::HashMap::new(),
         }
     }
+}
+
+impl Config {
 
     /// Set an option in the config
     pub fn with_option(mut self, key: &str, value: &str) -> Self {

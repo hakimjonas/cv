@@ -99,7 +99,7 @@ pub fn default_config() -> BundleConfig {
     js_bundles.insert(
         "blog".to_string(),
         vec![
-            "js/api-client.js".to_string(),
+            "js/simple-api-client.js".to_string(),
             "js/blog-integration.js".to_string(),
         ],
     );

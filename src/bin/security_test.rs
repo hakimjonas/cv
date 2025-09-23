@@ -1,4 +1,4 @@
-use cv::blog_api::create_blog_api_router;
+use cv::simple_blog_api::create_simple_blog_api_router;
 use cv::check_db_permissions::secure_db_permissions;
 use std::process::exit;
 use tokio::net::TcpListener;
@@ -107,7 +107,12 @@ async fn test_rate_limiting() {
     let db_path = temp_dir.path().join("test.db");
 
     // Create the router
-    let router = match create_blog_api_router(db_path).await {
+    // Use test configuration
+    let jwt_secret = "test-secret-key".to_string();
+    let token_expiration = 3600;
+    let dev_mode = true;
+
+    let router = match create_simple_blog_api_router(db_path, jwt_secret, token_expiration, dev_mode).await {
         Ok(router) => router,
         Err(e) => {
             error!("Failed to create blog API router: {}", e);
@@ -163,7 +168,12 @@ async fn test_csrf_protection() {
     let db_path = temp_dir.path().join("test.db");
 
     // Create the router
-    let router = match create_blog_api_router(db_path).await {
+    // Use test configuration
+    let jwt_secret = "test-secret-key".to_string();
+    let token_expiration = 3600;
+    let dev_mode = true;
+
+    let router = match create_simple_blog_api_router(db_path, jwt_secret, token_expiration, dev_mode).await {
         Ok(router) => router,
         Err(e) => {
             error!("Failed to create blog API router: {}", e);
@@ -267,7 +277,12 @@ async fn test_content_security_policy() {
     let db_path = temp_dir.path().join("test.db");
 
     // Create the router
-    let router = match create_blog_api_router(db_path).await {
+    // Use test configuration
+    let jwt_secret = "test-secret-key".to_string();
+    let token_expiration = 3600;
+    let dev_mode = true;
+
+    let router = match create_simple_blog_api_router(db_path, jwt_secret, token_expiration, dev_mode).await {
         Ok(router) => router,
         Err(e) => {
             error!("Failed to create blog API router: {}", e);

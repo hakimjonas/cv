@@ -502,8 +502,10 @@ pub async fn create_simple_blog_api_router(
     let git_identity_service = GitIdentityService::new();
 
     // Create configuration for SimpleAuthService
-    let mut config = crate::unified_config::AppConfig::default();
-    config.dev_mode = dev_mode;
+    let mut config = crate::unified_config::AppConfig {
+        dev_mode,
+        ..Default::default()
+    };
 
     // Try to get Git identity for owner configuration
     if let Ok(identity) = git_identity_service.get_identity() {

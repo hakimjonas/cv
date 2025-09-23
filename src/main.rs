@@ -2,9 +2,6 @@
 mod asset_processor;
 mod bundler;
 
-mod blog_generator;
-mod config;
-mod credentials;
 mod cv_data;
 mod db;
 #[allow(dead_code)]
@@ -14,7 +11,7 @@ mod html_generator;
 mod migrate;
 #[allow(dead_code)]
 mod runtime;
-mod static_blog;
+mod config;
 mod typst_generator;
 mod unified_config;
 
@@ -78,7 +75,7 @@ fn get_token_from_env() -> Option<String> {
 ///
 /// A Result containing an Option with the token if found
 fn get_token_from_secure_storage() -> Result<Option<String>> {
-    credentials::get_github_token().map(|token_opt| {
+    git_config::read_github_token().map(|token_opt| {
         token_opt.inspect(|_token| {
             info!("Using GitHub API token from secure storage for authentication");
         })
@@ -102,7 +99,7 @@ fn get_github_token(config: config::Config) -> config::Config {
             match env::var("GITHUB_TOKEN") {
                 Ok(token) => {
                     info!("Using GitHub API token from GitHub Actions for authentication");
-                    config.with_option(config::GITHUB_TOKEN_KEY, &token)
+                    config.with_option(git_config::GITHUB_TOKEN_KEY, &token)
                 }
                 Err(_) => {
                     warn!("No GitHub API token found in GitHub Actions environment.");
@@ -113,11 +110,11 @@ fn get_github_token(config: config::Config) -> config::Config {
         _ => {
             // Not running in GitHub Actions, check secure storage
             match get_token_from_secure_storage() {
-                Ok(Some(token)) => config.with_option(config::GITHUB_TOKEN_KEY, &token),
+                Ok(Some(token)) => config.with_option(git_config::GITHUB_TOKEN_KEY, &token),
                 Ok(None) => {
                     // Token not found in secure storage, try environment variable
                     match get_token_from_env() {
-                        Some(token) => config.with_option(config::GITHUB_TOKEN_KEY, &token),
+                        Some(token) => config.with_option(git_config::GITHUB_TOKEN_KEY, &token),
                         None => {
                             print_token_missing_message();
                             config
@@ -128,7 +125,7 @@ fn get_github_token(config: config::Config) -> config::Config {
                     warn!("Failed to read GitHub token from secure storage: {}", e);
                     // Fall back to environment variable
                     match get_token_from_env() {
-                        Some(token) => config.with_option(config::GITHUB_TOKEN_KEY, &token),
+                        Some(token) => config.with_option(git_config::GITHUB_TOKEN_KEY, &token),
                         None => {
                             print_token_missing_message();
                             config
@@ -231,7 +228,7 @@ async fn main() -> Result<()> {
     if args.len() >= 3 && args[1] == "--set-token" {
         let token = &args[2];
         info!("Setting GitHub API token in secure storage...");
-        return match credentials::store_github_token(token) {
+        return match git_config::write_github_token(token) {
             Ok(_) => {
                 info!("GitHub API token set successfully.");
                 Ok(())
@@ -246,7 +243,7 @@ async fn main() -> Result<()> {
     // Check for --remove-token argument
     if args.len() >= 2 && args[1] == "--remove-token" {
         info!("Removing GitHub API token from secure storage...");
-        return match credentials::remove_github_token() {
+        return match git_config::remove_github_token() {
             Ok(_) => {
                 info!("GitHub API token removed successfully.");
                 Ok(())
@@ -416,40 +413,6 @@ async fn main() -> Result<()> {
     html_generator::generate_html(&cv, &config_with_token.html_output_str()?)
         .context("Failed to generate HTML files")?;
 
-    // Generate static blog
-    info!("Generating static blog");
-    match static_blog::load_blog_posts("data/blog") {
-        Ok(blog_posts) => {
-            let published_posts = static_blog::get_published_posts(&blog_posts);
-            info!("Found {} published blog posts", published_posts.len());
-
-            if !published_posts.is_empty() {
-                match blog_generator::generate_blog_html(
-                    &blog_posts,
-                    &cv,
-                    &config_with_token.output_dir_str()?,
-                ) {
-                    Ok(()) => {
-                        info!("Successfully generated static blog HTML files");
-                    }
-                    Err(e) => {
-                        warn!(
-                            "Failed to generate blog HTML: {}. Continuing without blog.",
-                            e
-                        );
-                    }
-                }
-            } else {
-                info!("No published blog posts found");
-            }
-        }
-        Err(e) => {
-            warn!(
-                "Failed to load blog posts: {}. Skipping blog generation.",
-                e
-            );
-        }
-    }
 
     // Copy static assets (excluding generated HTML files)
     info!("Copying static assets");

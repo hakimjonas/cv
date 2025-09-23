@@ -8,6 +8,7 @@ WORKDIR /usr/src/app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     pkg-config \
     libssl-dev \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy only the dependency files first for better caching
@@ -43,6 +44,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     libssl1.1 \
     curl \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user to run the application

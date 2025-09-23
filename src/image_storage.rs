@@ -138,10 +138,10 @@ impl ImageStorage {
 
             for entry in entries {
                 let entry = entry?;
-                if entry.file_type()?.is_file() {
-                    if let Some(filename) = entry.file_name().to_str() {
-                        filenames.push(filename.to_string());
-                    }
+                if entry.file_type()?.is_file()
+                    && let Some(filename) = entry.file_name().to_str()
+                {
+                    filenames.push(filename.to_string());
                 }
             }
 

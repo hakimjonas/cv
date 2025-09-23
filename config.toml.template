@@ -1,0 +1,39 @@
+# CV Application Configuration Template
+# This file configures the CV application with Git-based authentication
+
+# Owner/Identity Configuration
+# These settings will be auto-detected from Git config if not specified
+[owner]
+name = "Your Name"  # Will be auto-detected from Git config
+github_username = "yourusername"  # Will be auto-detected from Git remotes
+email = "your.email@example.com"  # Will be auto-detected from Git config
+display_name = "Your Display Name"  # Optional override
+bio = "Your professional tagline"  # Optional
+role = "Author"  # Default role (Author, Editor, Admin)
+
+# Development settings
+dev_mode = true
+
+# Server settings
+api_port = 3002
+
+# Optional: GitHub token for API access (not for authentication)
+github_token = "your_github_token_here"
+
+# Data paths
+data_path = "data/cv_data.json"
+static_dir = "static"
+output_dir = "dist"
+db_path = "data/cv.db"
+
+# GitHub cache settings
+github_cache_path = "data/github_cache.json"
+github_cache_ttl = 3600  # 1 hour in seconds
+github_cache_refresh_strategy = "lazy"  # Options: lazy, background, eager
+github_rate_limit_strategy = "backoff"  # Options: backoff, wait, error
+
+# Public data settings (comma-separated list of fields)
+public_data = "name,title,summary,experiences,education,skill_categories,projects,languages,certifications"
+
+# Database storage settings (comma-separated list of fields)
+db_storage = "personal_info,experiences,education,skill_categories,projects,languages,certifications,github_sources"

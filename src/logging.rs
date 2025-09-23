@@ -72,41 +72,41 @@ pub fn init_logging(config: LoggingConfig) -> Option<non_blocking::WorkerGuard> 
     let subscriber = tracing_subscriber::registry().with(filter);
 
     // Configure file logging if enabled
-    if config.log_to_file {
-        if let Some(log_dir) = config.log_dir.as_ref() {
-            // Create the log directory if it doesn't exist
-            std::fs::create_dir_all(log_dir).ok();
+    if config.log_to_file
+        && let Some(log_dir) = config.log_dir.as_ref()
+    {
+        // Create the log directory if it doesn't exist
+        std::fs::create_dir_all(log_dir).ok();
 
-            // Set up a rolling file appender
-            let file_appender = rolling::daily(log_dir, format!("{}.log", config.app_name));
-            let (file_writer, guard) = non_blocking(file_appender);
+        // Set up a rolling file appender
+        let file_appender = rolling::daily(log_dir, format!("{}.log", config.app_name));
+        let (file_writer, guard) = non_blocking(file_appender);
 
-            // Configure the file layer
-            let file_layer = fmt::Layer::new()
-                .with_writer(file_writer)
-                .with_span_events(span_events.clone())
-                .with_ansi(false);
+        // Configure the file layer
+        let file_layer = fmt::Layer::new()
+            .with_writer(file_writer)
+            .with_span_events(span_events.clone())
+            .with_ansi(false);
 
-            // Add JSON formatting if configured
-            let file_layer = if config.json_format {
-                file_layer.json().boxed()
-            } else {
-                file_layer.boxed()
-            };
+        // Add JSON formatting if configured
+        let file_layer = if config.json_format {
+            file_layer.json().boxed()
+        } else {
+            file_layer.boxed()
+        };
 
-            // Set up the console layer
-            let console_layer = fmt::Layer::new()
-                .with_writer(std::io::stdout)
-                .with_span_events(span_events);
+        // Set up the console layer
+        let console_layer = fmt::Layer::new()
+            .with_writer(std::io::stdout)
+            .with_span_events(span_events);
 
-            // Try to register both layers, but don't panic if it fails
-            // This allows multiple binaries to initialize logging
-            match subscriber.with(file_layer).with(console_layer).try_init() {
-                Ok(_) => return Some(guard),
-                Err(_) => {
-                    // Subscriber already set, just return the guard to keep the file writer alive
-                    return Some(guard);
-                }
+        // Try to register both layers, but don't panic if it fails
+        // This allows multiple binaries to initialize logging
+        match subscriber.with(file_layer).with(console_layer).try_init() {
+            Ok(_) => return Some(guard),
+            Err(_) => {
+                // Subscriber already set, just return the guard to keep the file writer alive
+                return Some(guard);
             }
         }
     }

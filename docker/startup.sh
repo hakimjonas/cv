@@ -1,6 +1,33 @@
 #!/bin/bash
 set -e
 
+# Function to print colored output
+print_info() {
+    echo -e "\033[0;32m[INFO]\033[0m $1"
+}
+
+print_warning() {
+    echo -e "\033[1;33m[WARNING]\033[0m $1"
+}
+
+print_error() {
+    echo -e "\033[0;31m[ERROR]\033[0m $1"
+}
+
+# Configure Git if environment variables are provided
+if [[ -n "$GIT_USER_NAME" && -n "$GIT_USER_EMAIL" ]]; then
+    print_info "Configuring Git identity..."
+    git config --global user.name "$GIT_USER_NAME"
+    git config --global user.email "$GIT_USER_EMAIL"
+    
+    # Optional: Set up GitHub remote if provided
+    if [[ -n "$GITHUB_USERNAME" ]]; then
+        print_info "Git configured for GitHub user: $GITHUB_USERNAME"
+    fi
+else
+    print_warning "Git identity not configured. Set GIT_USER_NAME and GIT_USER_EMAIL environment variables."
+fi
+
 # Ensure data directory exists
 mkdir -p data
 mkdir -p test_data

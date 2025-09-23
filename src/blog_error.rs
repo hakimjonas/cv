@@ -42,15 +42,15 @@ pub enum BlogError {
     /// Internal error
     #[error("Internal error: {0}")]
     Internal(String),
-    
+
     /// File system error
     #[error("File system error: {0}")]
     FileSystemError(String),
-    
+
     /// Permission error
     #[error("Permission error: {0}")]
     PermissionError(String),
-    
+
     /// Configuration error
     #[error("Configuration error: {0}")]
     ConfigError(String),

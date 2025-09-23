@@ -1,0 +1,156 @@
+# Development-focused Dockerfile with hot-reload capabilities
+FROM rust:1.88.0-slim-bullseye
+
+WORKDIR /app
+
+# Install dependencies with retry logic for better network resilience
+RUN for i in $(seq 1 3); do \
+        echo "Attempt $i: Running apt-get update..." && \
+        (apt-get update && break || { echo "Attempt $i failed, retrying..."; sleep 15; }) \
+    done && \
+    for i in $(seq 1 3); do \
+        echo "Attempt $i: Installing packages..." && \
+        (apt-get install -y --no-install-recommends \
+            pkg-config \
+            libssl-dev \
+            curl \
+            libdbus-1-dev \
+            sqlite3 \
+            git \
+            procps \
+            lsof \
+            iproute2 \
+            && break || { echo "Attempt $i failed, retrying..."; sleep 15; }) \
+    done && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get clean
+
+# Configure multiple DNS servers for better network resilience
+RUN echo "nameserver 1.1.1.1" > /etc/resolv.conf \
+    && echo "nameserver 8.8.8.8" >> /etc/resolv.conf \
+    && echo "nameserver 9.9.9.9" >> /etc/resolv.conf \
+    && echo "options timeout:2 attempts:3 rotate" >> /etc/resolv.conf
+
+# Configure Cargo for better network resilience
+RUN mkdir -p ~/.cargo \
+    && echo '[net]' > ~/.cargo/config.toml \
+    && echo 'retry = 3' >> ~/.cargo/config.toml \
+    && echo 'connect-timeout = 30' >> ~/.cargo/config.toml \
+    && echo 'git-fetch-with-cli = true' >> ~/.cargo/config.toml \
+    && echo '[source.crates-io]' >> ~/.cargo/config.toml \
+    && echo 'registry = "https://github.com/rust-lang/crates.io-index"' >> ~/.cargo/config.toml \
+    && echo 'replace-with = "ustc"' >> ~/.cargo/config.toml \
+    && echo '[source.ustc]' >> ~/.cargo/config.toml \
+    && echo 'registry = "sparse+https://mirrors.ustc.edu.cn/crates.io-index/"' >> ~/.cargo/config.toml \
+    && echo '[http]' >> ~/.cargo/config.toml \
+    && echo 'timeout = 30' >> ~/.cargo/config.toml \
+    && echo 'low-speed-limit = 5' >> ~/.cargo/config.toml \
+    && echo 'multiplexing = false' >> ~/.cargo/config.toml \
+    && echo 'check-revoke = false' >> ~/.cargo/config.toml
+
+# Install cargo-watch for hot-reloading
+RUN for i in $(seq 1 3); do \
+        echo "Attempt $i: Installing cargo-watch..." && \
+        (cargo install cargo-watch && break || { echo "Attempt $i failed, retrying..."; sleep 15; }) \
+    done
+
+# Create a non-root user to run the application
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# Create data directory with proper permissions
+RUN mkdir -p /app/data /app/test_data && \
+    chown -R appuser:appuser /app && \
+    chmod 700 /app/data /app/test_data
+
+# Set the environment variables
+ENV RUST_LOG=debug
+ENV RUST_BACKTRACE=1
+ENV APP_VERSION=${BUILD_VERSION:-0.1.0-dev}
+
+# Expose the port
+EXPOSE 3000
+
+# Copy the startup script and SQL script
+COPY docker/startup-dev.sh /app/startup-dev.sh
+RUN chmod +x /app/startup-dev.sh
+
+# Create a development-specific startup script
+RUN echo '#!/bin/bash' > /app/startup-dev.sh && \
+    echo 'set -e' >> /app/startup-dev.sh && \
+    echo '' >> /app/startup-dev.sh && \
+    echo '# Function to print colored output' >> /app/startup-dev.sh && \
+    echo 'print_info() {' >> /app/startup-dev.sh && \
+    echo '    echo -e "\033[0;32m[INFO]\033[0m $1"' >> /app/startup-dev.sh && \
+    echo '}' >> /app/startup-dev.sh && \
+    echo '' >> /app/startup-dev.sh && \
+    echo 'print_warning() {' >> /app/startup-dev.sh && \
+    echo '    echo -e "\033[1;33m[WARNING]\033[0m $1"' >> /app/startup-dev.sh && \
+    echo '}' >> /app/startup-dev.sh && \
+    echo '' >> /app/startup-dev.sh && \
+    echo 'print_error() {' >> /app/startup-dev.sh && \
+    echo '    echo -e "\033[0;31m[ERROR]\033[0m $1"' >> /app/startup-dev.sh && \
+    echo '}' >> /app/startup-dev.sh && \
+    echo '' >> /app/startup-dev.sh && \
+    echo '# Configure Git if environment variables are provided' >> /app/startup-dev.sh && \
+    echo 'if [[ -n "$GIT_USER_NAME" && -n "$GIT_USER_EMAIL" ]]; then' >> /app/startup-dev.sh && \
+    echo '    print_info "Configuring Git identity..."' >> /app/startup-dev.sh && \
+    echo '    git config --global user.name "$GIT_USER_NAME"' >> /app/startup-dev.sh && \
+    echo '    git config --global user.email "$GIT_USER_EMAIL"' >> /app/startup-dev.sh && \
+    echo '    ' >> /app/startup-dev.sh && \
+    echo '    # Optional: Set up GitHub remote if provided' >> /app/startup-dev.sh && \
+    echo '    if [[ -n "$GITHUB_USERNAME" ]]; then' >> /app/startup-dev.sh && \
+    echo '        print_info "Git configured for GitHub user: $GITHUB_USERNAME"' >> /app/startup-dev.sh && \
+    echo '    fi' >> /app/startup-dev.sh && \
+    echo 'else' >> /app/startup-dev.sh && \
+    echo '    print_warning "Git identity not configured. Set GIT_USER_NAME and GIT_USER_EMAIL environment variables."' >> /app/startup-dev.sh && \
+    echo 'fi' >> /app/startup-dev.sh && \
+    echo '' >> /app/startup-dev.sh && \
+    echo '# Ensure data directory exists' >> /app/startup-dev.sh && \
+    echo 'mkdir -p data' >> /app/startup-dev.sh && \
+    echo 'mkdir -p test_data' >> /app/startup-dev.sh && \
+    echo '' >> /app/startup-dev.sh && \
+    echo '# Check if cv_data.json exists, if not, check for a backup or create a sample one' >> /app/startup-dev.sh && \
+    echo 'if [ ! -f "data/cv_data.json" ]; then' >> /app/startup-dev.sh && \
+    echo '    # Check if there is a backup file in the mounted volume' >> /app/startup-dev.sh && \
+    echo '    if [ -f "/app/data/cv_data.json.bak" ]; then' >> /app/startup-dev.sh && \
+    echo '        print_info "CV data file not found, but backup exists. Restoring from backup..."' >> /app/startup-dev.sh && \
+    echo '        cp /app/data/cv_data.json.bak /app/data/cv_data.json' >> /app/startup-dev.sh && \
+    echo '    else' >> /app/startup-dev.sh && \
+    echo '        print_info "CV data file not found, creating a sample one..."' >> /app/startup-dev.sh && \
+    echo '        # Create a minimal sample that matches the expected structure' >> /app/startup-dev.sh && \
+    echo '        echo '"'"'{' >> /app/startup-dev.sh && \
+    echo '          "personal_info": {' >> /app/startup-dev.sh && \
+    echo '            "name": "John Doe",' >> /app/startup-dev.sh && \
+    echo '            "title": "Software Engineer",' >> /app/startup-dev.sh && \
+    echo '            "email": "john.doe@example.com",' >> /app/startup-dev.sh && \
+    echo '            "summary": "Sample CV data for testing",' >> /app/startup-dev.sh && \
+    echo '            "social_links": {}' >> /app/startup-dev.sh && \
+    echo '          },' >> /app/startup-dev.sh && \
+    echo '          "experiences": [],' >> /app/startup-dev.sh && \
+    echo '          "education": [],' >> /app/startup-dev.sh && \
+    echo '          "skill_categories": [],' >> /app/startup-dev.sh && \
+    echo '          "projects": [],' >> /app/startup-dev.sh && \
+    echo '          "languages": {},' >> /app/startup-dev.sh && \
+    echo '          "certifications": [],' >> /app/startup-dev.sh && \
+    echo '          "github_sources": []' >> /app/startup-dev.sh && \
+    echo '        }'"'"' > data/cv_data.json' >> /app/startup-dev.sh && \
+    echo '    fi' >> /app/startup-dev.sh && \
+    echo 'else' >> /app/startup-dev.sh && \
+    echo '    print_info "Using existing CV data file"' >> /app/startup-dev.sh && \
+    echo '    # Create a backup of the existing file' >> /app/startup-dev.sh && \
+    echo '    cp data/cv_data.json data/cv_data.json.bak' >> /app/startup-dev.sh && \
+    echo 'fi' >> /app/startup-dev.sh && \
+    echo '' >> /app/startup-dev.sh && \
+    echo 'print_info "Starting development server with hot-reload..."' >> /app/startup-dev.sh && \
+    echo 'print_info "The server will automatically restart when source files change."' >> /app/startup-dev.sh && \
+    echo '' >> /app/startup-dev.sh && \
+    echo '# Use cargo-watch to enable hot-reloading' >> /app/startup-dev.sh && \
+    echo 'exec cargo watch -x "run --bin blog_api_server"' >> /app/startup-dev.sh && \
+    chmod +x /app/startup-dev.sh
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=5 \
+  CMD curl -f http://localhost:3000/health || exit 1
+
+# The actual source code will be mounted as volumes in docker-compose.dev.yml
+CMD ["/app/startup-dev.sh"]

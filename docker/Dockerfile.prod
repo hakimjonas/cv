@@ -1,0 +1,129 @@
+FROM rust:1.88.0-alpine3.20 as builder
+
+# Set up build environment
+WORKDIR /usr/src/app
+
+# Install build dependencies with retry logic for better network resilience
+RUN apk add --no-cache --virtual .build-deps \
+    build-base \
+    pkgconfig \
+    openssl-dev \
+    git \
+    curl \
+    && echo "Build dependencies installed successfully"
+
+# Configure multiple DNS servers for better network resilience
+RUN echo "nameserver 1.1.1.1" > /etc/resolv.conf \
+    && echo "nameserver 8.8.8.8" >> /etc/resolv.conf \
+    && echo "nameserver 9.9.9.9" >> /etc/resolv.conf \
+    && echo "options timeout:2 attempts:3 rotate" >> /etc/resolv.conf
+
+# Configure Cargo for better network resilience
+RUN mkdir -p ~/.cargo \
+    && echo '[net]' > ~/.cargo/config.toml \
+    && echo 'retry = 3' >> ~/.cargo/config.toml \
+    && echo 'connect-timeout = 30' >> ~/.cargo/config.toml \
+    && echo 'git-fetch-with-cli = true' >> ~/.cargo/config.toml \
+    && echo '[source.crates-io]' >> ~/.cargo/config.toml \
+    && echo 'registry = "https://github.com/rust-lang/crates.io-index"' >> ~/.cargo/config.toml \
+    && echo 'replace-with = "ustc"' >> ~/.cargo/config.toml \
+    && echo '[source.ustc]' >> ~/.cargo/config.toml \
+    && echo 'registry = "sparse+https://mirrors.ustc.edu.cn/crates.io-index/"' >> ~/.cargo/config.toml \
+    && echo '[http]' >> ~/.cargo/config.toml \
+    && echo 'timeout = 30' >> ~/.cargo/config.toml \
+    && echo 'low-speed-limit = 5' >> ~/.cargo/config.toml \
+    && echo 'multiplexing = false' >> ~/.cargo/config.toml \
+    && echo 'check-revoke = false' >> ~/.cargo/config.toml
+
+# Copy only the dependency files first for better caching
+COPY Cargo.toml Cargo.lock ./
+
+# Create a dummy main.rs to build dependencies
+RUN mkdir -p src && \
+    echo "fn main() {}" > src/main.rs && \
+    # Build with retry logic for better network resilience
+    for i in $(seq 1 3); do \
+        echo "Attempt $i: Building dependencies..." && \
+        (cargo build --release && break || { echo "Attempt $i failed, retrying..."; sleep 15; }) \
+    done && \
+    rm -rf src && \
+    rm -rf target/release/.fingerprint/cv-*
+
+# Copy the actual source code
+COPY src ./src/
+COPY static ./static/
+COPY templates ./templates/
+COPY data ./data/
+
+# Generate the website files first with retry logic
+RUN for i in $(seq 1 3); do \
+        echo "Attempt $i: Generating website files..." && \
+        (cargo run --bin cv && break || { echo "Attempt $i failed, retrying..."; sleep 15; }) \
+    done
+
+# Build the application with retry logic
+RUN for i in $(seq 1 3); do \
+        echo "Attempt $i: Building application..." && \
+        (cargo build --release --bin blog_api_server && break || { echo "Attempt $i failed, retrying..."; sleep 15; }) \
+    done
+
+# Verify the binary exists
+RUN ls -la target/release/blog_api_server || { echo "Binary not found!"; exit 1; }
+
+# Runtime stage - using Alpine for minimal size
+FROM alpine:3.20
+
+# Create app directory
+WORKDIR /app
+
+# Install runtime dependencies only
+RUN apk add --no-cache \
+    ca-certificates \
+    openssl \
+    curl \
+    git \
+    tzdata \
+    && echo "Runtime dependencies installed successfully"
+
+# Create a non-root user to run the application
+RUN addgroup -S appuser && adduser -S -G appuser appuser
+
+# Copy the binary from the builder stage
+COPY --from=builder /usr/src/app/target/release/blog_api_server /app/blog_api_server
+
+# Copy static assets and generated website files
+COPY --from=builder /usr/src/app/static /app/static
+COPY --from=builder /usr/src/app/dist /app/dist
+COPY --from=builder /usr/src/app/templates /app/templates
+
+# Create data directory with proper permissions
+RUN mkdir -p /app/data && \
+    chown -R appuser:appuser /app && \
+    chmod 700 /app/data
+
+# Copy the startup script
+COPY docker/startup.sh /app/startup.sh
+RUN chmod +x /app/startup.sh
+
+# Set the environment variables
+ENV RUST_LOG=info
+ENV TZ=UTC
+
+# Configure multiple DNS servers for better network resilience
+RUN echo "nameserver 1.1.1.1" > /etc/resolv.conf \
+    && echo "nameserver 8.8.8.8" >> /etc/resolv.conf \
+    && echo "nameserver 9.9.9.9" >> /etc/resolv.conf \
+    && echo "options timeout:2 attempts:3 rotate" >> /etc/resolv.conf
+
+# Expose the port
+EXPOSE 3000
+
+# Switch to non-root user
+USER appuser
+
+# Health check with retry logic
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:3000/health || exit 1
+
+# Run the binary
+CMD ["/app/blog_api_server"]

@@ -1,5 +1,18 @@
 [
   {
+    "name": "devhub - Python",
+    "description": "Development platform integration for AI-assisted workflows",
+    "url": null,
+    "repository": "https://github.com/hakimjonas/devhub",
+    "technologies": [
+      "Python"
+    ],
+    "highlights": [],
+    "stars": 0,
+    "owner_username": "hakimjonas",
+    "owner_avatar": "https://avatars.githubusercontent.com/u/3774539?v=4"
+  },
+  {
     "name": "valar - Scala",
     "description": "Valar: Type-safe validation for Scala 3 with boilerplate-free derivation via macros. Features error accumulation and fail-fast modes.",
     "url": null,

@@ -8,22 +8,21 @@ use crate::feature_flags::rollback::RollbackManager;
 use crate::feed::{FeedConfig, generate_atom_feed, generate_rss_feed};
 use crate::git_identity::GitIdentityService;
 use crate::image_api::create_image_api_router;
-use crate::rate_limiter::{RateLimiterConfig, create_rate_limiter_layer};
+use crate::rate_limiter::RateLimiterConfig;
 use crate::simple_auth::{AuthResponse, SimpleAuthService};
-use crate::simple_auth_middleware::{AuthenticatedUser, require_author};
+use crate::simple_auth_middleware::AuthenticatedUser;
 use axum::{
-    extract::{Path, Query, State},
-    http::{HeaderMap, StatusCode},
-    response::{IntoResponse, Response},
-    routing::{get, post, put, delete},
     Json, Router,
+    extract::{Path, Query, State},
+    http::StatusCode,
+    response::{IntoResponse, Response},
+    routing::{delete, get, post, put},
 };
 use chrono::Datelike;
 use im::{HashMap, Vector};
 use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use tower_http::services::ServeDir;
-use tracing::{debug, error, info, warn};
 
 /// Convert repository blog post to API blog post
 fn repo_to_api_post(repo_post: crate::db::repository::BlogPost) -> BlogPost {
@@ -120,12 +119,16 @@ impl From<BlogError> for ApiError {
             BlogError::PermissionError(msg) => ApiError::ValidationError(msg),
             BlogError::ConfigError(msg) => ApiError::InternalError(msg),
             BlogError::FileSystemError(msg) => ApiError::InternalError(msg),
-            BlogError::Io(err) => ApiError::InternalError(format!("IO error: {}", err)),
-            BlogError::Serialization(msg) => ApiError::InternalError(format!("Serialization error: {}", msg)),
-            BlogError::Deserialization(msg) => ApiError::InternalError(format!("Deserialization error: {}", msg)),
-            BlogError::MutexLock(msg) => ApiError::InternalError(format!("Mutex lock error: {}", msg)),
-            // Catch-all for any future variants
-            _ => ApiError::InternalError("Unknown error".to_string()),
+            BlogError::Io(err) => ApiError::InternalError(format!("IO error: {err}")),
+            BlogError::Serialization(msg) => {
+                ApiError::InternalError(format!("Serialization error: {msg}"))
+            }
+            BlogError::Deserialization(msg) => {
+                ApiError::InternalError(format!("Deserialization error: {msg}"))
+            }
+            BlogError::MutexLock(msg) => {
+                ApiError::InternalError(format!("Mutex lock error: {msg}"))
+            }
         }
     }
 }
@@ -153,7 +156,7 @@ async fn get_all_posts(State(state): State<Arc<ApiState>>) -> ApiResult<Json<Vec
         .repo
         .get_all_posts()
         .await
-        .map_err(|e| ApiError::DatabaseError(format!("Failed to get posts: {}", e)))?;
+        .map_err(|e| ApiError::DatabaseError(format!("Failed to get posts: {e}")))?;
 
     let api_posts = posts.into_iter().map(repo_to_api_post).collect();
     Ok(Json(api_posts))
@@ -168,8 +171,8 @@ async fn get_post_by_slug(
         .repo
         .get_post_by_slug(&slug)
         .await
-        .map_err(|e| ApiError::DatabaseError(format!("Failed to get post: {}", e)))?
-        .ok_or_else(|| ApiError::NotFound(format!("Post not found: {}", slug)))?;
+        .map_err(|e| ApiError::DatabaseError(format!("Failed to get post: {e}")))?
+        .ok_or_else(|| ApiError::NotFound(format!("Post not found: {slug}")))?;
 
     Ok(Json(repo_to_api_post(post)))
 }
@@ -182,14 +185,17 @@ async fn create_post(
 ) -> ApiResult<(StatusCode, Json<BlogPost>)> {
     // Set the user ID and author from the authenticated user
     post.user_id = Some(auth_user.0.user_id);
-    post.author = auth_user.0.display_name.clone().unwrap_or_else(|| "Unknown".to_string());
+    post.author = auth_user
+        .0
+        .display_name
+        .clone()
+        .unwrap_or_else(|| "Unknown".to_string());
 
     // Validate and sanitize the post
-    let validated_post = validate_and_sanitize_blog_post(&post)
-        .map_err(|e| match e {
-            BlogValidationError::ValidationError(msg) => ApiError::ValidationError(msg),
-            BlogValidationError::SanitizationError(msg) => ApiError::ValidationError(msg),
-        })?;
+    let validated_post = validate_and_sanitize_blog_post(&post).map_err(|e| match e {
+        BlogValidationError::ValidationError(msg) => ApiError::ValidationError(msg),
+        BlogValidationError::SanitizationError(msg) => ApiError::ValidationError(msg),
+    })?;
 
     // Convert to repository post and save
     let repo_post = api_to_repo_post(&validated_post);
@@ -197,14 +203,14 @@ async fn create_post(
         .repo
         .save_post(&repo_post)
         .await
-        .map_err(|e| ApiError::DatabaseError(format!("Failed to save post: {}", e)))?;
+        .map_err(|e| ApiError::DatabaseError(format!("Failed to save post: {e}")))?;
 
     // Fetch the saved post by ID
     let saved_post = state
         .repo
         .get_post_by_id(post_id)
         .await
-        .map_err(|e| ApiError::DatabaseError(format!("Failed to get saved post: {}", e)))?
+        .map_err(|e| ApiError::DatabaseError(format!("Failed to get saved post: {e}")))?
         .ok_or_else(|| ApiError::InternalError("Saved post not found".to_string()))?;
 
     // Convert back to API post and return
@@ -223,46 +229,48 @@ async fn update_post(
         .repo
         .get_post_by_slug(&slug)
         .await
-        .map_err(|e| ApiError::DatabaseError(format!("Failed to get post: {}", e)))?
-        .ok_or_else(|| ApiError::NotFound(format!("Post not found: {}", slug)))?;
+        .map_err(|e| ApiError::DatabaseError(format!("Failed to get post: {e}")))?
+        .ok_or_else(|| ApiError::NotFound(format!("Post not found: {slug}")))?;
 
     // Check if the user is the author of the post
     if existing_post.user_id != Some(auth_user.0.user_id) && auth_user.0.role != "Admin" {
         return Err(ApiError::ValidationError(format!(
-            "You don't have permission to update post: {}",
-            slug
+            "You don't have permission to update post: {slug}"
         )));
     }
 
     // Keep the original user ID and update the author if needed
     post.user_id = existing_post.user_id;
     if post.author.is_empty() {
-        post.author = auth_user.0.display_name.clone().unwrap_or_else(|| "Unknown".to_string());
+        post.author = auth_user
+            .0
+            .display_name
+            .clone()
+            .unwrap_or_else(|| "Unknown".to_string());
     }
 
     // Validate and sanitize the post
-    let validated_post = validate_and_sanitize_blog_post(&post)
-        .map_err(|e| match e {
-            BlogValidationError::ValidationError(msg) => ApiError::ValidationError(msg),
-            BlogValidationError::SanitizationError(msg) => ApiError::ValidationError(msg),
-        })?;
+    let validated_post = validate_and_sanitize_blog_post(&post).map_err(|e| match e {
+        BlogValidationError::ValidationError(msg) => ApiError::ValidationError(msg),
+        BlogValidationError::SanitizationError(msg) => ApiError::ValidationError(msg),
+    })?;
 
     // Convert to repository post and update
     let repo_post = api_to_repo_post(&validated_post);
-    
+
     // Update the post (returns () on success)
     state
         .repo
         .update_post(&repo_post)
         .await
-        .map_err(|e| ApiError::DatabaseError(format!("Failed to update post: {}", e)))?;
+        .map_err(|e| ApiError::DatabaseError(format!("Failed to update post: {e}")))?;
 
     // Fetch the updated post by slug
     let updated_post = state
         .repo
         .get_post_by_slug(&repo_post.slug)
         .await
-        .map_err(|e| ApiError::DatabaseError(format!("Failed to get updated post: {}", e)))?
+        .map_err(|e| ApiError::DatabaseError(format!("Failed to get updated post: {e}")))?
         .ok_or_else(|| ApiError::InternalError("Updated post not found".to_string()))?;
 
     // Convert back to API post and return
@@ -280,14 +288,13 @@ async fn delete_post(
         .repo
         .get_post_by_slug(&slug)
         .await
-        .map_err(|e| ApiError::DatabaseError(format!("Failed to get post: {}", e)))?
-        .ok_or_else(|| ApiError::NotFound(format!("Post not found: {}", slug)))?;
+        .map_err(|e| ApiError::DatabaseError(format!("Failed to get post: {e}")))?
+        .ok_or_else(|| ApiError::NotFound(format!("Post not found: {slug}")))?;
 
     // Check if the user is the author of the post
     if existing_post.user_id != Some(auth_user.0.user_id) && auth_user.0.role != "Admin" {
         return Err(ApiError::ValidationError(format!(
-            "You don't have permission to delete post: {}",
-            slug
+            "You don't have permission to delete post: {slug}"
         )));
     }
 
@@ -296,7 +303,7 @@ async fn delete_post(
         .repo
         .delete_post(existing_post.id.expect("Post ID should exist for deletion"))
         .await
-        .map_err(|e| ApiError::DatabaseError(format!("Failed to delete post: {}", e)))?;
+        .map_err(|e| ApiError::DatabaseError(format!("Failed to delete post: {e}")))?;
 
     Ok(StatusCode::NO_CONTENT)
 }
@@ -307,31 +314,35 @@ async fn get_all_tags(State(state): State<Arc<ApiState>>) -> ApiResult<Json<Vect
         .repo
         .get_all_tags()
         .await
-        .map_err(|e| ApiError::DatabaseError(format!("Failed to get tags: {}", e)))?;
+        .map_err(|e| ApiError::DatabaseError(format!("Failed to get tags: {e}")))?;
 
     let api_tags = tags.into_iter().map(repo_to_api_tag).collect();
     Ok(Json(api_tags))
 }
 
 /// Get published blog posts
-async fn get_published_posts(State(state): State<Arc<ApiState>>) -> ApiResult<Json<Vector<BlogPost>>> {
+async fn get_published_posts(
+    State(state): State<Arc<ApiState>>,
+) -> ApiResult<Json<Vector<BlogPost>>> {
     let posts = state
         .repo
         .get_published_posts()
         .await
-        .map_err(|e| ApiError::DatabaseError(format!("Failed to get published posts: {}", e)))?;
+        .map_err(|e| ApiError::DatabaseError(format!("Failed to get published posts: {e}")))?;
 
     let api_posts = posts.into_iter().map(repo_to_api_post).collect();
     Ok(Json(api_posts))
 }
 
 /// Get featured blog posts
-async fn get_featured_posts(State(state): State<Arc<ApiState>>) -> ApiResult<Json<Vector<BlogPost>>> {
+async fn get_featured_posts(
+    State(state): State<Arc<ApiState>>,
+) -> ApiResult<Json<Vector<BlogPost>>> {
     let posts = state
         .repo
         .get_featured_posts()
         .await
-        .map_err(|e| ApiError::DatabaseError(format!("Failed to get featured posts: {}", e)))?;
+        .map_err(|e| ApiError::DatabaseError(format!("Failed to get featured posts: {e}")))?;
 
     let api_posts = posts.into_iter().map(repo_to_api_post).collect();
     Ok(Json(api_posts))
@@ -343,14 +354,14 @@ async fn search_posts(
     Query(params): Query<HashMap<String, String>>,
 ) -> ApiResult<Json<Vector<BlogPost>>> {
     let query = params.get("q").cloned().unwrap_or_default();
-    let tag = params.get("tag").cloned();
+    let _tag = params.get("tag").cloned();
     let published_only = params.get("published").map(|v| v == "true").unwrap_or(true);
 
     let posts = state
         .repo
         .search_posts(&query, published_only)
         .await
-        .map_err(|e| ApiError::DatabaseError(format!("Failed to search posts: {}", e)))?;
+        .map_err(|e| ApiError::DatabaseError(format!("Failed to search posts: {e}")))?;
 
     let api_posts = posts.into_iter().map(repo_to_api_post).collect();
     Ok(Json(api_posts))
@@ -363,7 +374,7 @@ async fn get_rss_feed(State(state): State<Arc<ApiState>>) -> Result<impl IntoRes
         .repo
         .get_published_posts()
         .await
-        .map_err(|e| ApiError::DatabaseError(format!("Failed to get published posts: {}", e)))?;
+        .map_err(|e| ApiError::DatabaseError(format!("Failed to get published posts: {e}")))?;
 
     // Get the current year for the copyright
     let current_year = chrono::Utc::now().year();
@@ -376,16 +387,16 @@ async fn get_rss_feed(State(state): State<Arc<ApiState>>) -> Result<impl IntoRes
         author: "Blog Author".to_string(),
         email: "author@example.com".to_string(),
         language: "en-us".to_string(),
-        copyright: format!("Copyright {}", current_year),
+        copyright: format!("Copyright {current_year}"),
         base_url: "https://example.com".to_string(),
     };
 
     // Convert repository posts to blog data posts
     let api_posts: Vector<BlogPost> = posts.into_iter().map(repo_to_api_post).collect();
-    
+
     // Generate RSS feed
     let rss_feed = generate_rss_feed(&api_posts, &config)
-        .map_err(|e| ApiError::InternalError(format!("Failed to generate RSS feed: {}", e)))?;
+        .map_err(|e| ApiError::InternalError(format!("Failed to generate RSS feed: {e}")))?;
 
     // Return the RSS feed with appropriate content type
     Ok((
@@ -402,7 +413,7 @@ async fn get_atom_feed(State(state): State<Arc<ApiState>>) -> Result<impl IntoRe
         .repo
         .get_published_posts()
         .await
-        .map_err(|e| ApiError::DatabaseError(format!("Failed to get published posts: {}", e)))?;
+        .map_err(|e| ApiError::DatabaseError(format!("Failed to get published posts: {e}")))?;
 
     // Get the current year for the copyright
     let current_year = chrono::Utc::now().year();
@@ -415,16 +426,16 @@ async fn get_atom_feed(State(state): State<Arc<ApiState>>) -> Result<impl IntoRe
         author: "Blog Author".to_string(),
         email: "author@example.com".to_string(),
         language: "en-us".to_string(),
-        copyright: format!("Copyright {}", current_year),
+        copyright: format!("Copyright {current_year}"),
         base_url: "https://example.com".to_string(),
     };
 
     // Convert repository posts to blog data posts
     let api_posts: Vector<BlogPost> = posts.into_iter().map(repo_to_api_post).collect();
-    
+
     // Generate Atom feed
     let atom_feed = generate_atom_feed(&api_posts, &config)
-        .map_err(|e| ApiError::InternalError(format!("Failed to generate Atom feed: {}", e)))?;
+        .map_err(|e| ApiError::InternalError(format!("Failed to generate Atom feed: {e}")))?;
 
     // Return the Atom feed with appropriate content type
     Ok((
@@ -443,7 +454,7 @@ async fn get_posts_by_tag(
         .repo
         .get_posts_by_tag(&tag_slug)
         .await
-        .map_err(|e| ApiError::DatabaseError(format!("Failed to get posts by tag: {}", e)))?;
+        .map_err(|e| ApiError::DatabaseError(format!("Failed to get posts by tag: {e}")))?;
 
     let api_posts = posts.into_iter().map(repo_to_api_post).collect();
     Ok(Json(api_posts))
@@ -468,7 +479,7 @@ async fn create_session(
         .create_session()
         .await
         .map(Json)
-        .map_err(|e| ApiError::InternalError(format!("Failed to create session: {}", e)))
+        .map_err(|e| ApiError::InternalError(format!("Failed to create session: {e}")))
 }
 
 /// Create the blog API router
@@ -530,7 +541,7 @@ pub async fn create_simple_blog_api_router(
     });
 
     // Create rate limiter configuration
-    let rate_limiter_config = RateLimiterConfig {
+    let _rate_limiter_config = RateLimiterConfig {
         max_requests: 60,
         window_seconds: 60,
         include_headers: true,
@@ -544,25 +555,25 @@ pub async fn create_simple_blog_api_router(
     let api_router = Router::new()
         // Public endpoints
         .route("/posts", get(get_all_posts))
-        .route("/posts/:slug", get(get_post_by_slug))
+        .route("/posts/{slug}", get(get_post_by_slug))
         .route("/tags", get(get_all_tags))
         .route("/published", get(get_published_posts))
         .route("/featured", get(get_featured_posts))
         .route("/search", get(search_posts))
         .route("/feed/rss", get(get_rss_feed))
         .route("/feed/atom", get(get_atom_feed))
-        .route("/tags/:tag", get(get_posts_by_tag))
+        .route("/tags/{tag}", get(get_posts_by_tag))
         .route("/session", post(create_session))
         // Protected endpoints
         .route("/posts", post(create_post))
-        .route("/posts/:slug", put(update_post))
-        .route("/posts/:slug", delete(delete_post))
+        .route("/posts/{slug}", put(update_post))
+        .route("/posts/{slug}", delete(delete_post))
         // Note: Middleware is temporarily disabled due to compatibility issues
         // Will be properly implemented in a future update
         .with_state(state.clone());
-        // Rate limiter temporarily disabled due to type compatibility issues
-        // Will be properly implemented in a future update
-        // .layer(create_rate_limiter_layer(rate_limiter_config));
+    // Rate limiter temporarily disabled due to type compatibility issues
+    // Will be properly implemented in a future update
+    // .layer(create_rate_limiter_layer(rate_limiter_config));
 
     // Create static file server
     let static_dir = PathBuf::from("static");

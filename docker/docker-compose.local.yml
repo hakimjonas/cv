@@ -25,6 +25,12 @@ services:
       - RUST_LOG=debug  # More verbose logging for development
       - RUST_BACKTRACE=1  # Full backtraces for debugging
       - APP_VERSION=${BUILD_VERSION:-0.1.0-dev}
+      # Git identity configuration
+      - GIT_USER_NAME=${GIT_USER_NAME:-Your Name}
+      - GIT_USER_EMAIL=${GIT_USER_EMAIL:-your.email@example.com}
+      - GITHUB_USERNAME=${GITHUB_USERNAME:-yourusername}
+      # Optional GitHub token for API access
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
     # Add DNS configuration for better network resilience
     dns:
       - 8.8.8.8

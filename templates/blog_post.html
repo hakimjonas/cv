@@ -1,0 +1,73 @@
+{% extends "blog_base.html" %}
+
+{% block title %}{{ post.title }} - {{ cv.personal_info.name }}{% endblock %}
+{% block description %}{{ post.excerpt }}{% endblock %}
+{% block keywords %}{{ post.tags|join(", ") }}, blog, {{ cv.personal_info.title }}{% endblock %}
+
+{% block content %}
+<article class="blog-post">
+  <div class="container">
+    <header class="post-header">
+      <div class="header-top">
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+          <ol>
+            <li><a href="../index.html">Home</a></li>
+            <li><a href="../blog.html">Blog</a></li>
+            <li aria-current="page">{{ post.title }}</li>
+          </ol>
+        </nav>
+
+        <div class="post-meta">
+          <time datetime="{{ post.date }}" class="post-date">
+            <i class="nf nf-calendar" aria-hidden="true"></i>
+            {{ post.date }}
+          </time>
+
+          {% if post.tags.len() > 0 %}
+          <div class="post-tags">
+            <i class="nf nf-tag" aria-hidden="true"></i>
+            {% for tag in post.tags %}
+            <span class="tag">{{ tag }}</span>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <h1 class="post-title">{{ post.title }}</h1>
+    </header>
+
+    <div class="post-content">
+      {{ post.html_content|safe }}
+    </div>
+
+    <footer class="post-footer">
+      <nav class="post-navigation" aria-label="Post navigation">
+        <a href="../blog.html" class="back-to-blog">
+          <i class="nf nf-arrow-left" aria-hidden="true"></i>
+          Back to Blog
+        </a>
+      </nav>
+
+      {% if related_posts.len() > 0 %}
+      <section class="related-posts">
+        <h2>Related Posts</h2>
+        <div class="related-posts-grid">
+          {% for related_post in related_posts %}
+          <article class="related-post-card">
+            <h3>
+              <a href="{{ related_post.slug }}.html">{{ related_post.title }}</a>
+            </h3>
+            <time datetime="{{ related_post.date }}" class="post-date">
+              {{ related_post.date }}
+            </time>
+            <p class="post-excerpt">{{ related_post.excerpt }}</p>
+          </article>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+    </footer>
+  </div>
+</article>
+{% endblock %}

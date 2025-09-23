@@ -1,0 +1,19 @@
+[paths]
+data_file = "test_data/cv_data.json"
+output_dir = "test_output"
+static_dir = "static"
+database = "test_data/test.db"
+github_cache = "test_data/github_cache.json"
+
+[github]
+cache_ttl = 7200
+cache_strategy = "eager"
+rate_limit_strategy = "wait"
+
+[server]
+port = 8080
+dev_mode = true
+
+[data]
+public_fields = "name,title,experiences"
+database_fields = "personal_info,experiences"

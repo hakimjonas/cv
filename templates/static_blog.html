@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}{{ cv.personal_info.name }} - Blog{% endblock %}
+{% block description %}Personal blog of {{ cv.personal_info.name }} featuring articles on technology, programming, and software development.{% endblock %}
+{% block keywords %}blog, articles, technology, programming, software development, {{ cv.personal_info.title }}{% endblock %}
+
+{% block content %}
+<section class="blog-hero" id="blog-hero">
+  <div class="container">
+    <div class="hero-breadcrumb">
+      <a href="index.html" class="breadcrumb-link">
+        <i class="nf nf-home" aria-hidden="true"></i>
+        {{ cv.personal_info.name }}
+      </a>
+      <span class="breadcrumb-separator">→</span>
+      <span class="breadcrumb-current">Blog</span>
+    </div>
+    <h1 class="page-title">Blog</h1>
+    <p class="page-subtitle">
+      Thoughts, insights, and experiences in software development and technology.
+    </p>
+  </div>
+</section>
+
+<section class="blog-content" id="blog-content">
+  <div class="container">
+    {% if posts.len() > 0 %}
+    <div class="blog-posts" role="feed">
+      {% for post in posts %}
+      <article class="blog-post-card">
+        <header class="post-header">
+          <h2 class="post-title">
+            <a href="blog/{{ post.slug }}.html">{{ post.title }}</a>
+          </h2>
+          <div class="post-meta">
+            <div class="post-date">
+              <i class="nf nf-calendar" aria-hidden="true"></i>
+              <time datetime="{{ post.date }}">{{ post.date }}</time>
+            </div>
+            {% if post.tags.len() > 0 %}
+            <div class="post-tags">
+              <i class="nf nf-tag" aria-hidden="true"></i>
+              {% for tag in post.tags %}
+              <span class="tag">{{ tag }}</span>
+              {% endfor %}
+            </div>
+            {% endif %}
+          </div>
+        </header>
+
+        <div class="post-excerpt">
+          <p>{{ post.excerpt }}</p>
+        </div>
+
+        <footer class="post-footer">
+          <a href="blog/{{ post.slug }}.html" class="read-more">
+            <span>Read more</span>
+            <i class="nf nf-arrow-right" aria-hidden="true"></i>
+          </a>
+        </footer>
+      </article>
+      {% endfor %}
+    </div>
+
+    {% if tags.len() > 0 %}
+    <aside class="blog-sidebar">
+      <section class="blog-tags-section">
+        <h2 class="section-title">Tags</h2>
+        <div class="tags-list">
+          {% for tag in tags %}
+          <span class="tag">{{ tag }}</span>
+          {% endfor %}
+        </div>
+      </section>
+    </aside>
+    {% endif %}
+
+    {% else %}
+    <div class="no-posts">
+      <p>No blog posts available yet. Check back soon!</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<!-- Static blog - no dynamic loading needed -->
+<script>
+// Set active menu item for blog page
+document.addEventListener('DOMContentLoaded', function() {
+    const blogLink = document.querySelector('nav a[href="blog.html"]');
+    if (blogLink) {
+        blogLink.classList.add('active');
+        blogLink.setAttribute('aria-current', 'page');
+    }
+});
+</script>
+{% endblock %}

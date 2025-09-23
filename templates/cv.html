@@ -5,11 +5,6 @@
 {% block keywords %}cv, resume, {{ cv.personal_info.title }}, professional{% endblock %}
 
 {% block content %}
-    <div class="floating-download">
-      <a href="/static/cv.pdf" class="btn btn--primary" download aria-label="Download CV as PDF">
-        <i class="nf nf-download"></i> Download CV (PDF)
-      </a>
-    </div>
       <div class="cv-container">
         <div class="cv-section cv-header-section">
           <div class="profile-header">
@@ -32,6 +27,11 @@
                 <span aria-label="Location">{{ cv.personal_info.location.as_ref().unwrap() }}</span>
                 {% endif %}
               </p>
+              <div class="cv-download-section">
+                <a href="cv.pdf" class="btn btn--primary btn--download" download aria-label="Download CV as PDF">
+                  <i class="nf nf-download"></i> Download CV (PDF)
+                </a>
+              </div>
             </div>
             <div class="profile-image">
               <img 
@@ -58,19 +58,6 @@
           </p>
           {% endif %}
 
-          <div class="social-links">
-            {% for entry in cv.personal_info.social_links %}
-            <a
-              href="{{ entry.1 }}"
-              class="social-link"
-              target="_blank"
-              rel="noopener"
-              aria-label="{{ entry.0 }} profile"
-            >
-              <i class="nf nf-{{ entry.0 | lower }}"></i> {{ entry.0 }}
-            </a>
-            {% endfor %}
-          </div>
         </div>
 
         <div class="cv-section cv-section-profile">

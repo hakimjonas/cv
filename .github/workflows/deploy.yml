@@ -109,37 +109,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Auto-sync blog to main
+      - name: Blog post deployment info
         if: steps.changes.outputs.build_type == 'blog' && github.ref == 'refs/heads/blog'
         run: |
-          echo "🔄 Auto-syncing blog content to main branch"
-
-          # Configure git
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          # Fetch main branch
-          git fetch origin main:main
-
-          # Get the current blog commit
-          BLOG_COMMIT=$(git rev-parse HEAD)
-          BLOG_MESSAGE=$(git log -1 --pretty=format:"%s")
-
-          # Switch to main and merge blog changes
-          git checkout main
-          git merge --no-ff blog -m "auto-sync: $BLOG_MESSAGE
-
-          Auto-merged blog content from commit $BLOG_COMMIT
-
-          🤖 Generated with [Claude Code](https://claude.ai/code)
-          Co-Authored-By: GitHub Actions <actions@github.com>"
-
-          # Push updated main branch
-          git push origin main
-
-          echo "✅ Blog content synced to main branch"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          echo "📝 New blog post detected on blog branch"
+          echo "🚀 Building and deploying static site with new content"
+          echo "✅ Blog branch remains independent - no merge to main"
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

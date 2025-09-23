@@ -72,7 +72,10 @@ impl SimpleAuthService {
             Err(e) => {
                 if self.dev_mode {
                     // In dev mode, create a default session if Git identity fails
-                    info!("Dev mode enabled, creating default session despite Git identity error: {}", e);
+                    info!(
+                        "Dev mode enabled, creating default session despite Git identity error: {}",
+                        e
+                    );
                     self.create_default_dev_session()
                 } else {
                     error!("Failed to get Git identity: {}", e);
@@ -85,25 +88,40 @@ impl SimpleAuthService {
     /// Creates a session from owner configuration
     fn create_session_from_owner(&self, owner: &OwnerConfig) -> Result<AuthResponse, AuthError> {
         let display_name = owner.display_name.as_ref().unwrap_or(&owner.name);
-        let role = if owner.role.is_empty() { "Author".to_string() } else { owner.role.clone() };
-        
+        let role = if owner.role.is_empty() {
+            "Author".to_string()
+        } else {
+            owner.role.clone()
+        };
+
         let user = AuthUser {
             user_id: 1, // Single user always has ID 1
-            username: owner.github_username.clone().unwrap_or_else(|| "owner".to_string()),
+            username: owner
+                .github_username
+                .clone()
+                .unwrap_or_else(|| "owner".to_string()),
             display_name: Some(display_name.clone()),
             role,
         };
 
         let token = self.generate_token(&user)?;
-        
+
         Ok(AuthResponse { token, user })
     }
 
     /// Creates a session from Git identity
-    fn create_session_from_git_identity(&self, identity: &GitIdentity) -> Result<AuthResponse, AuthError> {
+    fn create_session_from_git_identity(
+        &self,
+        identity: &GitIdentity,
+    ) -> Result<AuthResponse, AuthError> {
         let username = identity.github_username.clone().unwrap_or_else(|| {
             // Use email username part if GitHub username is not available
-            identity.email.split('@').next().unwrap_or("user").to_string()
+            identity
+                .email
+                .split('@')
+                .next()
+                .unwrap_or("user")
+                .to_string()
         });
 
         let user = AuthUser {
@@ -114,7 +132,7 @@ impl SimpleAuthService {
         };
 
         let token = self.generate_token(&user)?;
-        
+
         Ok(AuthResponse { token, user })
     }
 
@@ -128,7 +146,7 @@ impl SimpleAuthService {
         };
 
         let token = self.generate_token(&user)?;
-        
+
         Ok(AuthResponse { token, user })
     }
 
@@ -146,11 +164,10 @@ impl SimpleAuthService {
         };
 
         let encoding_key = EncodingKey::from_secret(self.jwt_secret.as_bytes());
-        encode(&Header::default(), &claims, &encoding_key)
-            .map_err(|e| {
-                error!("Failed to generate token: {}", e);
-                AuthError::Internal(format!("Token generation error: {}", e))
-            })
+        encode(&Header::default(), &claims, &encoding_key).map_err(|e| {
+            error!("Failed to generate token: {}", e);
+            AuthError::Internal(format!("Token generation error: {e}"))
+        })
     }
 
     /// Validates a JWT token
@@ -158,19 +175,17 @@ impl SimpleAuthService {
         let decoding_key = DecodingKey::from_secret(self.jwt_secret.as_bytes());
         let validation = Validation::default();
 
-        let token_data = decode::<Claims>(token, &decoding_key, &validation)
-            .map_err(|e| {
-                match e.kind() {
-                    jsonwebtoken::errors::ErrorKind::ExpiredSignature => AuthError::TokenExpired,
-                    _ => {
-                        warn!("Invalid token: {}", e);
-                        AuthError::InvalidToken
-                    }
+        let token_data =
+            decode::<Claims>(token, &decoding_key, &validation).map_err(|e| match e.kind() {
+                jsonwebtoken::errors::ErrorKind::ExpiredSignature => AuthError::TokenExpired,
+                _ => {
+                    warn!("Invalid token: {}", e);
+                    AuthError::InvalidToken
                 }
             })?;
 
         let claims = token_data.claims;
-        
+
         let username = claims.username;
         let user = AuthUser {
             user_id: claims.sub.parse().unwrap_or(1),
@@ -189,13 +204,11 @@ impl SimpleAuthService {
         }
 
         // Check if the request is from localhost
-        let is_localhost = remote_addr.map(|addr| {
-            addr.is_loopback()
-        }).unwrap_or(false);
+        let is_localhost = remote_addr.map(|addr| addr.is_loopback()).unwrap_or(false);
 
         if is_localhost {
             debug!("Auto-authenticating for localhost in dev mode");
-            
+
             // Create a default user for development
             Some(AuthUser {
                 user_id: 1,
@@ -210,7 +223,7 @@ impl SimpleAuthService {
 }
 
 /// Extracts and validates the authentication token from the request headers
-/// 
+///
 /// Note: This function is marked as async for API consistency, even though it doesn't
 /// perform any asynchronous operations internally. It's awaited in middleware functions.
 pub async fn extract_and_validate_token(
@@ -246,14 +259,14 @@ mod tests {
             dev_mode: true,
             ..Default::default()
         };
-        
+
         let service = SimpleAuthService::new(&config, "test_secret".to_string(), 3600);
-        
+
         // Test with localhost
         let localhost = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1));
         let user = service.auto_authenticate_for_dev(Some(localhost));
         assert!(user.is_some());
-        
+
         // Test with non-localhost
         let non_localhost = IpAddr::V4(Ipv4Addr::new(192, 168, 1, 1));
         let user = service.auto_authenticate_for_dev(Some(non_localhost));
@@ -264,17 +277,17 @@ mod tests {
     fn test_generate_and_validate_token() {
         let config = AppConfig::default();
         let service = SimpleAuthService::new(&config, "test_secret".to_string(), 3600);
-        
+
         let user = AuthUser {
             user_id: 1,
             username: "test_user".to_string(),
             display_name: Some("Test User".to_string()),
             role: "Author".to_string(),
         };
-        
+
         let token = service.generate_token(&user).unwrap();
         let validated_user = service.validate_token(&token).unwrap();
-        
+
         assert_eq!(validated_user.user_id, user.user_id);
         assert_eq!(validated_user.username, user.username);
         assert_eq!(validated_user.role, user.role);

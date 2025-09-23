@@ -836,7 +836,6 @@ impl Database {
         BlogRepository::new(Arc::clone(&self.pool))
     }
 
-
     /// Get the metrics object for the connection pool
     #[allow(dead_code)]
     pub fn metrics(&self) -> Arc<pool_metrics::PoolMetrics> {

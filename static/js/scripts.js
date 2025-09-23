@@ -111,9 +111,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Example of page-specific menu configuration
     if (pageName === 'cv') {
-        menuConfig.visibleItems = ['cv', 'projects', 'blog'];
+        menuConfig.visibleItems = ['cv', 'projects', 'blog', 'index'];
     } else if (pageName === 'projects') {
-        menuConfig.visibleItems = ['cv', 'projects', 'blog'];
+        menuConfig.visibleItems = ['cv', 'projects', 'blog', 'index'];
     }
 
     // Initialize the menu with the configuration

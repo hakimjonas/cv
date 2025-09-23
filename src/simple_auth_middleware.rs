@@ -15,18 +15,21 @@ pub async fn require_auth(
     next: axum::middleware::Next,
 ) -> Result<Response, StatusCode> {
     let (mut parts, body) = req.into_parts();
-    
+
     // Extract remote address for dev mode auto-authentication
-    let remote_addr = parts.extensions.get::<axum::extract::ConnectInfo<std::net::SocketAddr>>()
+    let remote_addr = parts
+        .extensions
+        .get::<axum::extract::ConnectInfo<std::net::SocketAddr>>()
         .map(|connect_info| connect_info.0.ip());
-    
+
     // Extract and validate the token
     let auth_result = extract_and_validate_token(
         &auth_service,
         parts.headers.get("Authorization"),
         remote_addr,
-    ).await;
-    
+    )
+    .await;
+
     match auth_result {
         Ok(user) => {
             // Add the authenticated user to the request extensions
@@ -45,18 +48,21 @@ pub async fn require_admin(
     next: axum::middleware::Next,
 ) -> Result<Response, StatusCode> {
     let (mut parts, body) = req.into_parts();
-    
+
     // Extract remote address for dev mode auto-authentication
-    let remote_addr = parts.extensions.get::<axum::extract::ConnectInfo<std::net::SocketAddr>>()
+    let remote_addr = parts
+        .extensions
+        .get::<axum::extract::ConnectInfo<std::net::SocketAddr>>()
         .map(|connect_info| connect_info.0.ip());
-    
+
     // Extract and validate the token
     let auth_result = extract_and_validate_token(
         &auth_service,
         parts.headers.get("Authorization"),
         remote_addr,
-    ).await;
-    
+    )
+    .await;
+
     match auth_result {
         Ok(user) => {
             // Check if the user has admin role
@@ -80,18 +86,21 @@ pub async fn require_author(
     next: axum::middleware::Next,
 ) -> Result<Response, StatusCode> {
     let (mut parts, body) = req.into_parts();
-    
+
     // Extract remote address for dev mode auto-authentication
-    let remote_addr = parts.extensions.get::<axum::extract::ConnectInfo<std::net::SocketAddr>>()
+    let remote_addr = parts
+        .extensions
+        .get::<axum::extract::ConnectInfo<std::net::SocketAddr>>()
         .map(|connect_info| connect_info.0.ip());
-    
+
     // Extract and validate the token
     let auth_result = extract_and_validate_token(
         &auth_service,
         parts.headers.get("Authorization"),
         remote_addr,
-    ).await;
-    
+    )
+    .await;
+
     match auth_result {
         Ok(user) => {
             // Check if the user has author or admin role
@@ -115,18 +124,21 @@ pub async fn require_editor(
     next: axum::middleware::Next,
 ) -> Result<Response, StatusCode> {
     let (mut parts, body) = req.into_parts();
-    
+
     // Extract remote address for dev mode auto-authentication
-    let remote_addr = parts.extensions.get::<axum::extract::ConnectInfo<std::net::SocketAddr>>()
+    let remote_addr = parts
+        .extensions
+        .get::<axum::extract::ConnectInfo<std::net::SocketAddr>>()
         .map(|connect_info| connect_info.0.ip());
-    
+
     // Extract and validate the token
     let auth_result = extract_and_validate_token(
         &auth_service,
         parts.headers.get("Authorization"),
         remote_addr,
-    ).await;
-    
+    )
+    .await;
+
     match auth_result {
         Ok(user) => {
             // Check if the user has editor, author, or admin role

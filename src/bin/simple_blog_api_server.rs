@@ -57,7 +57,7 @@ fn configure_sqlite() {
 // Verify Git setup
 fn verify_git_setup() -> Result<()> {
     let git_identity_service = GitIdentityService::new();
-    
+
     // Verify Git is properly configured
     match git_identity_service.verify_git_setup() {
         Ok(_) => {
@@ -87,7 +87,9 @@ async fn main() -> Result<()> {
     debug!("Loaded configuration: {:?}", config);
 
     // Enable development mode for local testing
-    let dev_mode = std::env::var("DEV_MODE").map(|v| v == "1" || v.to_lowercase() == "true").unwrap_or(false);
+    let dev_mode = std::env::var("DEV_MODE")
+        .map(|v| v == "1" || v.to_lowercase() == "true")
+        .unwrap_or(false);
     if dev_mode {
         info!("Development mode enabled");
         config.dev_mode = true;
@@ -96,8 +98,11 @@ async fn main() -> Result<()> {
     // Try to get Git identity for owner configuration
     let git_identity_service = GitIdentityService::new();
     if let Ok(identity) = git_identity_service.get_identity() {
-        info!("Git identity detected: {} <{}>", identity.name, identity.email);
-        
+        info!(
+            "Git identity detected: {} <{}>",
+            identity.name, identity.email
+        );
+
         let owner = cv::unified_config::OwnerConfig {
             name: identity.name.clone(),
             github_username: identity.github_username.clone(),
@@ -106,7 +111,7 @@ async fn main() -> Result<()> {
             bio: None,
             role: "Author".to_string(),
         };
-        
+
         config.owner = Some(owner);
     } else {
         warn!("Could not detect Git identity");
@@ -122,21 +127,17 @@ async fn main() -> Result<()> {
         info!("No JWT_SECRET environment variable found, using generated secret");
         secret
     });
-    
+
     let token_expiration = std::env::var("TOKEN_EXPIRATION")
         .ok()
         .and_then(|s| s.parse::<i64>().ok())
         .unwrap_or(86400); // Default to 24 hours
-    
+
     info!("Token expiration set to {} seconds", token_expiration);
 
     // Create the API router
-    let app = create_simple_blog_api_router(
-        db_path,
-        jwt_secret,
-        token_expiration,
-        config.dev_mode,
-    ).await?;
+    let app = create_simple_blog_api_router(db_path, jwt_secret, token_expiration, config.dev_mode)
+        .await?;
 
     // Add Swagger UI for API documentation
     let app = add_swagger_ui(app);
@@ -181,7 +182,10 @@ async fn main() -> Result<()> {
 
     let (listener, addr) = listener.unwrap();
     info!("Starting server on http://{}", addr);
-    info!("Simple blog client available at http://{}/static/simple-blog-client.html", addr);
+    info!(
+        "Simple blog client available at http://{}/static/simple-blog-client.html",
+        addr
+    );
 
     axum::serve(listener, app).await.context("Server error")?;
 

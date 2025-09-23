@@ -72,13 +72,13 @@ pub async fn csrf_middleware(
 
     // Check for CSRF token in headers
     let token_header = request.headers().get("X-CSRF-Token");
-    if let Some(token) = token_header {
-        if let Ok(token_str) = token.to_str() {
-            // The verify method returns Result<(), CsrfError>, so we need to check if it's Ok
-            if csrf_token.verify(token_str).is_ok() {
-                debug!("Valid CSRF token found in headers");
-                return Ok(next.run(request).await);
-            }
+    if let Some(token) = token_header
+        && let Ok(token_str) = token.to_str()
+    {
+        // The verify method returns Result<(), CsrfError>, so we need to check if it's Ok
+        if csrf_token.verify(token_str).is_ok() {
+            debug!("Valid CSRF token found in headers");
+            return Ok(next.run(request).await);
         }
     }
 

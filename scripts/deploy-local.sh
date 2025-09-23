@@ -60,14 +60,103 @@ show_usage() {
     echo "  rebuild  Rebuild the application (preserves data)"
     echo "  prune    Remove unused Docker resources"
     echo "  help     Show this help message"
+    echo
+    echo -e "${BLUE}Environment Variables:${NC}"
+    echo "  GIT_USER_NAME     Git user name (default: from global Git config)"
+    echo "  GIT_USER_EMAIL    Git user email (default: from global Git config)"
+    echo "  GITHUB_USERNAME   GitHub username (optional)"
+    echo "  GITHUB_TOKEN      GitHub API token (optional)"
+    echo "  HOST_PORT         Port to expose the application on (default: 3002)"
 }
 
 # Get the absolute path to the project root directory
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DOCKER_COMPOSE_FILE="${PROJECT_ROOT}/docker/docker-compose.local.yml"
+ENV_FILE="${PROJECT_ROOT}/.env.local"
 
 # Default port for the application
 DEFAULT_PORT=3002
+
+# Function to check Git configuration
+check_git_config() {
+    print_info "Checking Git configuration..."
+    
+    if ! command -v git &> /dev/null; then
+        print_error "Git is not installed. Please install Git first."
+        exit 1
+    fi
+    
+    GIT_NAME=$(git config --global user.name 2>/dev/null || echo "")
+    GIT_EMAIL=$(git config --global user.email 2>/dev/null || echo "")
+    
+    if [[ -z "$GIT_NAME" || -z "$GIT_EMAIL" ]]; then
+        print_warning "Git identity not configured globally."
+        print_warning "The application will use environment variables or default values."
+        print_warning "Consider setting:"
+        echo "  git config --global user.name 'Your Name'"
+        echo "  git config --global user.email 'your.email@example.com'"
+    else
+        print_info "Git configured as: $GIT_NAME <$GIT_EMAIL>"
+        export GIT_USER_NAME="$GIT_NAME"
+        export GIT_USER_EMAIL="$GIT_EMAIL"
+    fi
+}
+
+# Function to create environment file
+create_env_file() {
+    if [[ ! -f "$ENV_FILE" ]]; then
+        print_info "Creating environment file..."
+        cat > "$ENV_FILE" << EOF
+# Git Identity (will be auto-detected from your Git config)
+GIT_USER_NAME=${GIT_USER_NAME:-"Your Name"}
+GIT_USER_EMAIL=${GIT_USER_EMAIL:-"your.email@example.com"}
+GITHUB_USERNAME=${GITHUB_USERNAME:-"yourusername"}
+
+# Optional GitHub token for API access
+GITHUB_TOKEN=${GITHUB_TOKEN:-""}
+
+# Application settings
+DEV_MODE=true
+HOST_PORT=${HOST_PORT:-3002}
+EOF
+        print_info "Environment file created at $ENV_FILE"
+        print_warning "Please edit $ENV_FILE to configure your settings."
+    fi
+}
+
+# Function to create or update config.toml
+create_config_toml() {
+    CONFIG_TEMPLATE="${PROJECT_ROOT}/config.toml.template"
+    CONFIG_FILE="${PROJECT_ROOT}/config.toml"
+    
+    if [[ ! -f "$CONFIG_FILE" && -f "$CONFIG_TEMPLATE" ]]; then
+        print_info "Creating config.toml from template..."
+        cp "$CONFIG_TEMPLATE" "$CONFIG_FILE"
+        
+        # Update config.toml with Git configuration
+        if [[ -n "$GIT_USER_NAME" && -n "$GIT_USER_EMAIL" ]]; then
+            print_info "Updating config.toml with Git identity..."
+            # Use sed to replace the placeholder values with actual Git configuration
+            sed -i "s/name = \"Your Name\"/name = \"$GIT_USER_NAME\"/" "$CONFIG_FILE"
+            sed -i "s/email = \"your.email@example.com\"/email = \"$GIT_USER_EMAIL\"/" "$CONFIG_FILE"
+            
+            if [[ -n "$GITHUB_USERNAME" ]]; then
+                sed -i "s/github_username = \"yourusername\"/github_username = \"$GITHUB_USERNAME\"/" "$CONFIG_FILE"
+            fi
+            
+            if [[ -n "$GITHUB_TOKEN" ]]; then
+                sed -i "s/github_token = \"your_github_token_here\"/github_token = \"$GITHUB_TOKEN\"/" "$CONFIG_FILE"
+            fi
+        fi
+        
+        print_info "Config file created at $CONFIG_FILE"
+        print_warning "Please review $CONFIG_FILE to ensure correct configuration."
+    elif [[ -f "$CONFIG_FILE" ]]; then
+        print_info "Using existing config.toml file."
+    else
+        print_warning "Config template not found at $CONFIG_TEMPLATE. Using default configuration."
+    fi
+}
 
 # Function to check if a port is in use
 check_port_in_use() {
@@ -124,6 +213,20 @@ find_available_port() {
 start_local_env() {
     print_header "Building and starting local development environment"
     
+    # Check Git configuration
+    check_git_config
+    
+    # Create environment file
+    create_env_file
+    
+    # Export environment variables
+    if [[ -f "$ENV_FILE" ]]; then
+        export $(grep -v '^#' "$ENV_FILE" | xargs)
+    fi
+    
+    # Create or update config.toml
+    create_config_toml
+    
     # Check if HOST_PORT is already set
     if [ -z "${HOST_PORT}" ]; then
         # Check if default port is in use
@@ -160,7 +263,7 @@ start_local_env() {
     print_info "Using port: $HOST_PORT"
     
     # Run docker-compose and capture output to check for port binding errors
-    DOCKER_OUTPUT=$($DOCKER_COMPOSE -f "${DOCKER_COMPOSE_FILE}" up -d --build --remove-orphans 2>&1)
+    DOCKER_OUTPUT=$($DOCKER_COMPOSE -f "${DOCKER_COMPOSE_FILE}" --env-file "$ENV_FILE" up -d --build --remove-orphans 2>&1)
     DOCKER_EXIT_CODE=$?
     
     # Check if there was a port binding error
@@ -190,14 +293,14 @@ start_local_env() {
     local max_attempts=10
     local wait_time=3
     for i in $(seq 1 $max_attempts); do
-        if $DOCKER_COMPOSE -f "${DOCKER_COMPOSE_FILE}" ps | grep -q "blog-api.*Up"; then
+        if $DOCKER_COMPOSE -f "${DOCKER_COMPOSE_FILE}" --env-file "$ENV_FILE" ps | grep -q "blog-api.*Up"; then
             print_info "Container is up and running."
             break
         fi
         if [ $i -eq $max_attempts ]; then
             print_error "Failed to start container after $max_attempts attempts."
             print_info "Checking logs for potential issues:"
-            $DOCKER_COMPOSE -f "${DOCKER_COMPOSE_FILE}" logs
+            $DOCKER_COMPOSE -f "${DOCKER_COMPOSE_FILE}" --env-file "$ENV_FILE" logs
             exit 1
         fi
         print_info "Waiting for container to start... (attempt $i/$max_attempts)"
@@ -209,7 +312,7 @@ start_local_env() {
     local health_max_attempts=30  # Reduced from 40 to 30
     local health_wait_time=10
     for i in $(seq 1 $health_max_attempts); do
-        HEALTH_STATUS=$(docker inspect --format='{{.State.Health.Status}}' $($DOCKER_COMPOSE -f "${DOCKER_COMPOSE_FILE}" ps -q blog-api) 2>/dev/null)
+        HEALTH_STATUS=$(docker inspect --format='{{.State.Health.Status}}' $($DOCKER_COMPOSE -f "${DOCKER_COMPOSE_FILE}" --env-file "$ENV_FILE" ps -q blog-api) 2>/dev/null)
         if [ "$HEALTH_STATUS" = "healthy" ]; then
             print_header "Application is ready!"
             print_info "Local development environment is running!"
@@ -256,20 +359,20 @@ start_local_env() {
 # Function to stop the local development environment
 stop_local_env() {
     print_header "Stopping local development environment"
-    $DOCKER_COMPOSE -f "${DOCKER_COMPOSE_FILE}" down --remove-orphans
+    $DOCKER_COMPOSE -f "${DOCKER_COMPOSE_FILE}" --env-file "$ENV_FILE" down --remove-orphans
     print_info "Local development environment stopped."
 }
 
 # Function to show logs
 show_logs() {
     print_header "Showing logs from local development environment"
-    $DOCKER_COMPOSE -f "${DOCKER_COMPOSE_FILE}" logs -f
+    $DOCKER_COMPOSE -f "${DOCKER_COMPOSE_FILE}" --env-file "$ENV_FILE" logs -f
 }
 
 # Function to show status
 show_status() {
     print_header "Status of local development environment"
-    $DOCKER_COMPOSE -f "${DOCKER_COMPOSE_FILE}" ps
+    $DOCKER_COMPOSE -f "${DOCKER_COMPOSE_FILE}" --env-file "$ENV_FILE" ps
 }
 
 # Function to prune unused Docker resources
@@ -281,7 +384,7 @@ prune_resources() {
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         print_info "Stopping any running containers first..."
-        $DOCKER_COMPOSE -f "${DOCKER_COMPOSE_FILE}" down --remove-orphans
+        $DOCKER_COMPOSE -f "${DOCKER_COMPOSE_FILE}" --env-file "$ENV_FILE" down --remove-orphans
 
         print_info "Pruning containers..."
         docker container prune -f
@@ -309,10 +412,10 @@ rebuild_app() {
     print_info "Any data in volumes will be preserved."
 
     print_info "Stopping containers..."
-    $DOCKER_COMPOSE -f "${DOCKER_COMPOSE_FILE}" down
+    $DOCKER_COMPOSE -f "${DOCKER_COMPOSE_FILE}" --env-file "$ENV_FILE" down
 
     print_info "Rebuilding images..."
-    $DOCKER_COMPOSE -f "${DOCKER_COMPOSE_FILE}" build --no-cache
+    $DOCKER_COMPOSE -f "${DOCKER_COMPOSE_FILE}" --env-file "$ENV_FILE" build --no-cache
 
     print_info "Starting containers..."
     start_local_env

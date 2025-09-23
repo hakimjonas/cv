@@ -2,6 +2,7 @@
 mod asset_processor;
 mod bundler;
 
+mod blog_generator;
 mod config;
 mod credentials;
 mod cv_data;
@@ -13,6 +14,7 @@ mod html_generator;
 mod migrate;
 #[allow(dead_code)]
 mod runtime;
+mod static_blog;
 mod typst_generator;
 mod unified_config;
 
@@ -414,12 +416,47 @@ async fn main() -> Result<()> {
     html_generator::generate_html(&cv, &config_with_token.html_output_str()?)
         .context("Failed to generate HTML files")?;
 
-    // Copy static assets (excluding index.html which we generate)
+    // Generate static blog
+    info!("Generating static blog");
+    match static_blog::load_blog_posts("data/blog") {
+        Ok(blog_posts) => {
+            let published_posts = static_blog::get_published_posts(&blog_posts);
+            info!("Found {} published blog posts", published_posts.len());
+
+            if !published_posts.is_empty() {
+                match blog_generator::generate_blog_html(
+                    &blog_posts,
+                    &cv,
+                    &config_with_token.output_dir_str()?,
+                ) {
+                    Ok(()) => {
+                        info!("Successfully generated static blog HTML files");
+                    }
+                    Err(e) => {
+                        warn!(
+                            "Failed to generate blog HTML: {}. Continuing without blog.",
+                            e
+                        );
+                    }
+                }
+            } else {
+                info!("No published blog posts found");
+            }
+        }
+        Err(e) => {
+            warn!(
+                "Failed to load blog posts: {}. Skipping blog generation.",
+                e
+            );
+        }
+    }
+
+    // Copy static assets (excluding generated HTML files)
     info!("Copying static assets");
     html_generator::copy_static_assets_except(
         &config_with_token.static_dir_str()?,
         &config_with_token.output_dir_str()?,
-        &["index.html"],
+        &["index.html", "cv.html", "projects.html", "blog.html"],
     )
     .context("Failed to copy static assets")?;
 

@@ -3,57 +3,84 @@ version: '3.8'
 services:
   blog-api:
     build:
-      context: .
-      dockerfile: Dockerfile
-    image: blog-api:latest
+      context: ..
+      dockerfile: docker/Dockerfile.prod
+      args:
+        - BUILD_VERSION=${BUILD_VERSION:-0.1.0}
+    image: blog-api:${BUILD_VERSION:-0.1.0}
     ports:
-      - "80:3000"
+      - "${HOST_PORT:-3000}:3000"
     volumes:
       - blog-data:/app/data
     restart: unless-stopped
     environment:
       - RUST_LOG=info
-      - RUST_BACKTRACE=0
+      - APP_VERSION=${BUILD_VERSION:-0.1.0}
+      # Git identity configuration
+      - GIT_USER_NAME=${GIT_USER_NAME:-Your Name}
+      - GIT_USER_EMAIL=${GIT_USER_EMAIL:-your.email@example.com}
+      - GITHUB_USERNAME=${GITHUB_USERNAME:-yourusername}
+      # Optional GitHub token for API access
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      # Network resilience settings
+      - HTTP_TIMEOUT=30
+      - HTTP_RETRY=3
+      - HTTP_KEEPALIVE=true
+    # Add DNS configuration for better network resilience
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+      - 9.9.9.9
+    # Add extra hosts for better hostname resolution
+    extra_hosts:
+      - "crates.io:151.101.1.69"
+      - "static.crates.io:151.101.1.69"
+      - "github.com:140.82.121.4"
+      - "api.github.com:140.82.121.6"
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 1G
-        reservations:
           cpus: '0.5'
           memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
       interval: 30s
-      timeout: 10s
+      timeout: 5s
       retries: 3
-      start_period: 60s
+      start_period: 5s
     logging:
       driver: "json-file"
       options:
-        max-size: "50m"
-        max-file: "5"
+        max-size: "10m"
+        max-file: "3"
     networks:
       - blog-network
-
-  # Optional: Add a reverse proxy for production
-  nginx:
-    image: nginx:alpine
-    ports:
-      - "443:443"
-    volumes:
-      - ../nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ../nginx/ssl:/etc/nginx/ssl:ro
-    depends_on:
-      - blog-api
-    restart: unless-stopped
-    networks:
-      - blog-network
+    labels:
+      - "app=blog-api"
+      - "version=${BUILD_VERSION:-0.1.0}"
+      - "environment=production"
 
 networks:
   blog-network:
     driver: bridge
+    # Enable IPv6 for better network resilience
+    enable_ipv6: true
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16
+          gateway: 172.28.0.1
+        - subnet: 2001:db8::/64
+          gateway: 2001:db8::1
+    labels:
+      - "app=blog-api"
+      - "environment=production"
 
 volumes:
   blog-data:
-    driver: local
+    labels:
+      - "app=blog-api"
+      - "environment=production"

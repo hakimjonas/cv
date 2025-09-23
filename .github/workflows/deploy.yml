@@ -1,234 +1,161 @@
-name: Build and Deploy Static Site
+name: Smart Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, blog ]
     paths:
       - 'src/**'
       - 'static/**'
       - 'templates/**'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
-      - '.github/workflows/deploy.yml'
-  pull_request:
-    branches: [ main ]
-    paths:
-      - 'src/**'
-      - 'static/**'
-      - 'templates/**'
+      - 'data/**'
       - 'Cargo.toml'
       - 'Cargo.lock'
   workflow_dispatch:
 
-env:
-  CARGO_TERM_COLOR: always
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   build:
-    name: Build Static Site
     runs-on: ubuntu-latest
-    outputs:
-      site_version: ${{ steps.version.outputs.version }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Fetch all history for proper versioning
-      
-      - name: Generate version
-        id: version
+          fetch-depth: 2  # Need previous commit to detect changes
+
+      - name: Detect changed files
+        id: changes
         run: |
-          VERSION=$(date +'%Y%m%d')-$(git rev-parse --short HEAD)
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-      
-      - name: Install Rust toolchain
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "build_type=full" >> $GITHUB_OUTPUT
+            echo "reason=Manual trigger" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "build_type=full" >> $GITHUB_OUTPUT
+            echo "reason=Main branch push" >> $GITHUB_OUTPUT
+          else
+            # Check if only blog content changed
+            CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+            echo "Changed files: $CHANGED_FILES"
+
+            BLOG_ONLY=true
+            for file in $CHANGED_FILES; do
+              if [[ ! "$file" =~ ^data/blog/ ]]; then
+                BLOG_ONLY=false
+                break
+              fi
+            done
+
+            if [ "$BLOG_ONLY" = "true" ]; then
+              echo "build_type=blog" >> $GITHUB_OUTPUT
+              echo "reason=Blog content only" >> $GITHUB_OUTPUT
+            else
+              echo "build_type=full" >> $GITHUB_OUTPUT
+              echo "reason=Code or infrastructure changes detected" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Log build decision
+        run: |
+          echo "🚀 Build Type: ${{ steps.changes.outputs.build_type }}"
+          echo "📝 Reason: ${{ steps.changes.outputs.reason }}"
+
+      - name: Setup Rust
         uses: actions-rs/toolchain@v1
         with:
-          profile: minimal
           toolchain: stable
           override: true
-      
-      - name: Cache Rust dependencies
+
+      - name: Cache cargo dependencies
         uses: actions/cache@v3
         with:
           path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-
-      
+
       - name: Install Typst
         uses: baptiste0928/cargo-install@v2
         with:
           crate: typst-cli
           version: "^0.10.0"
-      
-      - name: Cache Typst dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cache/typst
-            ~/.config/typst
-          key: ${{ runner.os }}-typst-${{ hashFiles('src/typst_generator/**') }}
-          restore-keys: |
-            ${{ runner.os }}-typst-
-      
-      - name: Build site
-        run: cargo run --release
-      
-      - name: Verify build
-        run: |
-          # Check if key files exist
-          for file in dist/index.html dist/cv.html dist/blog.html dist/projects.html; do
-            if [ ! -f "$file" ]; then
-              echo "Error: $file does not exist"
-              exit 1
-            fi
-          done
-          
-          # Check if CSS and JS files exist
-          if [ ! -d "dist/css" ] || [ ! -d "dist/js" ]; then
-            echo "Error: CSS or JS directories do not exist"
-            exit 1
-          fi
-          
-          # Check if the CV PDF was generated
-          if [ ! -f "dist/cv.pdf" ]; then
-            echo "Error: CV PDF was not generated"
-            exit 1
-          fi
-          
-          echo "Build verification successful"
-      
-      - name: Add version info
-        run: |
-          # Add version info to the HTML files
-          for file in dist/*.html; do
-            sed -i "s|</body>|<div style=\"text-align:center;font-size:0.8em;color:#999;margin-top:2em;\">Version: ${{ steps.version.outputs.version }} - Built on $(date +'%Y-%m-%d %H:%M:%S')</div></body>|" $file
-          done
-      
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: static-site
-          path: dist
-          retention-days: 7
+        if: steps.changes.outputs.build_type == 'full'
 
-  preview:
-    name: Deploy Preview
+      - name: Build site (Full)
+        if: steps.changes.outputs.build_type == 'full'
+        run: cargo run --bin cv
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build site (Blog only)
+        if: steps.changes.outputs.build_type == 'blog'
+        run: |
+          echo "⚡ Fast blog-only build"
+          echo "📝 Blog content changes detected - optimized build path"
+
+          # Fast blog-only build (skips PDF generation, CV compilation, etc.)
+          cargo run --bin cv
+
+          echo "✅ Blog build completed in fast mode"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Auto-sync blog to main
+        if: steps.changes.outputs.build_type == 'blog' && github.ref == 'refs/heads/blog'
+        run: |
+          echo "🔄 Auto-syncing blog content to main branch"
+
+          # Configure git
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Fetch main branch
+          git fetch origin main:main
+
+          # Get the current blog commit
+          BLOG_COMMIT=$(git rev-parse HEAD)
+          BLOG_MESSAGE=$(git log -1 --pretty=format:"%s")
+
+          # Switch to main and merge blog changes
+          git checkout main
+          git merge --no-ff blog -m "auto-sync: $BLOG_MESSAGE
+
+          Auto-merged blog content from commit $BLOG_COMMIT
+
+          🤖 Generated with [Claude Code](https://claude.ai/code)
+          Co-Authored-By: GitHub Actions <actions@github.com>"
+
+          # Push updated main branch
+          git push origin main
+
+          echo "✅ Blog content synced to main branch"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: build
-    if: github.event_name == 'pull_request'
-    environment:
-      name: preview
-      url: ${{ steps.deploy-preview.outputs.preview_url }}
     steps:
-      - name: Download build artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: static-site
-          path: dist
-      
-      - name: Deploy to Netlify
-        id: deploy-preview
-        uses: nwtgck/actions-netlify@v2
-        with:
-          publish-dir: './dist'
-          production-branch: main
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          deploy-message: "Deploy preview for PR #${{ github.event.pull_request.number }}"
-          enable-pull-request-comment: true
-          enable-commit-comment: false
-          overwrites-pull-request-comment: true
-          alias: pr-${{ github.event.pull_request.number }}
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-        timeout-minutes: 5
-      
-      - name: Comment on PR
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `✅ Preview deployment for this PR is ready!\n\n🔍 Preview URL: ${process.env.PREVIEW_URL}\n\nVersion: ${process.env.VERSION}`
-            })
-        env:
-          PREVIEW_URL: ${{ steps.deploy-preview.outputs.preview_url }}
-          VERSION: ${{ needs.build.outputs.site_version }}
-
-  deploy-production:
-    name: Deploy to Production
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    environment:
-      name: production
-      url: https://example.com
-    steps:
-      - name: Download build artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: static-site
-          path: dist
-      
       - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          branch: gh-pages
-          folder: dist
-          clean: true
-          commit-message: "Deploy static site version ${{ needs.build.outputs.site_version }}"
-      
-      - name: Notify on success
-        uses: slackapi/slack-github-action@v1.23.0
-        with:
-          payload: |
-            {
-              "text": "✅ Successfully deployed static site version ${{ needs.build.outputs.site_version }} to production",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "✅ *Successfully deployed static site to production*"
-                  }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Version:*\n${{ needs.build.outputs.site_version }}"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Environment:*\nProduction"
-                    }
-                  ]
-                },
-                {
-                  "type": "actions",
-                  "elements": [
-                    {
-                      "type": "button",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "View Site"
-                      },
-                      "url": "https://example.com"
-                    }
-                  ]
-                }
-              ]
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -8,7 +8,7 @@ use config::{Config, Environment, File};
 use im::{HashMap, Vector};
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
-use tracing::{debug, info, warn};
+use tracing::{debug, info};
 
 /// Configuration key for the GitHub API token
 #[allow(dead_code)]
@@ -41,18 +41,7 @@ pub const GITHUB_RATE_LIMIT_STRATEGY_KEY: &str = "github_rate_limit_strategy";
 /// Default strategy for handling GitHub API rate limits
 pub const DEFAULT_GITHUB_RATE_LIMIT_STRATEGY: &str = "backoff";
 
-/// Configuration key for the GitHub OAuth client ID
-pub const GITHUB_OAUTH_CLIENT_ID_KEY: &str = "github_oauth_client_id";
-
-/// Configuration key for the GitHub OAuth client secret
-pub const GITHUB_OAUTH_CLIENT_SECRET_KEY: &str = "github_oauth_client_secret";
-
-/// Configuration key for the GitHub OAuth redirect URL
-pub const GITHUB_OAUTH_REDIRECT_URL_KEY: &str = "github_oauth_redirect_url";
-
-/// Default GitHub OAuth redirect URL
-pub const DEFAULT_GITHUB_OAUTH_REDIRECT_URL: &str =
-    "http://localhost:3002/api/auth/github/callback";
+// NOTE: OAuth configuration has been removed - it was deprecated and unused
 
 /// Default path for the SQLite database file
 pub const DEFAULT_DB_PATH: &str = "data/cv.db";
@@ -84,21 +73,21 @@ pub const DEFAULT_API_MAX_PORT: u16 = 3010;
 pub struct OwnerConfig {
     /// The owner's name
     pub name: String,
-    
+
     /// The owner's GitHub username
     pub github_username: Option<String>,
-    
+
     /// The owner's email
     pub email: String,
-    
+
     /// The owner's display name (optional, defaults to name)
     #[serde(default)]
     pub display_name: Option<String>,
-    
+
     /// The owner's bio (optional)
     #[serde(default)]
     pub bio: Option<String>,
-    
+
     /// The owner's role (defaults to Author)
     #[serde(default)]
     pub role: String,
@@ -160,18 +149,7 @@ pub struct AppConfig {
     #[serde(default = "default_github_rate_limit_strategy")]
     pub github_rate_limit_strategy: String,
 
-    /// GitHub OAuth client ID (deprecated, kept for backward compatibility)
-    #[serde(default)]
-    pub github_oauth_client_id: Option<String>,
-
-    /// GitHub OAuth client secret (deprecated, kept for backward compatibility)
-    #[serde(default)]
-    pub github_oauth_client_secret: Option<String>,
-
-    /// GitHub OAuth redirect URL (deprecated, kept for backward compatibility)
-    #[serde(default = "default_github_oauth_redirect_url")]
-    pub github_oauth_redirect_url: String,
-
+    // OAuth fields removed - they were deprecated and unused
     /// Fields that should be publicly visible (comma-separated)
     #[serde(default = "default_public_data")]
     pub public_data: String,
@@ -191,7 +169,7 @@ pub struct AppConfig {
     /// Owner configuration (populated from Git identity)
     #[serde(default)]
     pub owner: Option<OwnerConfig>,
-    
+
     /// Development mode flag
     #[serde(default = "default_dev_mode")]
     pub dev_mode: bool,
@@ -254,9 +232,7 @@ fn default_github_rate_limit_strategy() -> String {
     DEFAULT_GITHUB_RATE_LIMIT_STRATEGY.to_string()
 }
 
-fn default_github_oauth_redirect_url() -> String {
-    DEFAULT_GITHUB_OAUTH_REDIRECT_URL.to_string()
-}
+// OAuth default function removed
 
 impl Default for AppConfig {
     fn default() -> Self {
@@ -277,9 +253,7 @@ impl Default for AppConfig {
             github_cache_ttl: default_github_cache_ttl(),
             github_cache_refresh_strategy: default_github_cache_refresh_strategy(),
             github_rate_limit_strategy: default_github_rate_limit_strategy(),
-            github_oauth_client_id: None,
-            github_oauth_client_secret: None,
-            github_oauth_redirect_url: default_github_oauth_redirect_url(),
+            // OAuth fields removed
             public_data: default_public_data(),
             db_storage: default_db_storage(),
             api_port: default_api_port(),
@@ -595,98 +569,7 @@ impl AppConfig {
         result
     }
 
-    /// Gets the GitHub OAuth client ID, if available
-    pub fn github_oauth_client_id(&self) -> Option<&str> {
-        if let Some(client_id) = self.options.get(GITHUB_OAUTH_CLIENT_ID_KEY) {
-            debug!("Using GitHub OAuth client ID from options");
-            Some(client_id)
-        } else {
-            let result = self.github_oauth_client_id.as_deref();
-            if let Some(client_id) = result {
-                if client_id == "your-github-client-id" {
-                    warn!(
-                        "Using placeholder GitHub OAuth client ID. This will not work for authentication."
-                    );
-                    warn!("Please set a real GitHub OAuth client ID in your configuration.");
-                    debug!(
-                        "You can create a GitHub OAuth app at https://github.com/settings/developers"
-                    );
-                } else {
-                    debug!("GitHub OAuth client ID is available");
-                }
-            } else {
-                debug!("No GitHub OAuth client ID available");
-            }
-            result
-        }
-    }
-
-    /// Gets the GitHub OAuth client secret, if available
-    pub fn github_oauth_client_secret(&self) -> Option<&str> {
-        if let Some(client_secret) = self.options.get(GITHUB_OAUTH_CLIENT_SECRET_KEY) {
-            debug!("Using GitHub OAuth client secret from options");
-            Some(client_secret)
-        } else {
-            let result = self.github_oauth_client_secret.as_deref();
-            if let Some(client_secret) = result {
-                if client_secret == "your-github-client-secret" {
-                    warn!(
-                        "Using placeholder GitHub OAuth client secret. This will not work for authentication."
-                    );
-                    warn!("Please set a real GitHub OAuth client secret in your configuration.");
-                    debug!(
-                        "You can create a GitHub OAuth app at https://github.com/settings/developers"
-                    );
-                } else {
-                    debug!("GitHub OAuth client secret is available");
-                }
-            } else {
-                debug!("No GitHub OAuth client secret available");
-            }
-            result
-        }
-    }
-
-    /// Gets the GitHub OAuth redirect URL
-    pub fn github_oauth_redirect_url(&self) -> &str {
-        if let Some(redirect_url) = self.options.get(GITHUB_OAUTH_REDIRECT_URL_KEY) {
-            debug!(
-                "Using GitHub OAuth redirect URL from options: {}",
-                redirect_url
-            );
-            redirect_url
-        } else {
-            debug!(
-                "Using default GitHub OAuth redirect URL: {}",
-                self.github_oauth_redirect_url
-            );
-            &self.github_oauth_redirect_url
-        }
-    }
-
-    /// Checks if GitHub OAuth is properly configured
-    pub fn is_github_oauth_configured(&self) -> bool {
-        match (
-            self.github_oauth_client_id(),
-            self.github_oauth_client_secret(),
-        ) {
-            (Some(client_id), Some(client_secret)) => {
-                if client_id == "your-github-client-id"
-                    || client_secret == "your-github-client-secret"
-                {
-                    warn!("GitHub OAuth is not properly configured. Using placeholder values.");
-                    false
-                } else {
-                    debug!("GitHub OAuth is properly configured");
-                    true
-                }
-            }
-            _ => {
-                debug!("GitHub OAuth is not configured (missing client ID or client secret)");
-                false
-            }
-        }
-    }
+    // OAuth methods removed - functionality was deprecated and unused
 }
 
 /// Extension trait to enable method chaining with pipe

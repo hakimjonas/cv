@@ -1,14 +1,24 @@
 /// CV Application library
+// Domain models (single source of truth for all data structures)
+pub mod domain;
+
+// Configuration (lean, principled configuration system)
+pub mod configuration;
+
+// Services (pure async business logic layer)
+pub mod services;
+
 // Core modules
+pub mod credentials;
 pub mod cv_data;
 pub mod cv_db;
+pub mod git_identity;
 pub mod github;
 pub mod github_cache;
 pub mod html_generator;
 pub mod language_icons;
 pub mod typst_generator;
 pub mod unified_config;
-pub mod git_identity;
 
 // Database module
 pub mod db;
@@ -17,12 +27,11 @@ pub mod db;
 pub mod api_docs;
 pub mod api_models;
 pub mod auth;
-pub mod simple_auth;
-pub mod simple_auth_middleware;
-pub mod simple_blog_api;
+pub mod blog_api;
 pub mod blog_converters;
 pub mod blog_data;
 pub mod blog_error;
+pub mod blog_generator;
 pub mod blog_utils;
 pub mod blog_validation;
 pub mod check_db_permissions;
@@ -34,6 +43,10 @@ pub mod image_api;
 pub mod image_storage;
 pub mod markdown_editor;
 pub mod rate_limiter;
+pub mod simple_auth;
+pub mod simple_auth_middleware;
+pub mod simple_blog_api;
+pub mod static_blog;
 
 // Utility modules
 pub mod logging;

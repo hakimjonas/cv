@@ -107,7 +107,7 @@ async fn test_rate_limiting() {
     let db_path = temp_dir.path().join("test.db");
 
     // Create the router
-    let router = match create_blog_api_router(db_path) {
+    let router = match create_blog_api_router(db_path).await {
         Ok(router) => router,
         Err(e) => {
             error!("Failed to create blog API router: {}", e);
@@ -163,7 +163,7 @@ async fn test_csrf_protection() {
     let db_path = temp_dir.path().join("test.db");
 
     // Create the router
-    let router = match create_blog_api_router(db_path) {
+    let router = match create_blog_api_router(db_path).await {
         Ok(router) => router,
         Err(e) => {
             error!("Failed to create blog API router: {}", e);
@@ -267,7 +267,7 @@ async fn test_content_security_policy() {
     let db_path = temp_dir.path().join("test.db");
 
     // Create the router
-    let router = match create_blog_api_router(db_path) {
+    let router = match create_blog_api_router(db_path).await {
         Ok(router) => router,
         Err(e) => {
             error!("Failed to create blog API router: {}", e);

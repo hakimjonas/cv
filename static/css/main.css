@@ -18,6 +18,7 @@
 @import "components/social.css";
 @import "components/header.css";
 @import "components/footer.css";
+@import "components/blog.css";
 
 /* Font styles */
 @import "nerd-fonts.css";

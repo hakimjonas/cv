@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result, anyhow};
 use regex::Regex;
 use std::process::Command;
 
@@ -15,6 +15,12 @@ pub struct GitIdentity {
 
 /// Service for extracting Git identity information
 pub struct GitIdentityService;
+
+impl Default for GitIdentityService {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl GitIdentityService {
     /// Creates a new GitIdentityService
@@ -42,9 +48,15 @@ impl GitIdentityService {
 
         match (name, email) {
             (Ok(_), Ok(_)) => Ok(()),
-            (Err(_), Ok(_)) => Err(anyhow!("Git user.name is not configured. Please run: git config --global user.name \"Your Name\"")),
-            (Ok(_), Err(_)) => Err(anyhow!("Git user.email is not configured. Please run: git config --global user.email \"your.email@example.com\"")),
-            (Err(_), Err(_)) => Err(anyhow!("Git user.name and user.email are not configured. Please run:\ngit config --global user.name \"Your Name\"\ngit config --global user.email \"your.email@example.com\"")),
+            (Err(_), Ok(_)) => Err(anyhow!(
+                "Git user.name is not configured. Please run: git config --global user.name \"Your Name\""
+            )),
+            (Ok(_), Err(_)) => Err(anyhow!(
+                "Git user.email is not configured. Please run: git config --global user.email \"your.email@example.com\""
+            )),
+            (Err(_), Err(_)) => Err(anyhow!(
+                "Git user.name and user.email are not configured. Please run:\ngit config --global user.name \"Your Name\"\ngit config --global user.email \"your.email@example.com\""
+            )),
         }
     }
 
@@ -53,7 +65,7 @@ impl GitIdentityService {
         let output = Command::new("git")
             .args(["config", "--global", key])
             .output()
-            .context(format!("Failed to execute git config --global {}", key))?;
+            .context(format!("Failed to execute git config --global {key}"))?;
 
         if output.status.success() {
             let value = String::from_utf8(output.stdout)
@@ -75,7 +87,7 @@ impl GitIdentityService {
     fn extract_github_username(&self) -> Result<String> {
         // Try to get the GitHub username from the remote URL
         let remote_url = self.get_git_remote_url()?;
-        
+
         // Parse different GitHub remote URL formats
         let username = if let Some(username) = self.parse_github_url(&remote_url) {
             username
@@ -141,20 +153,21 @@ impl GitIdentityService {
             .context("Failed to execute gh auth status")?;
 
         if output.status.success() {
-            let output_str = String::from_utf8(output.stdout)
-                .context("GitHub CLI output is not valid UTF-8")?;
-            
+            let output_str =
+                String::from_utf8(output.stdout).context("GitHub CLI output is not valid UTF-8")?;
+
             // Extract username from output like "Logged in to github.com as username"
-            let regex = Regex::new(r"Logged in to github\.com as ([^\s]+)").ok()
+            let regex = Regex::new(r"Logged in to github\.com as ([^\s]+)")
+                .ok()
                 .context("Failed to create regex for GitHub CLI output")?;
-            
-            if let Some(captures) = regex.captures(&output_str) {
-                if let Some(username) = captures.get(1) {
-                    return Ok(username.as_str().to_string());
-                }
+
+            if let Some(captures) = regex.captures(&output_str)
+                && let Some(username) = captures.get(1)
+            {
+                return Ok(username.as_str().to_string());
             }
         }
-        
+
         Err(anyhow!("Could not determine GitHub username"))
     }
 }
@@ -162,26 +175,34 @@ impl GitIdentityService {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::env;
-    
+
     #[test]
     fn test_parse_github_url_ssh() {
         let service = GitIdentityService::new();
         let url = "git@github.com:hakimjonas/cv.git";
-        assert_eq!(service.parse_github_url(url), Some("hakimjonas".to_string()));
+        assert_eq!(
+            service.parse_github_url(url),
+            Some("hakimjonas".to_string())
+        );
     }
-    
+
     #[test]
     fn test_parse_github_url_https() {
         let service = GitIdentityService::new();
         let url = "https://github.com/hakimjonas/cv.git";
-        assert_eq!(service.parse_github_url(url), Some("hakimjonas".to_string()));
+        assert_eq!(
+            service.parse_github_url(url),
+            Some("hakimjonas".to_string())
+        );
     }
-    
+
     #[test]
     fn test_parse_github_url_https_with_auth() {
         let service = GitIdentityService::new();
         let url = "https://hakimjonas@github.com/hakimjonas/cv.git";
-        assert_eq!(service.parse_github_url(url), Some("hakimjonas".to_string()));
+        assert_eq!(
+            service.parse_github_url(url),
+            Some("hakimjonas".to_string())
+        );
     }
 }

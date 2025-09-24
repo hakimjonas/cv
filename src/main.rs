@@ -2,6 +2,7 @@
 mod asset_processor;
 mod bundler;
 
+mod config;
 mod cv_data;
 mod db;
 #[allow(dead_code)]
@@ -11,7 +12,6 @@ mod html_generator;
 mod migrate;
 #[allow(dead_code)]
 mod runtime;
-mod config;
 mod typst_generator;
 mod unified_config;
 
@@ -412,7 +412,6 @@ async fn main() -> Result<()> {
     info!("Generating HTML files");
     html_generator::generate_html(&cv, &config_with_token.html_output_str()?)
         .context("Failed to generate HTML files")?;
-
 
     // Copy static assets (excluding generated HTML files)
     info!("Copying static assets");

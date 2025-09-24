@@ -6,7 +6,6 @@ use crate::unified_config::AppConfig;
 use anyhow::Result;
 use std::path::PathBuf;
 
-
 /// Config struct that wraps AppConfig
 #[derive(Debug, Clone)]
 pub struct Config {
@@ -26,7 +25,6 @@ impl Default for Config {
 }
 
 impl Config {
-
     /// Set an option in the config
     pub fn with_option(mut self, key: &str, value: &str) -> Self {
         self.cache.insert(key.to_string(), value.to_string());

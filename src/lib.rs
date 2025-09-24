@@ -1,3 +1,4 @@
+pub mod config;
 /// CV Application library
 // Core modules
 pub mod cv_data;
@@ -7,14 +8,12 @@ pub mod github;
 pub mod github_cache;
 pub mod html_generator;
 pub mod language_icons;
+pub mod migrate;
 pub mod typst_generator;
 pub mod unified_config;
-pub mod config;
-pub mod migrate;
 
 // Database module
 pub mod db;
-
 
 // Blog-related modules
 pub mod api_docs;

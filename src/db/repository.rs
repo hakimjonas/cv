@@ -12,38 +12,6 @@ pub struct Tag {
     pub slug: String,
 }
 
-/// User role for authorization
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub enum UserRole {
-    /// Administrator with full access
-    Admin,
-    /// Author who can create and edit their own posts
-    Author,
-    /// Editor who can edit but not create posts
-    Editor,
-    /// Viewer who can only view content
-    Viewer,
-}
-
-impl Default for UserRole {
-    fn default() -> Self {
-        Self::Author
-    }
-}
-
-/// User in the system
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub struct User {
-    pub id: Option<i64>,
-    pub username: String,
-    pub display_name: String,
-    pub email: String,
-    pub password_hash: String,
-    pub role: UserRole,
-    pub created_at: String,
-    pub updated_at: String,
-}
-
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct BlogPost {
     pub id: Option<i64>,

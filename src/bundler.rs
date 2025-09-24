@@ -186,15 +186,11 @@ pub fn bundle_css(config: &BundleConfig, static_dir: &str) -> Result<()> {
 
         info!("Created CSS bundle: {}", output_path.display());
 
-        // Create gzipped version in release mode
+        // Skip gzipped version for now (asset_processor disabled)
         #[cfg(not(debug_assertions))]
         {
-            let gz_path = output_path.with_extension("bundle.css.gz");
-            crate::asset_processor::write_gzipped_file(
-                gz_path.to_str().unwrap(),
-                final_content.as_bytes(),
-            )?;
-            info!("Created gzipped CSS bundle: {}", gz_path.display());
+            // TODO: Re-enable gzip compression when asset_processor is re-enabled
+            info!("Skipping gzipped CSS bundle creation (asset_processor disabled)");
         }
     }
 
@@ -253,15 +249,11 @@ pub fn bundle_js(config: &BundleConfig, static_dir: &str) -> Result<()> {
 
         info!("Created JavaScript bundle: {}", output_path.display());
 
-        // Create gzipped version in release mode
+        // Skip gzipped version for now (asset_processor disabled)
         #[cfg(not(debug_assertions))]
         {
-            let gz_path = output_path.with_extension("bundle.js.gz");
-            crate::asset_processor::write_gzipped_file(
-                gz_path.to_str().unwrap(),
-                final_content.as_bytes(),
-            )?;
-            info!("Created gzipped JavaScript bundle: {}", gz_path.display());
+            // TODO: Re-enable gzip compression when asset_processor is re-enabled
+            info!("Skipping gzipped JavaScript bundle creation (asset_processor disabled)");
         }
     }
 
@@ -279,9 +271,21 @@ pub fn bundle_js(config: &BundleConfig, static_dir: &str) -> Result<()> {
 /// A Result containing the minified CSS
 #[cfg(not(debug_assertions))]
 fn minify_css(content: &str) -> Result<String> {
-    // For now, use the existing minify_css_content function from asset_processor
-    // In the future, this could be replaced with lightningcss for better minification
-    crate::asset_processor::minify_css_content(content)
+    // Simple CSS minification (asset_processor disabled)
+    // Remove comments, extra whitespace, and newlines
+    let minified = content
+        .lines()
+        .map(|line| line.trim())
+        .filter(|line| !line.is_empty() && !line.starts_with("/*"))
+        .collect::<Vec<_>>()
+        .join(" ")
+        .replace("; ", ";")
+        .replace(": ", ":")
+        .replace(" {", "{")
+        .replace("{ ", "{")
+        .replace(" }", "}")
+        .replace("} ", "}");
+    Ok(minified)
 }
 
 /// Minifies JavaScript content using minify-js

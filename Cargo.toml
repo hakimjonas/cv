@@ -1,7 +1,16 @@
 [package]
-name = "cv"
-version = "0.1.0"
-edition = "2024"
+name = "cv-generator"
+version = "1.0.0"
+edition = "2021"
+authors = ["Hakim Jonas Ghoula <hakim@walkthisway.dk>"]
+description = "A fast, functional CV/portfolio generator built in Rust that creates beautiful HTML and PDF outputs from JSON data"
+license = "MIT"
+repository = "https://github.com/hakimjonas/cv"
+homepage = "https://github.com/hakimjonas/cv"
+documentation = "https://github.com/hakimjonas/cv/blob/main/README.md"
+readme = "README.md"
+keywords = ["cv", "portfolio", "generator", "static-site", "rust"]
+categories = ["command-line-utilities", "web-programming", "template-engine"]
 
 [dependencies]
 # Core functional programming and async runtime
@@ -25,10 +34,16 @@ minify-html = "0.16.4"
 
 # Logging
 tracing = "0.1.40"
-tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+tracing-subscriber = { version = "0.3.18", features = ["env-filter", "json"] }
+tracing-appender = "0.2.3"
+tracing-log = "0.2.0"
+
+# Compression
+flate2 = "1.0.32"
 
 # Utilities
 chrono = { version = "0.4.41", features = ["serde"] }
 regex = "1.11.1"
 thiserror = "2.0.12"
+once_cell = "1.20.2"
 

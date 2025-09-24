@@ -5,7 +5,7 @@ use askama::Template;
 use im::Vector;
 use minify_html::{minify, Cfg};
 use std::fs;
-use std::io::Write;
+// use std::io::Write; // Disabled for now
 use std::path::{Path, PathBuf};
 
 use crate::cv_data::Cv;
@@ -400,7 +400,7 @@ fn minify_css_content(content: &str) -> Result<String> {
 /// # Returns
 ///
 /// A Result indicating success or failure
-fn write_gzipped_file(path: &str, content: &[u8]) -> Result<()> {
+fn write_gzipped_file(_path: &str, _content: &[u8]) -> Result<()> {
     // For now, just skip gzip compression - can be re-enabled later
     // TODO: Re-enable gzip compression when flate2 dependency is working
     /*

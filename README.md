@@ -253,4 +253,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Made with 🦀 Rust and functional programming principles**
 
-*Fork this repository and have your professional CV website up and running in minutes!*
+*Fork this repository and have your professional CV website up and running in minutes!*# Force rebuild

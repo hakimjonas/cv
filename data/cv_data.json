@@ -1,0 +1,73 @@
+{
+  "personal_info": {
+    "name": "Your Name",
+    "title": "Your Professional Title",
+    "email": "your.email@example.com",
+    "phone": "+1 (555) 123-4567",
+    "location": "Your City, Country",
+    "summary": "This is a fallback CV data file used during CI/CD builds. In a real deployment, data is fetched from the content branch.",
+    "social_links": {
+      "LinkedIn": "https://linkedin.com/in/yourprofile",
+      "GitHub": "https://github.com/yourusername",
+      "Website": "https://yourwebsite.com"
+    }
+  },
+  "experiences": [
+    {
+      "company": "Example Company",
+      "position": "Example Position",
+      "start_date": "2023-01-01",
+      "end_date": null,
+      "location": "Remote",
+      "description": "This is example experience data used during CI/CD builds.",
+      "achievements": [
+        "Example achievement for CI/CD builds"
+      ],
+      "technologies": ["Rust", "JavaScript"]
+    }
+  ],
+  "education": [
+    {
+      "institution": "Example University",
+      "degree": "Bachelor of Science",
+      "field": "Computer Science",
+      "start_date": "2016-09-01",
+      "end_date": "2020-05-01",
+      "location": "Example City",
+      "gpa": "3.8/4.0",
+      "achievements": ["Example academic achievement"]
+    }
+  ],
+  "skill_categories": [
+    {
+      "name": "Programming Languages",
+      "skills": ["Rust", "JavaScript", "Python"]
+    }
+  ],
+  "projects": [
+    {
+      "name": "Example Project",
+      "description": "This is an example project used during CI/CD builds.",
+      "url": null,
+      "repository": null,
+      "technologies": ["Rust", "HTML", "CSS"],
+      "highlights": ["Example highlight for CI/CD builds"],
+      "stars": null,
+      "owner_username": null,
+      "owner_avatar": null
+    }
+  ],
+  "languages": {
+    "English": "Native",
+    "Spanish": "Intermediate"
+  },
+  "certifications": [
+    "Example Certification - Example Organization (2023)"
+  ],
+  "github_sources": [
+    {
+      "username": "yourusername",
+      "organization": null
+    }
+  ]
+}

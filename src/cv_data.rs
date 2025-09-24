@@ -103,8 +103,8 @@ impl Cv {
     ///
     /// # Examples
     ///
-    /// ```
-    /// use cv::cv_data::Cv;
+    /// ```no_run
+    /// use cv_generator::cv_data::Cv;
     /// let cv = Cv::from_json("data/cv_data.json").expect("Failed to load CV data");
     /// ```
     pub fn from_json(path: &str) -> Result<Self> {

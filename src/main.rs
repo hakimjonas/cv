@@ -2,14 +2,11 @@
 mod asset_processor;
 mod bundler;
 
-mod config;
 mod cv_data;
-mod db;
 #[allow(dead_code)]
 mod git_config;
 mod github;
 mod html_generator;
-mod migrate;
 #[allow(dead_code)]
 mod runtime;
 mod typst_generator;
@@ -214,8 +211,6 @@ fn get_github_token_app(config: AppConfig) -> AppConfig {
 /// - `--set-token <token>`: Set the GitHub API token in git config
 /// - `--remove-token`: Remove the GitHub API token from git config
 /// - `--cache-path <path>`: Set a custom path for the GitHub cache file
-/// - `--migrate-to-db`: Migrate CV data from JSON to SQLite database
-/// - `--use-db`: Load CV data from SQLite database instead of JSON
 #[tokio::main]
 async fn main() -> Result<()> {
     // Initialize logging
@@ -255,29 +250,6 @@ async fn main() -> Result<()> {
         };
     }
 
-    // Check for --migrate-to-db argument
-    if args.len() >= 2 && args[1] == "--migrate-to-db" {
-        let config = config::Config::default();
-        info!("Migrating CV data from JSON to SQLite database asynchronously...");
-        return match migrate::migrate_json_to_sqlite_async(
-            &config.data_path_str()?,
-            &config.db_path_str()?,
-        )
-        .await
-        {
-            Ok(_) => {
-                info!(
-                    "CV data migrated successfully to database: {}",
-                    config.db_path().display()
-                );
-                Ok(())
-            }
-            Err(e) => {
-                error!("Error migrating CV data to database: {}", e);
-                Err(e)
-            }
-        };
-    }
 
     // Load configuration from all available sources
     let mut config = AppConfig::load().context("Failed to load configuration")?;
@@ -291,41 +263,19 @@ async fn main() -> Result<()> {
                     info!("Using custom GitHub cache path: {}", cache_path.display());
                     config = config.with_option(unified_config::GITHUB_CACHE_KEY, &args[i + 1]);
                 }
-                "--db-path" => {
-                    let db_path = std::path::PathBuf::from(&args[i + 1]);
-                    info!("Using custom database path: {}", db_path.display());
-                    config = config.with_option(unified_config::DB_PATH_KEY, &args[i + 1]);
-                }
                 "--public-data" => {
                     info!("Using custom public data settings: {}", args[i + 1]);
                     config = config.with_option(unified_config::PUBLIC_DATA_KEY, &args[i + 1]);
-                }
-                "--db-storage" => {
-                    info!("Using custom database storage settings: {}", args[i + 1]);
-                    config = config.with_option(unified_config::DB_STORAGE_KEY, &args[i + 1]);
                 }
                 _ => {}
             }
         }
     }
 
-    // Check if we should use the database
-    let use_db = args.iter().any(|arg| arg == "--use-db");
-
-    // Load CV data
-    let mut cv = if use_db {
-        info!(
-            "Loading CV data from database asynchronously: {}",
-            config.db_path.display()
-        );
-        migrate::load_cv_from_sqlite_async(&config.db_path_str()?)
-            .await
-            .context("Failed to load CV data from database")?
-    } else {
-        info!("Loading CV data from JSON: {}", config.data_path.display());
-        cv_data::Cv::from_json(&config.data_path_str()?)
-            .context("Failed to load CV data from JSON")?
-    };
+    // Load CV data from JSON (pure functional approach)
+    info!("Loading CV data from JSON: {}", config.data_path.display());
+    let mut cv = cv_data::Cv::from_json(&config.data_path.to_string_lossy())
+        .context("Failed to load CV data from JSON")?;
 
     // Get GitHub token from available sources
     let config_with_token = get_github_token_app(config);

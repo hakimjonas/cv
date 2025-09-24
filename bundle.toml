@@ -22,17 +22,6 @@ main = [
     "css/nerd-icons.css"
 ]
 
-# Blog-specific CSS bundle
-blog = [
-    "css/base/reset.css",
-    "css/base/variables.css",
-    "css/layout/layout.css",
-    "css/components/header.css",
-    "css/components/footer.css",
-    "css/components/navigation.css",
-    "blog.css"
-]
-
 # Syntax highlighting CSS
 syntax = ["prism.css"]
 
@@ -40,15 +29,6 @@ syntax = ["prism.css"]
 [bundles.js]
 # Main JavaScript bundle for the CV and index pages
 main = ["js/scripts.js"]
-
-# Blog-specific JavaScript bundle
-blog = [
-    "js/simple-api-client.js",
-    "js/blog-integration.js"
-]
-
-# Debug tools JavaScript bundle
-debug = ["js/blog-debug.js"]
 
 # Syntax highlighting JavaScript
 syntax = ["prism.js"]

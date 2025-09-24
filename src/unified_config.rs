@@ -46,14 +46,8 @@ pub const DEFAULT_GITHUB_RATE_LIMIT_STRATEGY: &str = "backoff";
 /// Default path for the SQLite database file
 pub const DEFAULT_DB_PATH: &str = "data/cv.db";
 
-/// Configuration key for the database path
-pub const DB_PATH_KEY: &str = "db_path";
-
 /// Configuration key for controlling what data is publicly visible
 pub const PUBLIC_DATA_KEY: &str = "public_data";
-
-/// Configuration key for controlling what data is stored in the database
-pub const DB_STORAGE_KEY: &str = "db_storage";
 
 /// Default public data settings (comma-separated list of fields)
 pub const DEFAULT_PUBLIC_DATA: &str =
@@ -129,9 +123,6 @@ pub struct AppConfig {
     #[serde(default = "default_github_cache_path")]
     pub github_cache_path: PathBuf,
 
-    /// Path to the SQLite database file
-    #[serde(default = "default_db_path")]
-    pub db_path: PathBuf,
 
     /// GitHub API token
     #[serde(default)]
@@ -154,9 +145,6 @@ pub struct AppConfig {
     #[serde(default = "default_public_data")]
     pub public_data: String,
 
-    /// Fields that should be stored in the database (comma-separated)
-    #[serde(default = "default_db_storage")]
-    pub db_storage: String,
 
     /// Port for the blog API server
     #[serde(default = "default_api_port")]
@@ -208,9 +196,6 @@ fn default_public_data() -> String {
     DEFAULT_PUBLIC_DATA.to_string()
 }
 
-fn default_db_storage() -> String {
-    DEFAULT_DB_STORAGE.to_string()
-}
 
 fn default_api_port() -> u16 {
     DEFAULT_API_PORT
@@ -248,14 +233,12 @@ impl Default for AppConfig {
             typst_temp: default_typst_temp(),
             pdf_output,
             github_cache_path: default_github_cache_path(),
-            db_path: default_db_path(),
             github_token: None,
             github_cache_ttl: default_github_cache_ttl(),
             github_cache_refresh_strategy: default_github_cache_refresh_strategy(),
             github_rate_limit_strategy: default_github_rate_limit_strategy(),
             // OAuth fields removed
             public_data: default_public_data(),
-            db_storage: default_db_storage(),
             api_port: default_api_port(),
             api_max_port: default_api_max_port(),
             owner: None,
@@ -484,21 +467,6 @@ impl AppConfig {
         }
     }
 
-    /// Gets the database path as a string
-    pub fn db_path_str(&self) -> Result<String> {
-        if let Some(path) = self.options.get(DB_PATH_KEY) {
-            debug!("Using database path from options: {}", path);
-            Ok(path.clone())
-        } else {
-            debug!("Using default database path: {}", self.db_path.display());
-            self.path_to_string(&self.db_path).with_context(|| {
-                format!(
-                    "Failed to get database path as string: {}",
-                    self.db_path.display()
-                )
-            })
-        }
-    }
 
     /// Gets the list of fields that should be publicly visible
     pub fn public_data(&self) -> Vector<String> {
@@ -530,7 +498,7 @@ impl AppConfig {
     /// Gets the list of fields that should be stored in the database
     #[allow(dead_code)]
     pub fn db_storage(&self) -> Vector<String> {
-        let db_storage = if let Some(value) = self.options.get(DB_STORAGE_KEY) {
+        let db_storage = if let Some(value) = self.options.get("db_storage") {
             debug!("Using db_storage from options: {}", value);
             value.as_str()
         } else {

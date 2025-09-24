@@ -1,562 +1,256 @@
-# Personal Website with Dynamic CV Generator and Blog
+# 🚀 CV Generator
 
-[![Rust CI](https://github.com/yourusername/personal-website/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/personal-website/actions/workflows/ci.yml)
-[![Deploy CV](https://github.com/yourusername/personal-website/actions/workflows/deploy.yml/badge.svg)](https://github.com/yourusername/personal-website/actions/workflows/deploy.yml)
-[![Deploy Blog API](https://github.com/yourusername/personal-website/actions/workflows/deploy-blog-api.yml/badge.svg)](https://github.com/yourusername/personal-website/actions/workflows/deploy-blog-api.yml)
+> A fast, functional CV/portfolio generator built in Rust that creates beautiful HTML and PDF outputs from JSON data
 
-This project is a comprehensive personal website solution that includes a dynamically generated CV and a full-featured blog system. It's built with Rust using functional programming principles and modern web technologies. The CV is generated in both HTML and PDF formats from a single data source, and the blog system provides a RESTful API for content management.
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Rust](https://img.shields.io/badge/rust-stable-orange.svg)](https://www.rust-lang.org)
+[![GitHub Pages](https://img.shields.io/badge/demo-GitHub%20Pages-brightgreen.svg)](https://hakimjonas.github.io/cv/)
 
-## Features
+## ✨ Features
 
-- **Dynamic CV Generation**: Creates both HTML and PDF versions of your CV from a single JSON data source
-- **Blog System**: Full-featured blog with a RESTful API for content management
-- **GitHub Integration**: Automatically fetches and displays your GitHub repositories
-- **Responsive Design**: Mobile-friendly interface that works on all devices
-- **Dark/Light Theme**: User-selectable theme with automatic system preference detection
-- **Functional Programming**: Built with immutable data structures and functional programming principles
-- **Docker Support**: Easy deployment with Docker and Docker Compose
-- **CI/CD Pipeline**: Automated testing and deployment with GitHub Actions
+- 🎯 **Single Source of Truth**: JSON-based CV data with automatic HTML/PDF generation
+- 🚀 **GitHub Integration**: Automatically fetches and displays your latest GitHub projects
+- 📱 **Responsive Design**: Beautiful, mobile-friendly interface
+- 🎨 **Modern UI**: Clean, professional styling with excellent typography
+- ⚡ **Fast & Efficient**: Built in Rust with functional programming principles
+- 🔧 **Fork-Ready**: Complete separation between code and content for easy customization
 
-> **Project Architecture**: See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for information about the system architecture, design principles, and technical implementation.
+## 🎪 Live Demo
 
-## Directory Structure
+Check out the live example: **[hakimjonas.github.io/cv](https://hakimjonas.github.io/cv)**
 
-```
-.
-├── Cargo.toml           # Rust project configuration
-├── Cargo.lock           # Rust dependency lock file
-├── blog_api_server.rs   # Blog API server entry point
-├── blog.db              # SQLite database for blog content
-├── README-dev.md        # Development guidelines
-├── README.md            # This file
-├── docker/              # Docker configuration files
-│   ├── Dockerfile           # Docker configuration for blog API
-│   ├── Dockerfile.local     # Docker configuration for local development
-│   ├── docker-compose.yml   # Docker Compose configuration for production
-│   └── docker-compose.local.yml # Docker Compose configuration for local development
-├── docs/                # Documentation files
-│   ├── ARCHITECTURE.md      # System architecture and design principles
-│   ├── DEPLOYMENT_CONSOLIDATED.md # Comprehensive deployment documentation
-│   ├── API_GUIDE.md         # API documentation for developers
-│   ├── DATABASE.md          # Database schema and design
-│   ├── SECURITY.md          # Security considerations
-│   ├── TESTING_STRATEGY.md  # Testing approach and implementation
-│   └── USER_DOCUMENTATION.md # End-user documentation
-├── scripts/             # Scripts for deployment and testing
-│   ├── deploy.sh            # Deployment script for blog API
-│   ├── deploy-local.sh      # Local deployment script
-│   └── test.sh              # Test runner script
-├── data/                # Data files
-│   └── cv_data.json     # CV data in JSON format
-├── src/                 # Rust source code
-│   ├── main.rs          # Main application entry point
-│   ├── cv_data.rs       # CV data model
-│   ├── html_generator.rs # HTML generation logic
-│   ├── typst_generator.rs # PDF generation logic
-│   ├── blog_api.rs      # Blog API server logic
-│   ├── blog_data.rs     # Blog data model
-│   └── db/              # Database access layer
-│       ├── mod.rs       # Database module entry point
-│       ├── repository.rs # Repository pattern implementation
-│       ├── migrations.rs # Database schema migrations
-│       └── error.rs     # Custom error types for database operations
-├── static/              # Static web assets
-│   ├── blog-client.html # Blog client interface
-│   ├── style.css        # Main CSS styles
-│   ├── css/             # CSS files
-│   │   └── components/  # Component-specific CSS
-│   │       └── header.css # Header component styles
-│   ├── js/              # JavaScript files
-│   │   ├── scripts.js   # Main JavaScript functionality
-│   │   └── blog-debug.js # Debug tool for blog API
-│   └── img/             # Image assets
-├── templates/           # Askama HTML templates
-│   ├── base.html        # Base template with common structure
-│   ├── index.html       # Template for landing page
-│   ├── cv.html          # Template for CV page
-│   ├── projects.html    # Template for projects page
-│   └── partials/        # Partial templates
-│       ├── header.html  # Header partial
-│       ├── footer.html  # Footer partial
-│       └── project-card.html # Project card partial
-├── tests/               # Test files
-└── test_data/           # Test data files
+## 🚀 Quick Start (Fork & Deploy)
+
+### 1. Fork This Repository
+Click the "Fork" button above or visit: https://github.com/hakimjonas/cv/fork
+
+### 2. Set Up Your Content Branch
+```bash
+# Clone your fork
+git clone https://github.com/YOUR_USERNAME/cv.git
+cd cv
+
+# Switch to the content branch
+git checkout content
+
+# Edit your CV data
+nano data/cv_data.json
 ```
 
-## Installation
+### 3. Customize Your Data
+Update `data/cv_data.json` with your information:
+
+```json
+{
+  "personal_info": {
+    "name": "Your Name",
+    "title": "Your Professional Title",
+    "email": "your.email@example.com",
+    "summary": "Your professional summary...",
+    "social_links": {
+      "LinkedIn": "https://linkedin.com/in/yourprofile",
+      "GitHub": "https://github.com/yourusername"
+    }
+  },
+  "github_sources": [
+    {
+      "username": "yourusername",
+      "organization": null
+    }
+  ]
+}
+```
+
+### 4. Commit & Push
+```bash
+# Commit your changes to the content branch
+git add data/cv_data.json
+git commit -m "Update CV data with my information"
+git push origin content
+```
+
+### 5. Enable GitHub Pages
+1. Go to your fork's Settings → Pages
+2. Set Source to "GitHub Actions"
+3. Your site will be available at: `https://yourusername.github.io/cv`
+
+### 6. Configure Repository Settings (Optional)
+Set these environment variables in Settings → Secrets and variables → Actions:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `CV_REPO` | Repository path | `yourusername/cv` |
+| `CV_BRANCH` | Content branch | `content` |
+| `CV_DATA_PATH` | Data file path | `data/cv_data.json` |
+
+## 🏗️ Architecture
+
+This project uses a smart **branch-based architecture**:
+
+```
+main branch    → Application code (Rust, templates, styles)
+content branch → Your personal CV data (JSON files)
+gh-pages      → Auto-generated static site
+```
+
+**Benefits:**
+- ✅ Clean separation between code and content
+- ✅ Easy to fork and customize
+- ✅ Automatic deployments on data changes
+- ✅ Version control for your CV history
+- ✅ Leverages GitHub's native features
+
+## 🛠️ Local Development
 
 ### Prerequisites
+- [Rust](https://rustup.rs/) (stable)
+- [GitHub CLI](https://cli.github.com/) (for GitHub integration)
+- [Typst](https://typst.app/) (for PDF generation)
 
-- **Rust and Cargo** (version 1.70.0 or higher)
-- **SQLite3** (for the blog database)
-- **Node.js and npm** (for frontend development tools)
-- **Docker and Docker Compose** (optional, for containerized deployment)
-
-### Step 1: Install Rust and Cargo
-
+### Setup
 ```bash
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-source $HOME/.cargo/env
-```
+# Clone the repository
+git clone https://github.com/hakimjonas/cv.git
+cd cv
 
-### Step 2: Clone the Repository
-
-```bash
-git clone https://github.com/yourusername/personal-website.git
-cd personal-website
-```
-
-### Step 3: Install Dependencies
-
-```bash
 # Install Rust dependencies
 cargo build
 
-# Install Node.js dependencies (for frontend tools)
-npm install
+# Install GitHub CLI (if not already installed)
+# macOS: brew install gh
+# Ubuntu: sudo apt install gh
+# Windows: winget install GitHub.cli
+
+# Install Typst
+cargo install typst-cli
+
+# Authenticate GitHub CLI
+gh auth login
 ```
 
-### Step 4: Set Up the Database
+### Development Commands
+```bash
+# Generate CV (HTML + PDF)
+cargo run --bin cv
 
-The blog system uses SQLite for data storage. The database will be created automatically when you first run the application, but you can also initialize it manually:
+# Use local data instead of content branch
+echo '{}' > data/cv_data.json  # Create local data file
+cargo run --bin cv
+
+# Override data source via environment variables
+CV_REPO="otherusername/cv" cargo run --bin cv
+```
+
+## 📁 Project Structure
+
+```
+├── src/                    # 🦀 Rust application code
+│   ├── main.rs            # Main application entry point
+│   ├── cv_data.rs         # CV data structures and parsing
+│   ├── html_generator.rs  # HTML template generation
+│   ├── typst_generator.rs # PDF generation with Typst
+│   └── github.rs          # GitHub API integration
+├── static/                # 🎨 Static assets (CSS, JS, images)
+├── templates/             # 📄 HTML templates (Askama)
+├── dist/                  # 📦 Generated output (HTML, PDF, assets)
+├── data/                  # 📊 CV data (only in content branch)
+├── bundle.toml            # 🎁 Asset bundling configuration
+└── .github/workflows/     # 🔄 CI/CD automation
+```
+
+## 🎨 Customization
+
+### Styling
+Edit CSS files in `static/css/` to customize the appearance:
+- `static/css/main.css` - Main styles
+- `static/css/components/` - Component-specific styles
+
+### Templates
+Modify HTML templates in `templates/`:
+- `templates/cv.html` - Main CV template
+- `templates/index.html` - Landing page template
+
+### Data Structure
+The CV data follows this JSON schema (see `data/cv_data.json` in content branch):
+
+```json
+{
+  "personal_info": { ... },      // Basic personal information
+  "experiences": [ ... ],        // Work experience
+  "education": [ ... ],          // Educational background
+  "skill_categories": [ ... ],   // Technical skills
+  "projects": [ ... ],           // Manual projects (GitHub ones are auto-fetched)
+  "languages": { ... },          // Spoken languages
+  "certifications": [ ... ],     // Professional certifications
+  "github_sources": [ ... ]      // GitHub accounts/orgs to fetch projects from
+}
+```
+
+## 🔧 Configuration
+
+### Environment Variables
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `CV_REPO` | Source repository for CV data | `username/cv` |
+| `CV_BRANCH` | Branch containing CV data | `content` |
+| `CV_DATA_PATH` | Path to CV data file | `data/cv_data.json` |
+| `GITHUB_TOKEN` | GitHub API token (optional) | `ghp_...` |
+
+### GitHub Integration
+The application automatically fetches your latest GitHub projects using the GitHub CLI. Make sure you're authenticated:
 
 ```bash
-# Initialize the database with schema
-cargo run --bin blog_api_server -- --init-db
+gh auth login
+gh auth status
 ```
 
-> **For Developers**: See [README-dev.md](README-dev.md) for detailed development guidelines, including functional programming principles and best practices.
+Projects are filtered to show only:
+- ✅ Public repositories
+- ✅ Non-fork repositories
+- ✅ Latest 10 projects (sorted by update date)
 
-## Usage
+## 🚀 Deployment
 
-The project consists of two main components:
-1. The CV generator and static website
-2. The blog API server
+### Automatic Deployment
+The repository includes GitHub Actions workflows that automatically:
 
-### CV and Website
+1. **Build** the CV when code changes (main branch)
+2. **Rebuild** when CV data changes (content branch)
+3. **Deploy** to GitHub Pages
+4. **Generate** both HTML and PDF outputs
 
-1. **Customize your CV data**:
-
-   Edit the `data/cv_data.json` file to include your personal information, experiences, education, skills, projects, and more.
-
-2. **Generate the website**:
-
-   ```bash
-   # For development
-   cargo run
-
-   # For production (with optimizations)
-   cargo run --release
-   ```
-
-3. **View the generated files**:
-
-   The generated files will be in the `dist/` directory:
-   - `index.html`: The landing page/blog frontend
-   - `cv.html`: The HTML version of your CV
-   - `projects.html`: The projects page
-   - `cv.pdf`: The PDF version of your CV
-
-   Static assets (CSS, JavaScript, images) remain in the `static/` directory.
-
-### Blog API Server
-
-1. **Start the blog API server**:
-
-   ```bash
-   # Start the server in development mode
-   cargo run --bin blog_api_server
-
-   # Start the server in production mode
-   cargo run --bin blog_api_server --release
-   ```
-
-   The server will start on port 3000 by default.
-
-2. **Access the blog API**:
-
-   - API Endpoints: http://localhost:3000/api/blog
-   - Blog Client: http://localhost:3000/static/blog-client.html
-   - Debug Tool: http://localhost:3000/static/blog-debug.html
-
-3. **Test the blog functionality**:
-
-   ```bash
-   # Run the blog tester utility
-   cargo run --bin blog_tester
-   ```
-
-### Local Development Environment
-
-For a complete local development environment with hot reloading:
-
+### Manual Deployment
 ```bash
-# Make the script executable
-chmod +x scripts/deploy-local.sh
+# Build the site locally
+cargo run --bin cv
 
-# Start the local development environment
-./scripts/deploy-local.sh start
+# Deploy to GitHub Pages (if configured)
+# The dist/ folder contains all generated files
 ```
 
-This will start a development server on port 3002 with the CV website and blog API.
+## 🤝 Contributing
 
-## Deployment
+This project follows functional programming principles and emphasizes immutability. When contributing:
 
-> **Detailed Deployment Guide**: For comprehensive deployment instructions, including local development setup, CI/CD pipeline configuration, Docker configuration, and troubleshooting, see [DEPLOYMENT_CONSOLIDATED.md](docs/DEPLOYMENT_CONSOLIDATED.md).
+1. Use immutable data structures (`im` crate)
+2. Prefer pure functions without side effects
+3. Add comprehensive tests for new features
+4. Follow existing code style and patterns
 
-The project supports multiple deployment options for both the CV website and the blog API server.
+## 📄 License
 
-### CV Website Deployment
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-The CV website is a static site that can be deployed to any web hosting service:
+## 🙏 Acknowledgments
 
-1. **GitHub Pages** (Recommended):
-   ```bash
-   # Build the project
-   cargo run --release
+- Built with ❤️ using [Rust](https://www.rust-lang.org/)
+- PDF generation powered by [Typst](https://typst.app/)
+- Styled with modern CSS and [Nerd Fonts](https://www.nerdfonts.com/)
+- Deployed on [GitHub Pages](https://pages.github.com/)
 
-   # Deploy to GitHub Pages using the provided script
-   ./scripts/deploy.sh
-   ```
+---
 
-2. **Traditional Web Hosting**:
-   ```bash
-   # Build the project
-   cargo run --release
+**Made with 🦀 Rust and functional programming principles**
 
-   # Upload the contents of the static/ directory to your web server
-   ```
-
-3. **Netlify**:
-   - Connect your GitHub repository to Netlify
-   - Set the build command to `cargo run --release`
-   - Set the publish directory to `static/`
-
-### Blog API Server Deployment
-
-The blog API server can be deployed using Docker for easy setup and management:
-
-1. **Docker Deployment** (Recommended):
-   ```bash
-   # Deploy using Docker Compose
-   docker-compose -f docker/docker-compose.yml up -d
-   ```
-
-2. **Manual Deployment**:
-   ```bash
-   # Build the server
-   cargo build --release --bin blog_api_server
-
-   # Run the server
-   ./target/release/blog_api_server
-   ```
-
-### Local Development Environment
-
-For local development and testing:
-
-```bash
-# Start the local development environment
-./scripts/deploy-local.sh start
-
-# Stop the local development environment
-./scripts/deploy-local.sh stop
-```
-
-This will start a development server on port 3002 with hot reloading, making it easy to test changes before deployment.
-
-> **Note**: The first time you start the local environment, it may take several minutes for the Rust application to compile. Subsequent starts will be faster as the compiled artifacts are cached.
-
-### CI/CD Pipeline
-
-The project includes GitHub Actions workflows for automated testing and deployment:
-
-- **CI Workflow**: Runs tests and linting on every push and pull request
-- **Deploy CV Workflow**: Deploys the CV website to GitHub Pages on pushes to the main branch
-- **Deploy Blog API Workflow**: Deploys the blog API server to a production server on pushes to the main branch
-
-For detailed instructions on setting up and customizing the CI/CD pipeline, see [DEPLOYMENT_CONSOLIDATED.md](docs/DEPLOYMENT_CONSOLIDATED.md#cicd-pipeline).
-
-## Customization
-
-### CV Data
-
-Edit the `data/cv_data.json` file to update your personal information, experiences, education, skills, projects, languages, and certifications.
-
-### HTML Templates
-
-- `templates/base.html`: Modify this file to change the common structure of all pages
-- `templates/cv.html`: Modify this file to change the structure of the HTML CV
-- `templates/index.html`: Modify this file to change the landing page
-- `templates/projects.html`: Modify this file to change the projects page
-- `templates/partials/`: Modify files in this directory to change reusable components
-- `static/style.css`: Modify this file to change the styling of the website
-
-### PDF Template
-
-The PDF template is generated in code in the `src/typst_generator.rs` file. Modify the `generate_typst_markup` function to change the structure and styling of the PDF CV.
-
-## GitHub Integration
-
-This project can fetch your GitHub repositories and include them in your CV. To use this feature:
-
-1. Add your GitHub username and/or organization to the `github_sources` field in `data/cv_data.json`:
-   ```json
-   {
-     "github_sources": [
-       {
-         "username": "yourusername",
-         "organization": null
-       },
-       {
-         "username": null,
-         "organization": "yourorganization"
-       }
-     ]
-   }
-   ```
-
-2. **Important: GitHub API Rate Limiting**
-
-   The GitHub API has rate limits:
-   - Unauthenticated requests: 60 requests per hour
-   - Authenticated requests: 5,000 requests per hour
-
-   To avoid rate limiting, you can provide a GitHub API token using one of the following methods (in order of preference):
-
-   a. Create a personal access token on GitHub:
-      - Go to GitHub Settings → Developer settings → Personal access tokens
-      - Generate a new token with the `public_repo` scope
-
-   b. Store the token in your git config (recommended for local development):
-      ```bash
-      git config --global cv.github.token "your-token-here"
-      ```
-      This stores the token securely in your global git config, which is not committed to version control.
-
-   c. Set the token as an environment variable:
-      ```bash
-      GITHUB_TOKEN=your-token-here cargo run
-      ```
-
-3. **For Production Deployment with GitHub Actions**
-
-   When deploying with GitHub Actions, you can use GitHub Secrets to store your token securely:
-
-   a. Add your token as a secret in your GitHub repository:
-      - Go to your repository → Settings → Secrets and variables → Actions
-      - Click "New repository secret"
-      - Name: `GITHUB_TOKEN`
-      - Value: your personal access token
-
-   b. In your GitHub Actions workflow file, make the secret available as an environment variable:
-      ```yaml
-      jobs:
-        build:
-          runs-on: ubuntu-latest
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          steps:
-            - uses: actions/checkout@v3
-            - name: Build CV
-              run: cargo run --release
-      ```
-
-   The application will automatically detect when it's running in GitHub Actions and use the token from the environment.
-
-## Blog Functionality
-
-This project includes a blog functionality that allows you to create and manage blog posts. The blog features:
-
-- **SQLite Database**: Blog posts are stored in a SQLite database
-- **RESTful API**: A complete API for creating, reading, updating, and deleting blog posts
-- **Tagging System**: Support for categorizing posts with tags
-- **Markdown Support**: Write blog posts in Markdown format
-
-### Blog API Endpoints
-
-- `GET /api/blog` - Get all blog posts
-- `GET /api/blog/{slug}` - Get a specific blog post
-- `POST /api/blog` - Create a new blog post
-- `PUT /api/blog/{slug}` - Update a blog post
-- `DELETE /api/blog/{slug}` - Delete a blog post
-- `GET /api/blog/tags` - Get all tags
-- `GET /api/blog/published` - Get all published posts
-- `GET /api/blog/featured` - Get all featured posts
-- `GET /api/blog/tag/{tag_slug}` - Get all posts with a specific tag
-
-## Testing
-
-The project includes comprehensive tests for all functionality. Run them with our consolidated test script:
-
-```bash
-# Run all tests
-./scripts/test.sh
-```
-
-The test suite includes:
-
-- **Unit Tests**: Tests for individual functions and methods
-- **Integration Tests**: Tests for the API endpoints
-- **Blog Functionality Tests**: Tests for the blog core and API
-- **GitHub API Tests**: Tests for the GitHub integration
-- **Property-Based Tests**: Tests with randomly generated inputs
-
-You can also run specific test groups manually:
-
-```bash
-# Run all tests with Rust's test framework
-cargo test
-
-# Run with clippy to check for code quality issues
-cargo clippy --tests
-
-# Test blog core functionality
-cargo run --bin blog_tester
-
-# Start blog API server for manual testing
-cargo run --bin blog_api_server
-```
-
-> **For Developers**: See [README-dev.md](README-dev.md) for detailed information about our testing strategy, including property-based testing and idempotency tests.
-
-### Blog API Server
-
-A robust blog API server built with Rust using Axum framework and SQLite database.
-
-#### Features
-
-- RESTful API for blog management
-- SQLite database for data persistence
-- Support for blog posts, tags, and metadata
-- Docker support for easy deployment
-
-#### Prerequisites
-
-- Rust 1.87.0 or higher
-- SQLite3
-- Docker and Docker Compose (for containerized deployment)
-
-## Blog API Server Deployment
-
-> **Detailed Deployment Guide**: For comprehensive deployment instructions for the blog API server, including Docker configuration, health checks, and zero-downtime deployment, see [DEPLOYMENT_CONSOLIDATED.md](docs/DEPLOYMENT_CONSOLIDATED.md).
-
-### Quick Start
-
-The easiest way to deploy the blog API server is with Docker:
-
-```bash
-./scripts/deploy.sh
-```
-
-This script will:
-- Build the Docker image
-- Start the service or perform a rolling update if it's already running
-- Check the health status of the container
-- Provide detailed error messages if deployment fails
-
-## Website Structure
-
-The website consists of three main pages:
-
-1. **Home Page**: The main landing page that serves as the blog frontend, displaying recent blog posts and personal information.
-2. **CV Page**: Displays the HTML version of the CV with a link to download the PDF version.
-3. **Projects Page**: Displays GitHub projects with details fetched from the GitHub API.
-
-### Server-Side vs. Client-Side Processing
-
-The website uses a modern template-based architecture with server-side rendering:
-
-1. **Server-Side Processing**:
-   - HTML pages are generated server-side using Askama templates
-   - Templates are located in the `templates/` directory
-   - The base template (`templates/base.html`) provides the common structure for all pages
-   - Partial templates in `templates/partials/` provide reusable components like header and footer
-   - The Rust application processes these templates and generates the final HTML
-
-2. **Client-Side Processing**:
-   - JavaScript is used only for interactive elements like theme switching and accordion functionality
-   - The `scripts.js` file handles common functionality across all pages
-   - Blog-specific JavaScript is contained in separate files
-
-This approach ensures a consistent user experience across all pages while minimizing client-side JavaScript dependencies. Blog posts are designed to use the full width of their container for optimal readability.
-
-## Frontend Access
-
-You can access the frontend of the application at the following URLs:
-
-- **Production Website**: https://yourusername.github.io/personal-website/
-  - Home/Blog: https://yourusername.github.io/personal-website/
-  - CV: https://yourusername.github.io/personal-website/cv.html
-  - Projects: https://yourusername.github.io/personal-website/projects.html
-
-- **Blog API (Production)**: http://your-server-ip:3000
-  - API Endpoints: http://your-server-ip:3000/api/blog
-  - Blog Client: http://your-server-ip:3000/static/blog-client.html
-  - Debug Tool: http://your-server-ip:3000/static/blog-debug.html
-
-- **Local Development**:
-  - Home/Blog: http://localhost:3002/
-  - Blog Client: http://localhost:3002/static/blog-client.html
-  - Debug Tool: http://localhost:3002/static/blog-debug.html
-
-> **Note**: Replace `yourusername` with your actual GitHub username and `your-server-ip` with the actual IP address or domain name of your server.
-
-## Client
-
-For development and testing purposes, you can also access the standalone blog client at `http://localhost:3002/static/blog-client.html` (for local development) or `http://localhost:3000/static/blog-client.html` (for production).
-
-## Troubleshooting
-
-If you encounter any issues:
-
-1. Use the debug tool at `http://localhost:3002/static/blog-debug.html` (for local development)
-2. Check the logs with `docker-compose logs blog-api`
-3. Verify you're using the correct port (3002) for local development
-4. Refer to the troubleshooting section in [DEPLOYMENT_CONSOLIDATED.md](docs/DEPLOYMENT_CONSOLIDATED.md)
-
-## Technologies
-
-This project is built with modern technologies and follows functional programming principles:
-
-### Backend
-
-- **[Rust](https://www.rust-lang.org/)**: A systems programming language focused on safety, speed, and concurrency
-- **[Axum](https://github.com/tokio-rs/axum)**: A web framework built on top of Tokio, hyper, and tower
-- **[Tokio](https://tokio.rs/)**: An asynchronous runtime for Rust
-- **[SQLite](https://www.sqlite.org/)**: A self-contained, serverless database engine
-- **[Askama](https://github.com/djc/askama)**: A type-safe, compiled templating engine for Rust
-
-### Frontend
-
-- **HTML5/CSS3**: Modern web standards for structure and styling
-- **JavaScript**: For interactive elements and theme switching
-- **[Nerdfont Icons](https://www.nerdfonts.com/)**: Icon font for UI elements
-
-### Data Management
-
-- **[Serde](https://serde.rs/)**: A framework for serializing and deserializing Rust data structures
-- **[im](https://docs.rs/im/)**: Immutable data structures for Rust
-- **[Rusqlite](https://github.com/rusqlite/rusqlite)**: SQLite bindings for Rust
-- **[R2D2](https://github.com/sfackler/r2d2)**: A connection pool for Rust
-
-### Error Handling and Logging
-
-- **[Thiserror](https://github.com/dtolnay/thiserror)**: For defining custom error types
-- **[Anyhow](https://github.com/dtolnay/anyhow)**: For flexible error handling
-- **[Tracing](https://github.com/tokio-rs/tracing)**: A framework for structured, contextual logging
-
-### Testing
-
-- **[Proptest](https://github.com/AltSysrq/proptest)**: Property-based testing for Rust
-- **Rust's built-in testing framework**: For unit and integration tests
-
-### Deployment and Infrastructure
-
-- **[Docker](https://www.docker.com/)**: For containerization
-- **[GitHub Actions](https://github.com/features/actions)**: For CI/CD pipelines
-- **[GitHub Pages](https://pages.github.com/)**: For hosting the static website
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+*Fork this repository and have your professional CV website up and running in minutes!*

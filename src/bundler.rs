@@ -326,8 +326,8 @@ pub fn process_assets(config_path: &str, static_dir: &str) -> Result<()> {
     // Bundle JavaScript files
     bundle_js(&config, static_dir)?;
 
-    // Generate server configuration files
-    crate::asset_processor::generate_server_configs(&config.output.directory)?;
+    // Generate server configuration files (disabled for now)
+    // crate::asset_processor::generate_server_configs(&config.output.directory)?;
 
     info!("Asset processing completed successfully");
     Ok(())

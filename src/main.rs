@@ -1,5 +1,5 @@
 #[allow(dead_code)]
-mod asset_processor;
+// mod asset_processor; // Disabled for now
 mod bundler;
 
 mod cv_data;
@@ -7,13 +7,14 @@ mod cv_data;
 mod git_config;
 mod github;
 mod html_generator;
-#[allow(dead_code)]
-mod runtime;
+mod language_icons;
+// #[allow(dead_code)]
+// mod runtime; // Disabled for now
 mod typst_generator;
 mod unified_config;
 
 use anyhow::{Context, Result};
-use cv::logging;
+// use cv::logging; // Disabled for now
 use im::Vector;
 use std::env;
 use tracing::{debug, error, info, warn};
@@ -30,21 +31,17 @@ trait Pipe: Sized {
     }
 }
 
-// Implement Pipe for Config to enable method chaining
-impl Pipe for config::Config {}
-
-/// Initialize logging with tracing
+/// Initialize simple logging with tracing
 fn init_logging() {
-    // Set up a logging configuration for the CV application
-    let config = logging::LoggingConfig {
-        app_name: "cv".to_string(),
-        level: tracing::Level::INFO,
-        log_spans: true,
-        ..Default::default()
-    };
+    use tracing_subscriber;
 
-    // Initialize logging with the configuration
-    let _guard = logging::init_logging(config);
+    tracing_subscriber::fmt()
+        .with_target(false)
+        .with_thread_ids(false)
+        .with_level(true)
+        .with_ansi(true)
+        .init();
+
     info!("Logging initialized with tracing");
 }
 
@@ -79,59 +76,96 @@ fn get_token_from_secure_storage() -> Result<Option<String>> {
     })
 }
 
-/// Gets a GitHub token from available sources with priority:
-/// 1. GitHub Actions environment (if running in GitHub Actions)
-/// 2. Git config
-/// 3. Environment variable
+/// Fetch CV data from the content branch using GitHub CLI
+///
+/// # Arguments
+/// * `repo` - Repository in format "owner/repo"
+/// * `branch` - Branch name (default: "content")
+/// * `file_path` - Path to CV data file (default: "data/cv_data.json")
 ///
 /// # Returns
-///
-/// A Config with the token set if found
-#[allow(dead_code)]
-fn get_github_token(config: config::Config) -> config::Config {
-    // Check if running in GitHub Actions
-    match env::var("GITHUB_ACTIONS") {
-        Ok(actions) if actions == "true" => {
-            // We're running in GitHub Actions, check for GITHUB_TOKEN
-            match env::var("GITHUB_TOKEN") {
-                Ok(token) => {
-                    info!("Using GitHub API token from GitHub Actions for authentication");
-                    config.with_option(git_config::GITHUB_TOKEN_KEY, &token)
-                }
-                Err(_) => {
-                    warn!("No GitHub API token found in GitHub Actions environment.");
-                    config
-                }
+/// Result containing the JSON content as string
+fn fetch_data_from_content_branch(repo: &str, branch: &str, file_path: &str) -> Result<String> {
+    use std::process::Command;
+
+    info!("Fetching CV data from {}:{}/{}", repo, branch, file_path);
+
+    let output = Command::new("gh")
+        .args([
+            "api",
+            &format!("/repos/{}/contents/{}", repo, file_path),
+            "--jq",
+            ".content",
+            "-H",
+            &format!("X-GitHub-Api-Version: 2022-11-28"),
+            "--header",
+            &format!("Accept: application/vnd.github+json"),
+            "--field",
+            &format!("ref={}", branch),
+        ])
+        .output()
+        .context("Failed to execute gh command to fetch data from content branch")?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        return Err(anyhow::anyhow!("GitHub CLI failed: {}", stderr));
+    }
+
+    let base64_content = String::from_utf8(output.stdout)
+        .context("Invalid UTF-8 in GitHub CLI response")?
+        .trim()
+        .trim_matches('"')
+        .to_string();
+
+    // Decode base64 content
+    use std::str;
+    let decoded_bytes = base64_decode(&base64_content)
+        .context("Failed to decode base64 content from GitHub")?;
+
+    let json_content = str::from_utf8(&decoded_bytes)
+        .context("Invalid UTF-8 in decoded content")?
+        .to_string();
+
+    info!("Successfully fetched CV data from content branch");
+    Ok(json_content)
+}
+
+/// Simple base64 decoder
+fn base64_decode(input: &str) -> Result<Vec<u8>> {
+    // Simple base64 decode implementation
+    let alphabet = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let mut result = Vec::new();
+    let input = input.replace('\n', "").replace('\r', "");
+    let input = input.trim_end_matches('=');
+
+    let mut chars = input.chars().collect::<Vec<char>>();
+
+    // Pad to multiple of 4
+    while chars.len() % 4 != 0 {
+        chars.push('=');
+    }
+
+    for chunk in chars.chunks(4) {
+        let mut values = [0u8; 4];
+        for (i, &ch) in chunk.iter().enumerate() {
+            if ch == '=' {
+                values[i] = 0;
+            } else {
+                values[i] = alphabet.iter().position(|&c| c == ch as u8)
+                    .ok_or_else(|| anyhow::anyhow!("Invalid base64 character: {}", ch))? as u8;
             }
         }
-        _ => {
-            // Not running in GitHub Actions, check secure storage
-            match get_token_from_secure_storage() {
-                Ok(Some(token)) => config.with_option(git_config::GITHUB_TOKEN_KEY, &token),
-                Ok(None) => {
-                    // Token not found in secure storage, try environment variable
-                    match get_token_from_env() {
-                        Some(token) => config.with_option(git_config::GITHUB_TOKEN_KEY, &token),
-                        None => {
-                            print_token_missing_message();
-                            config
-                        }
-                    }
-                }
-                Err(e) => {
-                    warn!("Failed to read GitHub token from secure storage: {}", e);
-                    // Fall back to environment variable
-                    match get_token_from_env() {
-                        Some(token) => config.with_option(git_config::GITHUB_TOKEN_KEY, &token),
-                        None => {
-                            print_token_missing_message();
-                            config
-                        }
-                    }
-                }
-            }
+
+        result.push((values[0] << 2) | (values[1] >> 4));
+        if chunk[2] != '=' {
+            result.push((values[1] << 4) | (values[2] >> 2));
+        }
+        if chunk[3] != '=' {
+            result.push((values[2] << 6) | values[3]);
         }
     }
+
+    Ok(result)
 }
 
 /// Gets a GitHub token from available sources with priority:
@@ -250,7 +284,6 @@ async fn main() -> Result<()> {
         };
     }
 
-
     // Load configuration from all available sources
     let mut config = AppConfig::load().context("Failed to load configuration")?;
 
@@ -272,19 +305,34 @@ async fn main() -> Result<()> {
         }
     }
 
-    // Load CV data from JSON (pure functional approach)
-    info!("Loading CV data from JSON: {}", config.data_path.display());
-    let mut cv = cv_data::Cv::from_json(&config.data_path.to_string_lossy())
-        .context("Failed to load CV data from JSON")?;
+    // Load CV data - try content branch first, fall back to local file
+    let mut cv = {
+        // Check for data source configuration
+        let repo = env::var("CV_REPO").unwrap_or_else(|_| "hakimjonas/cv".to_string());
+        let branch = env::var("CV_BRANCH").unwrap_or_else(|_| "content".to_string());
+        let file_path = env::var("CV_DATA_PATH").unwrap_or_else(|_| "data/cv_data.json".to_string());
+
+        match fetch_data_from_content_branch(&repo, &branch, &file_path) {
+            Ok(json_content) => {
+                info!("Using CV data from content branch: {}:{}", repo, branch);
+                cv_data::Cv::from_json_str(&json_content, &format!("{}:{}/{}", repo, branch, file_path))
+                    .context("Failed to parse CV data from content branch")?
+            }
+            Err(e) => {
+                warn!("Failed to fetch from content branch: {}", e);
+                info!("Falling back to local CV data: {}", config.data_path.display());
+                cv_data::Cv::from_json(&config.data_path.to_string_lossy())
+                    .context("Failed to load local CV data")?
+            }
+        }
+    };
 
     // Get GitHub token from available sources
     let config_with_token = get_github_token_app(config);
 
     // Fetch GitHub projects from sources defined in CV data
-    info!("Fetching GitHub projects from sources defined in CV data asynchronously");
-    match github::fetch_projects_from_sources(&cv.github_sources, config_with_token.github_token())
-        .await
-    {
+    info!("Fetching GitHub projects from sources defined in CV data using GitHub CLI");
+    match github::fetch_projects_from_sources(&cv.github_sources) {
         Ok(github_projects) => {
             info!("Found {} GitHub projects", github_projects.len());
 
@@ -318,7 +366,7 @@ async fn main() -> Result<()> {
         .parent()
         .unwrap()
         .join("language_icons.json");
-    match cv::language_icons::LanguageIcons::from_json(icons_path.to_str().unwrap()) {
+    match language_icons::LanguageIcons::from_json(icons_path.to_str().unwrap()) {
         Ok(icons) => {
             info!("Found {} language icons", icons.0.len());
 
@@ -381,10 +429,10 @@ async fn main() -> Result<()> {
     )
     .context("Failed to generate PDF CV")?;
 
-    // Process and bundle assets
-    info!("Processing and bundling assets");
-    bundler::process_assets("bundle.toml", &config_with_token.static_dir_str()?)
-        .context("Failed to process and bundle assets")?;
+    // Process and bundle assets (disabled for now)
+    info!("Skipping asset processing for now");
+    // bundler::process_assets("bundle.toml", &config_with_token.static_dir_str()?)
+    //     .context("Failed to process and bundle assets")?;
 
     // Print summary
     info!("Done! Output files:");

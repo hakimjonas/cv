@@ -43,18 +43,12 @@ pub const DEFAULT_GITHUB_RATE_LIMIT_STRATEGY: &str = "backoff";
 
 // NOTE: OAuth configuration has been removed - it was deprecated and unused
 
-/// Default path for the SQLite database file
-pub const DEFAULT_DB_PATH: &str = "data/cv.db";
-
 /// Configuration key for controlling what data is publicly visible
 pub const PUBLIC_DATA_KEY: &str = "public_data";
 
 /// Default public data settings (comma-separated list of fields)
 pub const DEFAULT_PUBLIC_DATA: &str =
     "name,title,summary,experiences,education,skill_categories,projects,languages,certifications";
-
-/// Default database storage settings (comma-separated list of fields)
-pub const DEFAULT_DB_STORAGE: &str = "personal_info,experiences,education,skill_categories,projects,languages,certifications,github_sources";
 
 /// Default port for the blog API server
 pub const DEFAULT_API_PORT: u16 = 3000;
@@ -123,7 +117,6 @@ pub struct AppConfig {
     #[serde(default = "default_github_cache_path")]
     pub github_cache_path: PathBuf,
 
-
     /// GitHub API token
     #[serde(default)]
     pub github_token: Option<String>,
@@ -144,7 +137,6 @@ pub struct AppConfig {
     /// Fields that should be publicly visible (comma-separated)
     #[serde(default = "default_public_data")]
     pub public_data: String,
-
 
     /// Port for the blog API server
     #[serde(default = "default_api_port")]
@@ -188,14 +180,9 @@ fn default_github_cache_path() -> PathBuf {
     PathBuf::from(DEFAULT_GITHUB_CACHE_PATH)
 }
 
-fn default_db_path() -> PathBuf {
-    PathBuf::from(DEFAULT_DB_PATH)
-}
-
 fn default_public_data() -> String {
     DEFAULT_PUBLIC_DATA.to_string()
 }
-
 
 fn default_api_port() -> u16 {
     DEFAULT_API_PORT
@@ -433,41 +420,6 @@ impl AppConfig {
         })
     }
 
-    /// Gets the data path as a string
-    pub fn data_path_str(&self) -> Result<String> {
-        debug!(
-            "Converting data path to string: {}",
-            self.data_path.display()
-        );
-        self.path_to_string(&self.data_path).with_context(|| {
-            format!(
-                "Failed to get data path as string: {}",
-                self.data_path.display()
-            )
-        })
-    }
-
-    /// Gets the GitHub cache path as a string
-    pub fn github_cache_path_str(&self) -> Result<String> {
-        if let Some(path) = self.options.get(GITHUB_CACHE_KEY) {
-            debug!("Using GitHub cache path from options: {}", path);
-            Ok(path.clone())
-        } else {
-            debug!(
-                "Using default GitHub cache path: {}",
-                self.github_cache_path.display()
-            );
-            self.path_to_string(&self.github_cache_path)
-                .with_context(|| {
-                    format!(
-                        "Failed to get GitHub cache path as string: {}",
-                        self.github_cache_path.display()
-                    )
-                })
-        }
-    }
-
-
     /// Gets the list of fields that should be publicly visible
     pub fn public_data(&self) -> Vector<String> {
         let public_data = if let Some(value) = self.options.get(PUBLIC_DATA_KEY) {
@@ -492,48 +444,6 @@ impl AppConfig {
     pub fn is_public(&self, field: &str) -> bool {
         let result = self.public_data().contains(&field.to_string());
         debug!("Checking if field '{}' is public: {}", field, result);
-        result
-    }
-
-    /// Gets the list of fields that should be stored in the database
-    #[allow(dead_code)]
-    pub fn db_storage(&self) -> Vector<String> {
-        let db_storage = if let Some(value) = self.options.get("db_storage") {
-            debug!("Using db_storage from options: {}", value);
-            value.as_str()
-        } else {
-            debug!("Using default db_storage: {}", self.db_storage);
-            &self.db_storage
-        };
-
-        let fields: Vector<String> = db_storage
-            .split(',')
-            .map(|s| s.trim().to_string())
-            .collect();
-
-        debug!("Database storage fields ({}): {:?}", fields.len(), fields);
-        fields
-    }
-
-    /// Checks if a field should be stored in the database
-    #[allow(dead_code)]
-    pub fn store_in_db(&self, field: &str) -> bool {
-        let result = self.db_storage().contains(&field.to_string());
-        debug!(
-            "Checking if field '{}' should be stored in DB: {}",
-            field, result
-        );
-        result
-    }
-
-    /// Gets the GitHub API token, if available
-    pub fn github_token(&self) -> Option<&str> {
-        let result = self.github_token.as_deref();
-        if result.is_some() {
-            debug!("GitHub token is available");
-        } else {
-            debug!("No GitHub token available, API requests may be rate limited");
-        }
         result
     }
 
@@ -595,22 +505,5 @@ mod tests {
         assert!(config.is_public("name"));
         assert!(config.is_public("title"));
         assert!(config.is_public("experiences"));
-    }
-
-    #[test]
-    fn test_db_storage() {
-        let config = AppConfig::default();
-        let db_storage = config.db_storage();
-        assert!(db_storage.contains(&"personal_info".to_string()));
-        assert!(db_storage.contains(&"experiences".to_string()));
-        assert!(db_storage.contains(&"education".to_string()));
-    }
-
-    #[test]
-    fn test_store_in_db() {
-        let config = AppConfig::default();
-        assert!(config.store_in_db("personal_info"));
-        assert!(config.store_in_db("experiences"));
-        assert!(config.store_in_db("education"));
     }
 }

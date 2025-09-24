@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use askama::Template;
-use flate2::Compression;
-use flate2::write::GzEncoder;
+// use flate2::Compression;
+// use flate2::write::GzEncoder;
 use im::Vector;
 use minify_html::{Cfg, minify};
 use std::fs;
@@ -401,6 +401,9 @@ fn minify_css_content(content: &str) -> Result<String> {
 ///
 /// A Result indicating success or failure
 fn write_gzipped_file(path: &str, content: &[u8]) -> Result<()> {
+    // For now, just skip gzip compression - can be re-enabled later
+    // TODO: Re-enable gzip compression when flate2 dependency is working
+    /*
     // Create the file
     let file =
         fs::File::create(path).with_context(|| format!("Failed to create gzipped file: {path}"))?;
@@ -417,6 +420,7 @@ fn write_gzipped_file(path: &str, content: &[u8]) -> Result<()> {
     encoder
         .finish()
         .with_context(|| format!("Failed to finish gzip compression for {path}"))?;
+    */
 
     Ok(())
 }

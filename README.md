@@ -1,3 +1,4 @@
+# CV Generator
 # 🚀 CV Generator
 
 > A fast, functional CV/portfolio generator built in Rust that creates beautiful HTML and PDF outputs from JSON data

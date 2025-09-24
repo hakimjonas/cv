@@ -90,83 +90,46 @@ fn fetch_data_from_content_branch(repo: &str, branch: &str, file_path: &str) -> 
 
     info!("Fetching CV data from {}:{}/{}", repo, branch, file_path);
 
+    // Try using raw content download approach
     let output = Command::new("gh")
         .args([
             "api",
             &format!("/repos/{}/contents/{}", repo, file_path),
-            "--jq",
-            ".content",
-            "-H",
-            &format!("X-GitHub-Api-Version: 2022-11-28"),
-            "--header",
-            &format!("Accept: application/vnd.github+json"),
-            "--field",
-            &format!("ref={}", branch),
+            "--field", &format!("ref={}", branch),
+            "--jq", ".download_url",
         ])
         .output()
-        .context("Failed to execute gh command to fetch data from content branch")?;
+        .context("Failed to get download URL from GitHub")?;
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
-        return Err(anyhow::anyhow!("GitHub CLI failed: {}", stderr));
+        return Err(anyhow::anyhow!("GitHub CLI failed to get download URL: {}", stderr));
     }
 
-    let base64_content = String::from_utf8(output.stdout)
-        .context("Invalid UTF-8 in GitHub CLI response")?
+    let download_url = String::from_utf8(output.stdout)
+        .context("Invalid UTF-8 in download URL response")?
         .trim()
         .trim_matches('"')
         .to_string();
 
-    // Decode base64 content
-    use std::str;
-    let decoded_bytes = base64_decode(&base64_content)
-        .context("Failed to decode base64 content from GitHub")?;
+    // Now fetch the raw content
+    let content_output = Command::new("curl")
+        .args(["-s", &download_url])
+        .output()
+        .context("Failed to download content from GitHub")?;
 
-    let json_content = str::from_utf8(&decoded_bytes)
-        .context("Invalid UTF-8 in decoded content")?
-        .to_string();
+    if !content_output.status.success() {
+        let stderr = String::from_utf8_lossy(&content_output.stderr);
+        return Err(anyhow::anyhow!("Failed to download content: {}", stderr));
+    }
+
+    let json_content = String::from_utf8(content_output.stdout)
+        .context("Invalid UTF-8 in downloaded content")?;
 
     info!("Successfully fetched CV data from content branch");
     Ok(json_content)
 }
 
-/// Simple base64 decoder
-fn base64_decode(input: &str) -> Result<Vec<u8>> {
-    // Simple base64 decode implementation
-    let alphabet = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    let mut result = Vec::new();
-    let input = input.replace('\n', "").replace('\r', "");
-    let input = input.trim_end_matches('=');
-
-    let mut chars = input.chars().collect::<Vec<char>>();
-
-    // Pad to multiple of 4
-    while chars.len() % 4 != 0 {
-        chars.push('=');
-    }
-
-    for chunk in chars.chunks(4) {
-        let mut values = [0u8; 4];
-        for (i, &ch) in chunk.iter().enumerate() {
-            if ch == '=' {
-                values[i] = 0;
-            } else {
-                values[i] = alphabet.iter().position(|&c| c == ch as u8)
-                    .ok_or_else(|| anyhow::anyhow!("Invalid base64 character: {}", ch))? as u8;
-            }
-        }
-
-        result.push((values[0] << 2) | (values[1] >> 4));
-        if chunk[2] != '=' {
-            result.push((values[1] << 4) | (values[2] >> 2));
-        }
-        if chunk[3] != '=' {
-            result.push((values[2] << 6) | values[3]);
-        }
-    }
-
-    Ok(result)
-}
 
 /// Gets a GitHub token from available sources with priority:
 /// 1. GitHub Actions environment (if running in GitHub Actions)

@@ -1,0 +1,178 @@
+/**
+ * Reset CSS
+ * A modern CSS reset to reduce browser inconsistencies
+ */
+
+/* Box sizing for all elements */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Remove default margin and padding */
+html,
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+ul,
+ol,
+li,
+figure,
+figcaption,
+blockquote,
+dl,
+dd {
+  margin: 0;
+  padding: 0;
+}
+
+/* Set core body defaults */
+body {
+  min-height: 100vh;
+  scroll-behavior: smooth;
+  text-rendering: optimizeSpeed;
+  line-height: 1.6;
+  font-family: var(--font-family-primary);
+  color: var(--color-text);
+  background-color: var(--color-background);
+}
+
+/* Make images easier to work with */
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* Inherit fonts for inputs and buttons */
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+/* Remove list styles */
+ul,
+ol {
+  list-style: none;
+}
+
+/* Set default link styles */
+a {
+  text-decoration: none;
+  color: var(--color-primary);
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--color-secondary);
+}
+
+/* Remove all animations and transitions for people that prefer not to see them */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Focus styles for accessibility */
+:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Enhanced focus styles for interactive elements */
+button:focus, 
+a:focus, 
+input:focus, 
+select:focus, 
+textarea:focus,
+.btn:focus,
+.social-link:focus,
+.theme-switch:focus,
+[role="button"]:focus,
+[tabindex]:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(var(--color-primary-rgb), 0.2);
+}
+
+/* High contrast focus style for users with "prefers-contrast: more" */
+@media (prefers-contrast: more) {
+  :focus {
+    outline: 3px solid black;
+    outline-offset: 3px;
+  }
+  
+  button:focus, 
+  a:focus, 
+  input:focus, 
+  select:focus, 
+  textarea:focus,
+  .btn:focus,
+  .social-link:focus,
+  .theme-switch:focus,
+  [role="button"]:focus,
+  [tabindex]:focus {
+    outline: 3px solid black;
+    outline-offset: 3px;
+    box-shadow: 0 0 0 6px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* Skip link for accessibility */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--color-primary);
+  color: white;
+  padding: 12px 20px;
+  z-index: 100;
+  transition: top 0.3s ease;
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: 0 0 4px 0;
+  box-shadow: var(--shadow-md);
+  outline: none;
+}
+
+.skip-link:focus {
+  top: 0;
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
+
+/* Additional skip links for complex pages */
+.skip-link-secondary {
+  position: absolute;
+  top: -40px;
+  left: 120px;
+  background: var(--color-secondary);
+  color: white;
+  padding: 12px 20px;
+  z-index: 100;
+  transition: top 0.3s ease;
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: 0 0 4px 0;
+  box-shadow: var(--shadow-md);
+  outline: none;
+}
+
+.skip-link-secondary:focus {
+  top: 0;
+  outline: 2px solid white;
+  outline-offset: 2px;
+}

@@ -1,0 +1,149 @@
+<!-- Common footer -->
+<footer role="contentinfo">
+  <div class="container">
+    <div class="footer-content">
+      <div class="footer-nav">
+        <h3 id="footer-nav-heading">Navigation</h3>
+        <ul aria-labelledby="footer-nav-heading">
+          <li><a href="cv.html">CV</a></li>
+          <li><a href="projects.html">Projects</a></li>
+          <li><a href="blog.html">Blog</a></li>
+          <li><a href="index.html">About Me</a></li>
+        </ul>
+      </div>
+      <div class="footer-social">
+        <h3>Connect</h3>
+        <div class="social-links">
+          {% for entry in cv.personal_info.social_links %}
+          <a
+            href="{{ entry.1 }}"
+            class="social-link"
+            target="_blank"
+            rel="noopener"
+            aria-label="{{ entry.0 }} profile"
+          >
+            <i class="nf nf-{{ entry.0 | lower }}"></i>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="footer-tech">
+        <h3 id="built-with-heading">Built With</h3>
+        <ul class="tech-list" aria-labelledby="built-with-heading">
+          <li>
+            <i class="nf nf-rust" aria-hidden="true"></i>
+            <a href="https://www.rust-lang.org/" target="_blank" rel="noopener">Rust</a> - Static
+            site generation
+          </li>
+          <li>
+            <i class="nf nf-file-pdf" aria-hidden="true"></i>
+            <a href="https://typst.app/" target="_blank" rel="noopener">Typst</a> - PDF resume
+            creation
+          </li>
+          <li>
+            <button class="accordion-header" aria-expanded="false" aria-controls="dependencies-list">
+              <i class="nf nf-box" aria-hidden="true"></i> Dependencies
+              <i class="nf nf-chevron-down accordion-icon" aria-hidden="true"></i>
+            </button>
+            <ul id="dependencies-list" class="accordion-content accordion-collapsed">
+              <li>
+                <i class="nf nf-cube" aria-hidden="true"></i>
+                <a href="https://serde.rs/" target="_blank" rel="noopener">serde</a> (v1.0) -
+                Serialization framework
+              </li>
+              <li>
+                <i class="nf nf-cube" aria-hidden="true"></i>
+                <a href="https://github.com/serde-rs/json" target="_blank" rel="noopener"
+                  >serde_json</a
+                >
+                (v1.0) - JSON support
+              </li>
+              <li>
+                <i class="nf nf-cube" aria-hidden="true"></i>
+                <a href="https://github.com/djc/askama" target="_blank" rel="noopener">askama</a>
+                (v0.14.0) - Templating engine
+              </li>
+              <li>
+                <i class="nf nf-cube" aria-hidden="true"></i>
+                <a href="https://github.com/bodil/im-rs" target="_blank" rel="noopener">im</a>
+                (v15.1) - Immutable data structures
+              </li>
+              <li>
+                <i class="nf nf-cube" aria-hidden="true"></i>
+                <a href="https://github.com/dtolnay/anyhow" target="_blank" rel="noopener"
+                  >anyhow</a
+                >
+                (v1.0) - Error handling
+              </li>
+              <li>
+                <i class="nf nf-cube" aria-hidden="true"></i>
+                <a href="https://github.com/seanmonstar/reqwest" target="_blank" rel="noopener"
+                  >reqwest</a
+                >
+                (v0.12.15) - HTTP client
+              </li>
+              <li>
+                <i class="nf nf-cube" aria-hidden="true"></i>
+                <a href="https://tokio.rs/" target="_blank" rel="noopener">tokio</a> (v1) - Async
+                runtime
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>
+        &copy; <span id="current-year">2023</span> {{ cv.personal_info.name }}. All rights reserved.
+      </p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Update current year
+  document.getElementById('current-year').textContent = new Date().getFullYear();
+
+  // Accordion functionality with accessibility
+  document.addEventListener('DOMContentLoaded', function() {
+    const accordionButton = document.querySelector('.accordion-header');
+    const accordionContent = document.getElementById('dependencies-list');
+    
+    if (accordionButton && accordionContent) {
+      // Function to toggle accordion
+      function toggleAccordion() {
+        const isExpanded = accordionButton.getAttribute('aria-expanded') === 'true';
+        
+        // Toggle aria-expanded attribute
+        accordionButton.setAttribute('aria-expanded', !isExpanded);
+        
+        // Toggle collapsed class
+        accordionContent.classList.toggle('accordion-collapsed');
+        
+        // Announce state change for screen readers
+        const accordionState = !isExpanded ? 'expanded' : 'collapsed';
+        const announcement = document.createElement('div');
+        announcement.setAttribute('aria-live', 'polite');
+        announcement.setAttribute('class', 'sr-only');
+        announcement.textContent = `Dependencies list ${accordionState}`;
+        document.body.appendChild(announcement);
+        
+        // Remove the announcement after it's been read
+        setTimeout(() => {
+          document.body.removeChild(announcement);
+        }, 1000);
+      }
+      
+      // Toggle on click
+      accordionButton.addEventListener('click', toggleAccordion);
+      
+      // Toggle on Enter or Space key
+      accordionButton.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleAccordion();
+        }
+      });
+    }
+  });
+</script>

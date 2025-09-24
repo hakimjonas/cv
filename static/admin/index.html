@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Admin</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #f7f7f7;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+        }
+        
+        .card h2 {
+            margin-top: 0;
+            color: #2c3e50;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        pre {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border: 1px solid #ddd;
+        }
+        
+        .success {
+            color: #2ecc71;
+        }
+        
+        .error {
+            color: #e74c3c;
+        }
+        
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .nav-links a {
+            color: #3498db;
+            text-decoration: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            background-color: #eee;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .status-online {
+            background-color: #2ecc71;
+        }
+        
+        .status-offline {
+            background-color: #e74c3c;
+        }
+        
+        .status-unknown {
+            background-color: #f39c12;
+        }
+        
+        #api-status {
+            font-weight: bold;
+        }
+        
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .tool-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            border: 1px solid #ddd;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .tool-card h3 {
+            margin-top: 0;
+            color: #2c3e50;
+            font-size: 1.2rem;
+        }
+        
+        .tool-card p {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        .tool-card a {
+            display: inline-block;
+            margin-top: 10px;
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        .tool-card a:hover {
+            text-decoration: underline;
+        }
+    </style>
+    <script>
+        // Add debugging to check if the script is loaded
+        console.log("Admin page is loading...");
+        window.addEventListener('error', function(event) {
+            console.error('Global error:', event.error);
+            document.getElementById('api-status').textContent = 'Error: ' + event.error.message;
+            document.getElementById('api-status').className = 'error';
+        });
+    </script>
+    <script src="/static/js/blog-debug.js" onerror="console.error('Failed to load blog-debug.js'); document.getElementById('api-status').textContent = 'Error: Failed to load blog-debug.js'; document.getElementById('api-status').className = 'error';"></script>
+    <script>
+        // Check if testApiConnection is defined after loading the script
+        console.log("Checking if testApiConnection is defined:", typeof window.testApiConnection);
+        if (typeof window.testApiConnection !== 'function') {
+            console.error('testApiConnection is not defined after loading blog-debug.js');
+            document.getElementById('api-status').textContent = 'Error: testApiConnection is not defined';
+            document.getElementById('api-status').className = 'error';
+        } else {
+            console.log("testApiConnection is defined correctly");
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <h1>Blog Admin Dashboard</h1>
+    </header>
+    
+    <div class="container">
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/static/blog-client.html">Blog Client</a>
+            <a href="/static/blog-debug.html">Debug Tool</a>
+            <a href="/api/blog">API</a>
+        </div>
+        
+        <div class="card">
+            <h2>API Status</h2>
+            <p>
+                <span class="status-indicator status-unknown" id="status-indicator"></span>
+                <span id="api-status">Checking API status...</span>
+            </p>
+            <button id="test-api-btn">Test API Connection</button>
+            <div id="api-result" style="margin-top: 15px;"></div>
+        </div>
+        
+        <div class="card">
+            <h2>Quick Actions</h2>
+            <button id="create-post-btn">Create Test Post</button>
+            <button id="view-posts-btn">View All Posts</button>
+            <div id="action-result" style="margin-top: 15px;"></div>
+        </div>
+        
+        <h2>Admin Tools</h2>
+        <div class="tools-grid">
+            <div class="tool-card">
+                <h3>Blog Client</h3>
+                <p>User-friendly interface for managing blog posts</p>
+                <a href="/static/blog-client.html">Open Blog Client</a>
+            </div>
+            
+            <div class="tool-card">
+                <h3>Debug Tool</h3>
+                <p>Advanced debugging tools for the blog API</p>
+                <a href="/static/blog-debug.html">Open Debug Tool</a>
+            </div>
+            
+            <div class="tool-card">
+                <h3>API Documentation</h3>
+                <p>Documentation for the blog API endpoints</p>
+                <a href="/api-docs">View API Docs</a>
+            </div>
+            
+            <div class="tool-card">
+                <h3>Raw API</h3>
+                <p>Direct access to the blog API</p>
+                <a href="/api/blog">Access API</a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Function to update API status
+        async function updateApiStatus() {
+            const statusIndicator = document.getElementById('status-indicator');
+            const apiStatus = document.getElementById('api-status');
+            
+            try {
+                const result = await testApiConnection();
+                
+                if (result.success) {
+                    statusIndicator.className = 'status-indicator status-online';
+                    apiStatus.textContent = 'API Online';
+                    apiStatus.className = 'success';
+                    return result;
+                } else {
+                    statusIndicator.className = 'status-indicator status-offline';
+                    apiStatus.textContent = 'API Offline';
+                    apiStatus.className = 'error';
+                    return result;
+                }
+            } catch (error) {
+                statusIndicator.className = 'status-indicator status-offline';
+                apiStatus.textContent = 'API Error: ' + error.message;
+                apiStatus.className = 'error';
+                return { success: false, error: error.message };
+            }
+        }
+        
+        // Function to test API connection
+        async function testApi() {
+            const apiResult = document.getElementById('api-result');
+            apiResult.innerHTML = '<p>Testing API connection...</p>';
+            
+            try {
+                const result = await testApiConnection();
+                
+                if (result.success) {
+                    apiResult.innerHTML = `
+                        <p class="success">Connection successful!</p>
+                        <p>Source: ${result.source}</p>
+                        <p>Found ${result.posts.length} posts</p>
+                        ${result.posts.length > 0 ? `<pre>${JSON.stringify(result.posts[0], null, 2)}</pre>` : ''}
+                    `;
+                } else {
+                    apiResult.innerHTML = `
+                        <p class="error">Connection failed</p>
+                        <p>Error: ${result.error || 'Unknown error'}</p>
+                    `;
+                }
+                
+                // Update status indicator
+                await updateApiStatus();
+                
+            } catch (error) {
+                apiResult.innerHTML = `
+                    <p class="error">Error testing API connection</p>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+        
+        // Function to create a test post
+        async function createTestPost() {
+            const actionResult = document.getElementById('action-result');
+            actionResult.innerHTML = '<p>Creating test post...</p>';
+            
+            try {
+                const result = await window.createTestPost();
+                
+                if (result.success) {
+                    actionResult.innerHTML = `
+                        <p class="success">Test post created successfully!</p>
+                        <pre>${JSON.stringify(result.data, null, 2)}</pre>
+                    `;
+                } else {
+                    actionResult.innerHTML = `
+                        <p class="error">Failed to create test post</p>
+                        <p>Error: ${result.error || 'Unknown error'}</p>
+                    `;
+                }
+            } catch (error) {
+                actionResult.innerHTML = `
+                    <p class="error">Error creating test post</p>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+        
+        // Function to view all posts
+        async function viewAllPosts() {
+            const actionResult = document.getElementById('action-result');
+            actionResult.innerHTML = '<p>Loading posts...</p>';
+            
+            try {
+                const apiStatus = await updateApiStatus();
+                
+                if (!apiStatus.success) {
+                    actionResult.innerHTML = `
+                        <p class="error">Cannot load posts: API is offline</p>
+                        <p>Error: ${apiStatus.error || 'Unknown error'}</p>
+                    `;
+                    return;
+                }
+                
+                const response = await fetch(apiStatus.source);
+                
+                if (response.ok) {
+                    const posts = await response.json();
+                    
+                    if (posts.length === 0) {
+                        actionResult.innerHTML = `
+                            <p>No posts found</p>
+                        `;
+                    } else {
+                        actionResult.innerHTML = `
+                            <p class="success">Found ${posts.length} posts</p>
+                            <pre>${JSON.stringify(posts, null, 2)}</pre>
+                        `;
+                    }
+                } else {
+                    actionResult.innerHTML = `
+                        <p class="error">Failed to load posts</p>
+                        <p>Status: ${response.status}</p>
+                    `;
+                }
+            } catch (error) {
+                actionResult.innerHTML = `
+                    <p class="error">Error loading posts</p>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+        
+        // Add event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Update API status on page load
+            updateApiStatus();
+            
+            // Add event listeners to buttons
+            document.getElementById('test-api-btn').addEventListener('click', testApi);
+            document.getElementById('create-post-btn').addEventListener('click', createTestPost);
+            document.getElementById('view-posts-btn').addEventListener('click', viewAllPosts);
+        });
+    </script>
+</body>
+</html>

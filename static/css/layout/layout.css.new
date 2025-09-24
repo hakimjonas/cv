@@ -1,0 +1,291 @@
+/**
+ * Layout styles using BEM methodology
+ */
+
+/* Container */
+
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-md);
+}
+
+/* Full-width container */
+
+.container-full {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 var(--spacing-md);
+}
+
+/* Grid layouts */
+
+.grid {
+  display: grid;
+  gap: var(--spacing-md);
+}
+
+.grid-2-cols {
+  grid-template-columns: repeat(1, 1fr);
+}
+
+.grid-3-cols {
+  grid-template-columns: repeat(1, 1fr);
+}
+
+.grid-4-cols {
+  grid-template-columns: repeat(1, 1fr);
+}
+
+/* Responsive grid layouts */
+
+@media (width >= var(--breakpoint-md)) {
+  .grid-2-cols {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .grid-3-cols {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .grid-4-cols {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (width >= var(--breakpoint-lg)) {
+  .grid-3-cols {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .grid-4-cols {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Flexbox layouts */
+
+.flex {
+  display: flex;
+}
+
+.flex-center {
+  justify-content: center;
+  align-items: center;
+}
+
+.flex-between {
+  justify-content: space-between;
+  align-items: center;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.flex-gap-sm {
+  gap: var(--spacing-sm);
+}
+
+.flex-gap-md {
+  gap: var(--spacing-md);
+}
+
+.flex-gap-lg {
+  gap: var(--spacing-lg);
+}
+
+/* Main content spacing */
+
+main {
+  padding: var(--spacing-xxl) 0;
+  min-height: calc(100vh - 200px); /* Ensure proper spacing from header/footer */
+}
+
+/* Section layouts */
+
+.section {
+  padding: var(--spacing-xxl) 0;
+}
+
+.section-alt {
+  background-color: var(--color-background-light);
+}
+
+/* CV specific layouts */
+
+.cv-container {
+  width: 90%;
+  max-width: 1200px;
+  margin: var(--spacing-xxl) auto;
+  padding: var(--spacing-xxl) var(--spacing-xxl);
+  background-color: var(--color-card-background);
+  box-shadow: var(--shadow-md);
+  border-radius: var(--border-radius-md);
+}
+
+.cv-section {
+  margin-bottom: var(--spacing-xxl);
+  padding-bottom: var(--spacing-xl);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.cv-section:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+/* Additional padding for Profile and Certifications sections */
+
+.cv-section-profile,
+.cv-section-certifications {
+  padding-bottom: 4rem;
+}
+
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: var(--spacing-lg);
+}
+
+@media (width >= var(--breakpoint-md)) {
+  .skills-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Item layouts */
+
+.item-header {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: var(--spacing-md);
+}
+
+@media (width >= var(--breakpoint-md)) {
+  .item-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+}
+
+.item-date {
+  font-weight: 500;
+  color: var(--color-text-light);
+  margin-top: var(--spacing-xs);
+}
+
+@media (width >= var(--breakpoint-md)) {
+  .item-date {
+    margin-top: 0;
+    text-align: right;
+  }
+}
+
+/* Blog layouts */
+
+.blog-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: var(--spacing-lg);
+}
+
+@media (width >= var(--breakpoint-md)) {
+  .blog-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (width >= var(--breakpoint-lg)) {
+  .blog-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Profile header and image */
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.profile-info {
+  text-align: left;
+  flex: 1;
+}
+
+.profile-info h1 {
+  font-size: 2.8rem;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.profile-info .tagline {
+  font-size: 1.4rem;
+  color: var(--color-primary);
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.profile-info p {
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+.profile-image {
+  margin-left: 2.5rem;
+}
+
+.profile-image img {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--color-primary);
+  transition: border-color 0.3s ease;
+  box-shadow: var(--shadow-md);
+}
+
+/* Projects grid */
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: var(--spacing-xxl);
+  grid-auto-rows: 1fr;
+  padding: var(--spacing-xl) 0;
+}
+
+/* Full-width projects grid for projects.html */
+
+.projects-grid-full-width {
+  grid-template-columns: 1fr !important;
+}
+
+/* Make github-card in full-width grid have consistent styling with index.html */
+
+.projects-grid-full-width .github-card {
+  max-width: none;
+}
+
+@media (width >= var(--breakpoint-md)) {
+  .projects-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (width >= var(--breakpoint-lg)) {
+  .projects-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

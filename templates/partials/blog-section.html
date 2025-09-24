@@ -1,0 +1,55 @@
+<!-- Blog section partial -->
+<section class="blog-section" id="blog" aria-labelledby="blog-section-title">
+  <div class="container">
+    <h2 class="section-title" id="blog-section-title">Latest Blog Posts</h2>
+    <div id="blog-posts-container" class="blog-posts" role="feed" aria-busy="true" aria-live="polite">
+      <div class="loading" role="status">Loading posts...</div>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Load the blog integration script if it's not already loaded
+  if (typeof BlogAPI === 'undefined') {
+    // Load the API client script first
+    const apiScript = document.createElement('script');
+    apiScript.src = '/static/js/api-client.js';
+    apiScript.onload = function() {
+      // Then load the blog integration script
+      const integrationScript = document.createElement('script');
+      integrationScript.src = '/static/js/blog-integration.js';
+      document.head.appendChild(integrationScript);
+    };
+    document.head.appendChild(apiScript);
+  } else {
+    // If BlogAPI is already defined, just load the blog integration script
+    if (!document.querySelector('script[src="/static/js/blog-integration.js"]')) {
+      const integrationScript = document.createElement('script');
+      integrationScript.src = '/static/js/blog-integration.js';
+      document.head.appendChild(integrationScript);
+    }
+  }
+
+  // Initialize blog posts when the DOM is loaded
+  document.addEventListener('DOMContentLoaded', function() {
+    // Check if loadBlogPosts function exists
+    if (typeof loadBlogPosts === 'function') {
+      loadBlogPosts().catch(error => {
+        console.error('Failed to load blog posts:', error);
+        const postsContainer = document.getElementById('blog-posts-container');
+        if (postsContainer) {
+          postsContainer.innerHTML = `
+            <div class="error" role="alert">
+              <p>Error loading posts. Please try again later.</p>
+              <button class="retry-button" onclick="loadBlogPosts()">
+                <i class="nf nf-refresh" aria-hidden="true"></i> Retry
+              </button>
+            </div>
+          `;
+        }
+      });
+    } else {
+      console.warn('loadBlogPosts function not found. Blog integration script may not be loaded yet.');
+    }
+  });
+</script>

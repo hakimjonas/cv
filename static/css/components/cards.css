@@ -1,0 +1,288 @@
+/* Project cards and language-specific styling */
+
+/* GitHub card */
+.github-card {
+  background-color: var(--color-card-background);
+  border-radius: 12px;
+  box-shadow: var(--color-card-shadow);
+  margin-bottom: var(--spacing-lg);
+  overflow: hidden;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.github-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* Card header */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--color-primary); /* Default language color */
+  color: white;
+  padding: 20px 24px;
+  border-radius: 12px 12px 0 0;
+}
+
+/* Language-specific header colors - increased specificity */
+.github-card .card-header.rust {
+  background-color: #e8a55c !important; /* burnished copper */
+}
+
+.github-card .card-header.javascript {
+  background-color: #f0db4f !important; /* JavaScript yellow */
+}
+
+.github-card .card-header.typescript {
+  background-color: #3178c6 !important; /* TypeScript blue */
+}
+
+.github-card .card-header.python {
+  background-color: #7fb3a3 !important; /* sage green */
+}
+
+.github-card .card-header.scala {
+  background-color: #d67c7c !important; /* muted crimson */
+}
+
+.github-card .card-header.java {
+  background-color: #5382a1 !important; /* Java blue */
+}
+
+.github-card .card-header.c {
+  background-color: #a8b9cc !important; /* C light blue */
+}
+
+.github-card .card-header.cpp {
+  background-color: #00599c !important; /* C++ blue */
+}
+
+.github-card .card-header.csharp {
+  background-color: #9b4f96 !important; /* C# purple */
+}
+
+.github-card .card-header.go {
+  background-color: #00add8 !important; /* Go blue */
+}
+
+.github-card .card-header.ruby {
+  background-color: #cc342d !important; /* Ruby red */
+}
+
+.github-card .card-header.php {
+  background-color: #777bb4 !important; /* PHP purple */
+}
+
+.github-card .card-header.swift {
+  background-color: #f05138 !important; /* Swift orange */
+}
+
+.github-card .card-header.kotlin {
+  background-color: #7f52ff !important; /* Kotlin purple */
+}
+
+
+.github-card .card-header.dart {
+  background-color: #0175c2 !important; /* Dart blue */
+}
+
+.github-card .card-header.elixir {
+  background-color: #4e2a8e !important; /* Elixir purple */
+}
+
+.github-card .card-header.haskell {
+  background-color: #5d4f85 !important; /* Haskell purple */
+}
+
+.github-card .card-header.clojure {
+  background-color: #5881d8 !important; /* Clojure blue */
+}
+
+.github-card .card-header.perl {
+  background-color: #39457e !important; /* Perl blue */
+}
+
+.github-card .card-header.lua {
+  background-color: #2c2d72 !important; /* Lua blue */
+}
+
+.github-card .card-header.html {
+  background-color: #ff00ff !important; /* bright magenta - very noticeable change */
+}
+
+.github-card .card-header.shell {
+  background-color: #8b9dc3 !important; /* storm blue-gray */
+}
+
+/* Language icon spans - prevent any pseudo-element content */
+span[class$="-icon"]::before,
+span[class$="-icon"]::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* Ensure only direct text content is shown */
+span[class$="-icon"] {
+  font-family: "0xProto Nerd Font", "Symbols Nerd Font", monospace;
+}
+
+/* Project title */
+.project-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+/* Repository description */
+.repo-description {
+  padding: 24px;
+  margin: 0;
+  color: var(--color-text);
+  flex-grow: 1;
+}
+
+/* Project details */
+.project-details {
+  padding: 0 24px 20px;
+  margin: 0;
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+/* Project highlights */
+.project-highlights {
+  padding: 0 24px 20px;
+  flex-grow: 0;
+}
+
+.project-highlights h4 {
+  margin-bottom: var(--spacing-sm);
+  font-weight: 600;
+}
+
+.project-highlights ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.project-highlights li {
+  margin-bottom: var(--spacing-xs);
+}
+
+/* Technologies */
+.technologies {
+  padding: 0 24px 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+  flex-grow: 0;
+}
+
+.tech-tag {
+  background-color: var(--color-background-light);
+  color: var(--color-text);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+/* Hide tech tags in GitHub cards while keeping them for metadata */
+.github-card .tech-tag {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Card footer */
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-top: 1px solid var(--color-border);
+  margin-top: auto;
+}
+
+/* Owner section in card footer */
+.owner-section {
+  display: flex;
+  align-items: center;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  margin-right: var(--spacing-sm);
+}
+
+.avatar-placeholder {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--color-background-light);
+  margin-right: var(--spacing-sm);
+}
+
+.owner-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.owner-name {
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+/* Project links */
+.project-links {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+/* Project links outside card-footer (legacy support) */
+.github-card > .project-links {
+  padding: 16px 20px;
+}
+
+.project-link {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.project-link:hover {
+  color: var(--color-secondary);
+}
+
+.project-link i {
+  margin-right: var(--spacing-xs);
+}
+
+/* Stars */
+.stars {
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+}
+
+.stars i {
+  margin-right: 4px;
+}

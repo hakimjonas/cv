@@ -1,0 +1,33 @@
+<!-- Education section component -->
+{% if !cv.education.is_empty() %}
+<div class="cv-section">
+  <h2 class="cv-section-title">Education</h2>
+  {% for edu in cv.education %}
+  <div class="education-item">
+    <div class="item-header">
+      <div>
+        <h3 class="item-title">{{ edu.degree }} in {{ edu.field }}</h3>
+        <p class="item-subtitle">
+          {{ edu.institution }} {% if edu.location.is_some() %} | {{ edu.location.as_ref().unwrap()
+          }} {% endif %}
+        </p>
+      </div>
+      <div class="item-date">
+        {{ edu.start_date }} - {% if edu.end_date.is_some() %} {{ edu.end_date.as_ref().unwrap() }}
+        {% else %} Present {% endif %}
+      </div>
+    </div>
+
+    {% if edu.gpa.is_some() %}
+    <p>GPA: {{ edu.gpa.as_ref().unwrap() }}</p>
+    {% endif %} {% if !edu.achievements.is_empty() %}
+    <ul>
+      {% for achievement in edu.achievements %}
+      <li>{{ achievement }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}

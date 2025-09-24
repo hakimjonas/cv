@@ -1,0 +1,47 @@
+[package]
+name = "cv-generator"
+version = "1.0.0"
+edition = "2021"
+authors = ["Hakim Jonas Ghoula <hakim@walkthisway.dk>"]
+description = "A fast, functional CV/portfolio generator built in Rust that creates beautiful HTML and PDF outputs from JSON data"
+license = "MIT"
+repository = "https://github.com/hakimjonas/cv"
+homepage = "https://github.com/hakimjonas/cv"
+documentation = "https://github.com/hakimjonas/cv/blob/main/README.md"
+readme = "README.md"
+keywords = ["cv", "portfolio", "generator", "static-site", "rust"]
+categories = ["command-line-utilities", "web-programming", "template-engine"]
+
+[[bin]]
+name = "cv"
+path = "src/main.rs"
+
+[dependencies]
+# Core functional programming and async runtime
+anyhow = "1.0.98"
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.140"
+im = { version = "15.1", features = ["serde"] }
+tokio = { version = "1.45.1", features = ["rt-multi-thread", "macros"] }
+
+# GitHub integration
+reqwest = { version = "0.12.18", features = ["json", "blocking"] }
+git2 = "0.20.2"
+
+# Configuration management
+config = { version = "0.15.13", features = ["toml", "json", "yaml"] }
+toml = "0.9.2"
+
+# Templating and HTML generation
+askama = "0.14.0"
+minify-html = "0.16.4"
+
+# Logging
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+
+# Utilities
+chrono = { version = "0.4.41", features = ["serde"] }
+regex = "1.11.1"
+thiserror = "2.0.12"
+

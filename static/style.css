@@ -1,0 +1,2090 @@
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* Global Styles */
+:root {
+    /* Rose Pine Dawn (Light Theme) */
+    --rose-pine-base: #faf4ed;
+    --rose-pine-surface: #fffaf3;
+    --rose-pine-overlay: #f2e9e1;
+    --rose-pine-muted: #9893a5;
+    --rose-pine-subtle: #797593;
+    --rose-pine-text: #575279;
+    --rose-pine-love: #b4637a;
+    --rose-pine-gold: #ea9d34;
+    --rose-pine-rose: #d7827e;
+    --rose-pine-pine: #286983;
+    --rose-pine-foam: #56949f;
+    --rose-pine-iris: #907aa9;
+
+    /* Default to light theme */
+    --primary-color: var(--rose-pine-pine);
+    --secondary-color: var(--rose-pine-foam);
+    --accent-color: var(--rose-pine-iris);
+    --text-color: var(--rose-pine-text);
+    --light-text: var(--rose-pine-subtle);
+    --background-color: var(--rose-pine-base);
+    --light-background: var(--rose-pine-surface);
+    --border-color: var(--rose-pine-overlay);
+    --success-color: var(--rose-pine-foam);
+    --warning-color: var(--rose-pine-gold);
+    --error-color: var(--rose-pine-love);
+
+    /* Aliases for component CSS files */
+    --color-primary: var(--primary-color);
+    --color-secondary: var(--secondary-color);
+    --color-accent: var(--accent-color);
+    --color-text: var(--text-color);
+    --color-text-light: var(--light-text);
+    --color-background: var(--background-color);
+    --color-background-light: var(--light-background);
+    --color-border: var(--border-color);
+    --color-success: var(--success-color);
+    --color-warning: var(--warning-color);
+    --color-error: var(--error-color);
+
+    /* Additional variables for blog-like design */
+    --card-background: #ffffff;
+    --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    --header-background: var(--rose-pine-overlay);
+    --footer-background: var(--rose-pine-overlay);
+    --code-background: var(--rose-pine-overlay);
+    --blockquote-border: var(--rose-pine-muted);
+
+    /* Font variables */
+    --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+/* Dark Theme */
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* Rose Pine (Dark Theme) */
+        --rose-pine-base: #191724;
+        --rose-pine-surface: #1f1d2e;
+        --rose-pine-overlay: #26233a;
+        --rose-pine-muted: #6e6a86;
+        --rose-pine-subtle: #908caa;
+        --rose-pine-text: #e0def4;
+        --rose-pine-love: #eb6f92;
+        --rose-pine-gold: #f6c177;
+        --rose-pine-rose: #ebbcba;
+        --rose-pine-pine: #31748f;
+        --rose-pine-foam: #9ccfd8;
+        --rose-pine-iris: #c4a7e7;
+
+        /* Update theme variables for dark mode */
+        --primary-color: var(--rose-pine-pine);
+        --secondary-color: var(--rose-pine-foam);
+        --accent-color: var(--rose-pine-iris);
+        --text-color: var(--rose-pine-text);
+        --light-text: var(--rose-pine-subtle);
+        --background-color: var(--rose-pine-base);
+        --light-background: var(--rose-pine-surface);
+        --border-color: var(--rose-pine-overlay);
+        --success-color: var(--rose-pine-foam);
+        --warning-color: var(--rose-pine-gold);
+        --error-color: var(--rose-pine-love);
+
+        /* Aliases for component CSS files */
+        --color-primary: var(--primary-color);
+        --color-secondary: var(--secondary-color);
+        --color-accent: var(--accent-color);
+        --color-text: var(--text-color);
+        --color-text-light: var(--light-text);
+        --color-background: var(--background-color);
+        --color-background-light: var(--light-background);
+        --color-border: var(--border-color);
+        --color-success: var(--success-color);
+        --color-warning: var(--warning-color);
+        --color-error: var(--error-color);
+
+        /* Additional variables for blog-like design */
+        --card-background: #232136;
+        --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        --header-background: var(--rose-pine-overlay);
+        --footer-background: var(--rose-pine-overlay);
+        --code-background: var(--rose-pine-overlay);
+        --blockquote-border: var(--rose-pine-muted);
+    }
+}
+
+/* Theme class for manual switching */
+.theme-dark {
+    /* Rose Pine (Dark Theme) */
+    --rose-pine-base: #191724;
+    --rose-pine-surface: #1f1d2e;
+    --rose-pine-overlay: #26233a;
+    --rose-pine-muted: #6e6a86;
+    --rose-pine-subtle: #908caa;
+    --rose-pine-text: #e0def4;
+    --rose-pine-love: #eb6f92;
+    --rose-pine-gold: #f6c177;
+    --rose-pine-rose: #ebbcba;
+    --rose-pine-pine: #31748f;
+    --rose-pine-foam: #9ccfd8;
+    --rose-pine-iris: #c4a7e7;
+
+    /* Update theme variables for dark mode */
+    --primary-color: var(--rose-pine-pine);
+    --secondary-color: var(--rose-pine-foam);
+    --accent-color: var(--rose-pine-iris);
+    --text-color: var(--rose-pine-text);
+    --light-text: var(--rose-pine-subtle);
+    --background-color: var(--rose-pine-base);
+    --light-background: var(--rose-pine-surface);
+    --border-color: var(--rose-pine-overlay);
+    --success-color: var(--rose-pine-foam);
+    --warning-color: var(--rose-pine-gold);
+    --error-color: var(--rose-pine-love);
+
+    /* Aliases for component CSS files */
+    --color-primary: var(--primary-color);
+    --color-secondary: var(--secondary-color);
+    --color-accent: var(--accent-color);
+    --color-text: var(--text-color);
+    --color-text-light: var(--light-text);
+    --color-background: var(--background-color);
+    --color-background-light: var(--light-background);
+    --color-border: var(--border-color);
+    --color-success: var(--success-color);
+    --color-warning: var(--warning-color);
+    --color-error: var(--error-color);
+
+    /* Additional variables for blog-like design */
+    --card-background: #232136;
+    --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    --header-background: var(--rose-pine-overlay);
+    --footer-background: var(--rose-pine-overlay);
+    --code-background: var(--rose-pine-overlay);
+    --blockquote-border: var(--rose-pine-muted);
+}
+
+.theme-light {
+    /* Rose Pine Dawn (Light Theme) */
+    --rose-pine-base: #faf4ed;
+    --rose-pine-surface: #fffaf3;
+    --rose-pine-overlay: #f2e9e1;
+    --rose-pine-muted: #9893a5;
+    --rose-pine-subtle: #797593;
+    --rose-pine-text: #575279;
+    --rose-pine-love: #b4637a;
+    --rose-pine-gold: #ea9d34;
+    --rose-pine-rose: #d7827e;
+    --rose-pine-pine: #286983;
+    --rose-pine-foam: #56949f;
+    --rose-pine-iris: #907aa9;
+
+    /* Default to light theme */
+    --primary-color: var(--rose-pine-pine);
+    --secondary-color: var(--rose-pine-foam);
+    --accent-color: var(--rose-pine-iris);
+    --text-color: var(--rose-pine-text);
+    --light-text: var(--rose-pine-subtle);
+    --background-color: var(--rose-pine-base);
+    --light-background: var(--rose-pine-surface);
+    --border-color: var(--rose-pine-overlay);
+    --success-color: var(--rose-pine-foam);
+    --warning-color: var(--rose-pine-gold);
+    --error-color: var(--rose-pine-love);
+
+    /* Aliases for component CSS files */
+    --color-primary: var(--primary-color);
+    --color-secondary: var(--secondary-color);
+    --color-accent: var(--accent-color);
+    --color-text: var(--text-color);
+    --color-text-light: var(--light-text);
+    --color-background: var(--background-color);
+    --color-background-light: var(--light-background);
+    --color-border: var(--border-color);
+    --color-success: var(--success-color);
+    --color-warning: var(--warning-color);
+    --color-error: var(--error-color);
+
+    /* Additional variables for blog-like design */
+    --card-background: #ffffff;
+    --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    --header-background: var(--rose-pine-overlay);
+    --footer-background: var(--rose-pine-overlay);
+    --code-background: var(--rose-pine-overlay);
+    --blockquote-border: var(--rose-pine-muted);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-primary);
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--background-color);
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.container-full {
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: var(--secondary-color);
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+    margin-bottom: 1rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+h1 {
+    font-size: 2.5rem;
+}
+
+h2 {
+    font-size: 2rem;
+}
+
+h3 {
+    font-size: 1.75rem;
+}
+
+p {
+    margin-bottom: 1rem;
+}
+
+/* Header */
+header {
+    background-color: var(--header-background);
+    padding: 1rem 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease;
+}
+
+header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header h1 {
+    margin-bottom: 0;
+    font-size: 1.5rem;
+}
+
+nav {
+    display: flex;
+    align-items: center;
+}
+
+nav ul {
+    display: flex;
+    list-style: none;
+}
+
+nav ul li {
+    margin-left: 1.5rem;
+}
+
+nav ul li a {
+    font-weight: 500;
+    position: relative;
+}
+
+nav ul li a:hover::after, nav ul li a.active::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background-color: var(--accent-color);
+    bottom: -4px;
+    left: 0;
+    transform: scaleX(1);
+    transition: transform 0.3s ease;
+}
+
+nav ul li a.active {
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
+/* Theme switcher */
+.theme-switch-wrapper {
+    display: flex;
+    align-items: center;
+    margin-left: 1.5rem;
+}
+
+.theme-switch {
+    display: inline-block;
+    height: 24px;
+    position: relative;
+    width: 48px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    padding: 0;
+    transition: all 0.3s ease;
+}
+
+.slider {
+    background-color: var(--rose-pine-muted);
+    bottom: 0;
+    cursor: pointer;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    transition: .4s;
+    border-radius: 24px;
+    box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.1);
+}
+
+.slider:before {
+    background-color: var(--rose-pine-surface);
+    bottom: 4px;
+    content: "";
+    height: 16px;
+    left: 4px;
+    position: absolute;
+    transition: .4s;
+    width: 16px;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Active state (dark theme) */
+.theme-switch.active .slider {
+    background-color: var(--rose-pine-iris);
+}
+
+.theme-switch.active .slider:before {
+    transform: translateX(24px);
+}
+
+/* Focus state for accessibility */
+.theme-switch:focus {
+    outline: none;
+}
+
+.theme-switch:focus .slider {
+    box-shadow: 0 0 0 2px var(--accent-color);
+}
+
+.theme-icon {
+    font-size: 0.8rem;
+    color: var(--light-text);
+    margin-left: 8px;
+    cursor: pointer;
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* In light mode, show moon icon (indicating switch to dark) */
+.light-icon {
+    display: none;
+}
+
+.dark-icon {
+    display: inline-block;
+}
+
+/* In dark mode, show sun icon (indicating switch to light) */
+.theme-dark .light-icon {
+    display: inline-block;
+}
+
+.theme-dark .dark-icon {
+    display: none;
+}
+
+/* Ensure proper contrast in both themes */
+.theme-dark .theme-switch .slider {
+    background-color: var(--rose-pine-muted);
+}
+
+.theme-dark .theme-switch.active .slider {
+    background-color: var(--rose-pine-iris);
+}
+
+.theme-dark .theme-switch .slider:before {
+    background-color: var(--rose-pine-surface);
+}
+
+/* Hover effects */
+.theme-switch:hover .slider {
+    background-color: var(--rose-pine-subtle);
+}
+
+.theme-switch.active:hover .slider {
+    background-color: var(--rose-pine-love);
+}
+
+/* Sections */
+section {
+    padding: 3rem 0;
+}
+
+section:nth-child(even) {
+    background-color: var(--light-background);
+}
+
+/* Hero Section */
+.hero {
+    text-align: center;
+    padding: 4rem 0;
+    background-color: var(--rose-pine-rose);
+    color: white;
+}
+
+.hero h2 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.tagline {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    opacity: 0.9;
+}
+
+.summary {
+    max-width: 800px;
+    margin: 0 auto 2rem;
+    font-size: 1.1rem;
+    line-height: 1.8;
+}
+
+.cta-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    font-weight: 500;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn.primary {
+    background-color: white;
+    color: var(--primary-color);
+}
+
+.btn.primary:hover {
+    background-color: var(--light-background);
+}
+
+.btn.secondary {
+    background-color: transparent;
+    border: 2px solid white;
+    color: white;
+}
+
+.btn.secondary:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Projects Grid */
+.projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2.5rem;
+    margin-top: 2rem;
+    padding-bottom: 2rem; /* Add bottom padding to ensure space after the last card */
+}
+
+/* GitHub Project Card Styling */
+.github-card {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 500px;
+    background-color: var(--card-background);
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.github-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* TOP section */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--color-primary); /* Default language color */
+    color: white;
+    padding: 16px 20px;
+    border-radius: 12px 12px 0 0;
+}
+
+.card-header.rust {
+    background-color: #e8a55c; /* burnished copper */
+}
+
+.card-header.javascript {
+    background-color: #f0db4f; /* JavaScript yellow */
+}
+
+.card-header.typescript {
+    background-color: #3178c6; /* TypeScript blue */
+}
+
+.card-header.python {
+    background-color: #7fb3a3; /* sage green */
+}
+
+.card-header.scala {
+    background-color: #d67c7c; /* muted crimson */
+}
+
+.card-header.java {
+    background-color: #5382a1; /* Java blue */
+}
+
+.card-header.c {
+    background-color: #a8b9cc; /* C light blue */
+}
+
+.card-header.cpp {
+    background-color: #00599c; /* C++ blue */
+}
+
+.card-header.csharp {
+    background-color: #9b4f96; /* C# purple */
+}
+
+.card-header.go {
+    background-color: #00add8; /* Go blue */
+}
+
+.card-header.ruby {
+    background-color: #cc342d; /* Ruby red */
+}
+
+.card-header.php {
+    background-color: #777bb4; /* PHP purple */
+}
+
+.card-header.swift {
+    background-color: #f05138; /* Swift orange */
+}
+
+.card-header.kotlin {
+    background-color: #7f52ff; /* Kotlin purple */
+}
+
+.card-header.r {
+    background-color: #276dc3; /* R blue */
+}
+
+.card-header.dart {
+    background-color: #0175c2; /* Dart blue */
+}
+
+.card-header.elixir {
+    background-color: #4e2a8e; /* Elixir purple */
+}
+
+.card-header.haskell {
+    background-color: #5d4f85; /* Haskell purple */
+}
+
+.card-header.clojure {
+    background-color: #5881d8; /* Clojure blue */
+}
+
+.card-header.perl {
+    background-color: #39457e; /* Perl blue */
+}
+
+.card-header.lua {
+    background-color: #2c2d72; /* Lua blue */
+}
+
+/* Custom language icon styling */
+[class$="-icon"] {
+    font-family: 'Symbols Nerd Font', 'NerdFontsSymbols Nerd Font', monospace !important;
+    font-weight: normal;
+    font-style: normal;
+    font-size: 1.2em;
+    line-height: 1;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 0.2em;
+    /* Ensure the icon is visible */
+    opacity: 1;
+    /* Add a slight shadow to make the icon more visible */
+    text-shadow: 0 0 1px rgba(0, 0, 0, 0.2);
+}
+
+.scala-icon {
+    color: #d67c7c; /* Match Scala's muted crimson color */
+}
+
+.rust-icon {
+    color: #e8a55c; /* Match Rust's burnished copper color */
+}
+
+.python-icon {
+    color: #7fb3a3; /* sage green */
+}
+
+.javascript-icon {
+    color: #f0db4f; /* JavaScript yellow */
+}
+
+.typescript-icon {
+    color: #3178c6; /* TypeScript blue */
+}
+
+.java-icon {
+    color: #5382a1; /* Java blue */
+}
+
+.c-icon {
+    color: #a8b9cc; /* C light blue */
+}
+
+.cpp-icon {
+    color: #00599c; /* C++ blue */
+}
+
+.csharp-icon {
+    color: #9b4f96; /* C# purple */
+}
+
+.go-icon {
+    color: #00add8; /* Go blue */
+}
+
+.ruby-icon {
+    color: #cc342d; /* Ruby red */
+}
+
+.php-icon {
+    color: #777bb4; /* PHP purple */
+}
+
+.swift-icon {
+    color: #f05138; /* Swift orange */
+}
+
+.kotlin-icon {
+    color: #7f52ff; /* Kotlin purple */
+}
+
+.html-icon {
+    color: #e34c26; /* HTML orange */
+}
+
+.css-icon {
+    color: #264de4; /* CSS blue */
+}
+
+.shell-icon {
+    color: #8b9dc3; /* storm blue-gray */
+}
+
+.powershell-icon {
+    color: #5391fe; /* PowerShell blue */
+}
+
+.sql-icon {
+    color: #e38c00; /* SQL orange */
+}
+
+
+.dart-icon {
+    color: #0175c2; /* Dart blue */
+}
+
+.elixir-icon {
+    color: #4e2a8e; /* Elixir purple */
+}
+
+.haskell-icon {
+    color: #5d4f85; /* Haskell purple */
+}
+
+.clojure-icon {
+    color: #5881d8; /* Clojure blue */
+}
+
+.perl-icon {
+    color: #39457e; /* Perl blue */
+}
+
+.lua-icon {
+    color: #2c2d72; /* Lua blue */
+}
+
+.card-header.html {
+    background-color: #c9a96e; /* warm sand */
+}
+
+.card-header.shell {
+    background-color: #8b9dc3; /* storm blue-gray */
+}
+
+.repo-info {
+    font-weight: 600;
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 70%;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.stars {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: white;
+    font-weight: 500;
+}
+
+/* MIDDLE section */
+.repo-description {
+    line-height: 1.6;
+    margin: 0;
+    padding: 20px;
+    color: var(--text-color);
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    font-size: 0.95rem;
+}
+
+/* BOTTOM section */
+.card-footer {
+    display: flex;
+    align-items: center;
+    border-top: 1px solid var(--border-color);
+    background-color: var(--light-background);
+    padding: 15px 20px;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 12px;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 12px;
+    background-color: var(--light-background);
+    border: 1px solid var(--border-color);
+}
+
+.owner-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.owner-name {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+/* Project Card Styling */
+.projects-grid .project-card {
+    box-sizing: border-box;
+    width: 500px;
+    max-width: 100%;
+    background-color: var(--card-background);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+}
+
+.projects-grid .project-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* Project Header Styling */
+.projects-grid .project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--primary-color); /* Default language color */
+    color: white;
+    padding: 16px 20px;
+    border-radius: 0;
+}
+
+.projects-grid .project-title {
+    font-weight: 600;
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 70%;
+    margin: 0;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.projects-grid .project-stars {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: white;
+    font-weight: 500;
+}
+
+/* Project Description */
+.projects-grid .project-description {
+    line-height: 1.6;
+    margin: 0;
+    padding: 20px;
+    color: var(--text-color);
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    font-size: 0.95rem;
+}
+
+/* Technologies */
+.projects-grid .technologies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0 20px 10px;
+}
+
+.projects-grid .tech-tag {
+    background-color: var(--accent-color);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+/* Project Links */
+.projects-grid .project-links {
+    display: flex;
+    gap: 12px;
+    padding: 15px 20px;
+    border-top: 1px solid var(--border-color);
+    background-color: var(--light-background);
+}
+
+.projects-grid .project-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--accent-color);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.projects-grid .project-link:hover {
+    color: var(--primary-color);
+}
+
+/* Language-specific styling */
+.project-header.rust {
+    background-color: #e8a55c; /* burnished copper */
+}
+
+.project-header.scala {
+    background-color: #d67c7c; /* muted crimson */
+}
+
+.project-header.javascript {
+    background-color: var(--rose-pine-gold);
+}
+
+.project-header.python {
+    background-color: #7fb3a3; /* sage green */
+}
+
+.project-header.html {
+    background-color: #c9a96e; /* warm sand */
+}
+
+.project-header.shell {
+    background-color: #8b9dc3; /* storm blue-gray */
+}
+
+.project-image {
+    height: 200px;
+    overflow: hidden;
+}
+
+.project-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.projects-grid .project-card:hover .project-image img {
+    transform: scale(1.05);
+}
+
+.project-content {
+    padding: 1.8rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.project-title {
+    margin-bottom: 0.8rem;
+    font-size: 1.4rem;
+    color: var(--text-color);
+    transition: color 0.3s ease;
+}
+
+.project-description {
+    margin-bottom: 1.5rem;
+    color: var(--light-text);
+    line-height: 1.6;
+    flex-grow: 1;
+}
+
+.technologies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    margin-bottom: 1.5rem;
+}
+
+.tech-tag {
+    background-color: var(--light-background);
+    padding: 0.5rem 1rem;
+    border-radius: 30px;
+    font-size: 0.9rem;
+    color: var(--primary-color);
+    transition: all 0.3s ease;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    letter-spacing: 0.01em;
+}
+
+.tech-tag:hover {
+    background-color: var(--primary-color);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.project-links {
+    display: flex;
+    gap: 1rem;
+    margin-top: auto;
+    flex-wrap: wrap;
+}
+
+.project-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    background-color: var(--light-background);
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    color: var(--text-color);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.project-link:hover {
+    background-color: var(--primary-color);
+    color: #ffffff; /* Ensure high contrast with explicit white */
+    transform: translateY(-2px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+.theme-dark .project-link {
+    background-color: var(--rose-pine-overlay);
+    color: var(--rose-pine-text);
+}
+
+.theme-dark .project-link:hover {
+    background-color: var(--rose-pine-pine);
+    color: white;
+}
+
+/* Explicit light theme styling to ensure contrast */
+.theme-light .project-link:hover {
+    background-color: var(--rose-pine-pine);
+    color: #ffffff;
+    font-weight: 600; /* Make text slightly bolder for better readability */
+}
+
+/* Social Links */
+.social-links {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.social-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: var(--light-background);
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.social-link:hover {
+    background-color: var(--border-color);
+}
+
+/* Skip Link for Accessibility */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background-color: var(--accent-color);
+    color: white;
+    padding: 8px;
+    z-index: 100;
+    transition: top 0.3s;
+}
+
+.skip-link:focus {
+    top: 0;
+}
+
+/* Floating Download Button */
+.floating-download {
+    position: fixed;
+    right: 2rem;
+    top: 120px;
+    z-index: 99;
+    transition: all 0.3s ease;
+}
+
+.floating-download .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem;
+    padding: 1.1rem 1.6rem;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    font-size: 1.1rem;
+    font-weight: 500;
+    border-radius: 8px;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    color: white; /* Ensuring high contrast */
+    background-color: var(--primary-color);
+}
+
+.floating-download .btn i {
+    font-size: 1.2rem;
+}
+
+.floating-download .btn:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    background-color: var(--secondary-color);
+}
+
+/* Remove redundant download button in header */
+.cv-header-section .cta-buttons {
+    display: none;
+}
+
+/* Logo */
+.logo {
+    text-decoration: none;
+    color: var(--text-color);
+}
+
+.logo h1 {
+    font-size: 1.8rem;
+    transition: color 0.3s ease;
+}
+
+.logo:hover h1 {
+    color: var(--accent-color);
+}
+
+/* Visually Hidden (for screen readers) */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+/* Blog Cards */
+.blog-card {
+    background-color: var(--card-background);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 2rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    padding: 1.5rem;
+}
+
+.blog-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.blog-meta {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--light-text);
+}
+
+.blog-title {
+    margin-bottom: 0.75rem;
+    font-size: 1.4rem;
+}
+
+.blog-excerpt {
+    margin-bottom: 1rem;
+    color: var(--light-text);
+}
+
+.read-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.read-more:hover {
+    color: var(--accent-color);
+}
+
+.read-more i {
+    transition: transform 0.3s ease;
+}
+
+.read-more:hover i {
+    transform: translateX(4px);
+}
+
+/* Intro Section */
+.intro-section {
+    padding: 3rem 0 1rem;
+    background-color: var(--background-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.blog-card.intro {
+    background-color: var(--card-background);
+    border-left: 4px solid var(--accent-color);
+    padding: 1.5rem 2rem;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Featured Post */
+.featured-post {
+    padding: 4rem 0;
+    background-color: var(--light-background);
+}
+
+.blog-card.featured {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    padding: 0;
+}
+
+.blog-card-content {
+    padding: 2rem;
+}
+
+.blog-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Blog Grid */
+.blog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+/* Section Titles */
+.section-title {
+    position: relative;
+    margin-bottom: 2rem;
+    padding-bottom: 0.5rem;
+    display: inline-block;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 50%;
+    height: 3px;
+    background-color: var(--accent-color);
+}
+
+/* Newsletter Section */
+.newsletter {
+    background-color: var(--card-background);
+    padding: 4rem 0;
+    text-align: center;
+}
+
+.newsletter-content {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.newsletter-form {
+    margin-top: 2rem;
+}
+
+.form-group {
+    display: flex;
+    gap: 0.5rem;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.form-group input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.form-group input:focus {
+    outline: 2px solid var(--accent-color);
+    border-color: transparent;
+}
+
+/* Footer */
+footer {
+    background-color: var(--footer-background);
+    padding: 3rem 0 1.5rem;
+    border-top: 1px solid var(--border-color);
+    transition: background-color 0.3s ease;
+}
+
+.footer-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.footer-nav h3, .footer-social h3, .footer-tech h3 {
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.footer-nav ul {
+    list-style: none;
+}
+
+.footer-nav ul li {
+    margin-bottom: 0.5rem;
+}
+
+.footer-nav ul li a {
+    color: var(--light-text);
+    transition: color 0.3s ease;
+}
+
+.footer-nav ul li a:hover {
+    color: var(--accent-color);
+}
+
+.footer-social .social-links {
+    display: flex;
+    gap: 1rem;
+}
+
+.footer-social .social-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color: var(--light-background);
+    border-radius: 50%;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.footer-social .social-link:hover {
+    background-color: var(--accent-color);
+    color: white;
+    transform: translateY(-3px);
+}
+
+.footer-tech .tech-list {
+    list-style: none;
+}
+
+.footer-tech .tech-list li {
+    margin-bottom: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--light-text);
+}
+
+.footer-tech .tech-list li i {
+    color: var(--accent-color);
+    font-size: 1.1rem;
+    width: 1.5rem;
+    text-align: center;
+}
+
+/* Accordion styles */
+.accordion-header {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.accordion-header:hover {
+    color: var(--primary-color);
+}
+
+.accordion-icon {
+    margin-left: 8px;
+    transition: transform 0.3s ease;
+    font-size: 0.8rem;
+}
+
+.accordion-header.active .accordion-icon {
+    transform: rotate(180deg);
+}
+
+.accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    padding-left: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.accordion-content.active {
+    max-height: 500px; /* Adjust as needed */
+}
+
+.accordion-content li {
+    margin-left: 1.5rem;
+}
+
+.footer-bottom {
+    text-align: center;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    color: var(--light-text);
+}
+
+/* CV Specific Styles */
+.cv-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 2.5rem;
+    background-color: var(--card-background);
+    box-shadow: var(--card-shadow);
+    border-radius: 8px;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.cv-header-section {
+    text-align: left;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+}
+
+.profile-info {
+    text-align: left;
+    flex: 1;
+}
+
+.profile-info h1 {
+    font-size: 2.8rem;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
+}
+
+.profile-info .tagline {
+    font-size: 1.4rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.profile-info p {
+    font-size: 1.05rem;
+    line-height: 1.7;
+}
+
+.profile-image {
+    margin-left: 2.5rem;
+}
+
+.profile-image img {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--primary-color);
+    transition: border-color 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Profile placeholder for when no image is available */
+.profile-placeholder {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid var(--primary-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.profile-initials {
+    font-size: 3rem;
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.summary {
+    max-width: 800px;
+    margin: 0 auto 2.5rem;
+    text-align: left;
+}
+
+.summary p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: var(--text-color);
+    letter-spacing: 0.01em;
+}
+
+.social-links {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.social-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 1.2rem;
+    background-color: var(--light-background);
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    font-size: 1.05rem;
+}
+
+.social-link:hover {
+    background-color: var(--primary-color);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.cv-section {
+    margin-bottom: 3rem;
+    padding: 2.5rem;
+    background-color: var(--card-background);
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+    transition: all 0.3s ease;
+    font-family: var(--font-primary);
+    line-height: 1.7;
+}
+
+/* Ensure all text elements within cv-section have proper margins */
+.cv-section p, 
+.cv-section ul, 
+.cv-section ol, 
+.cv-section dl, 
+.cv-section blockquote {
+    margin-bottom: 1.5rem;
+}
+
+/* Additional padding for Profile and Certifications sections */
+.cv-section-profile,
+.cv-section-certifications {
+    padding-bottom: 4rem;
+}
+
+/* Add extra space after certification list items */
+.cv-section-certifications ul li {
+    margin-bottom: 1.5rem;
+}
+
+.cv-section:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.cv-section-title {
+    position: relative;
+    padding-bottom: 0.8rem;
+    margin-bottom: 2rem;
+    color: var(--text-color);
+    transition: color 0.3s ease;
+    font-size: 1.8rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.cv-section-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: var(--primary-color);
+    transition: background-color 0.3s ease;
+}
+
+.experience-item, .education-item, .project-item {
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+    transition: border-color 0.3s ease;
+}
+
+.experience-item:last-child, .education-item:last-child, .project-item:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.item-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+.item-title {
+    font-weight: 600;
+    font-size: 1.3rem;
+    color: var(--primary-color);
+    transition: color 0.3s ease;
+    margin-bottom: 0.4rem;
+    letter-spacing: -0.01em;
+}
+
+.item-subtitle {
+    color: var(--light-text);
+    transition: color 0.3s ease;
+    font-size: 1.05rem;
+    font-weight: 500;
+}
+
+.item-date {
+    color: var(--light-text);
+    font-style: italic;
+    transition: color 0.3s ease;
+    font-weight: 500;
+    background-color: var(--light-background);
+    padding: 0.3rem 0.8rem;
+    border-radius: 4px;
+    font-size: 0.95rem;
+}
+
+.skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 2rem;
+}
+
+.skill-category h4 {
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+    transition: color 0.3s ease;
+    font-size: 1.2rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+.skill-list {
+    list-style: none;
+}
+
+.skill-list li {
+    margin-bottom: 0.8rem;
+    position: relative;
+    padding-left: 1.5rem;
+    color: var(--text-color);
+    transition: color 0.3s ease;
+    font-size: 1.05rem;
+    line-height: 1.6;
+}
+
+.skill-list li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: var(--accent-color);
+    transition: color 0.3s ease;
+    font-size: 1.2rem;
+    line-height: 1.4;
+}
+
+.experience-item p, .education-item p, .project-item p {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    margin-bottom: 1.2rem;
+    color: var(--text-color);
+}
+
+.experience-item ul, .education-item ul, .project-item ul {
+    margin-bottom: 1.5rem;
+    padding-left: 1.2rem;
+    list-style-type: disc;
+}
+
+.experience-item li, .education-item li, .project-item li {
+    margin-bottom: 0.7rem;
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: var(--text-color);
+}
+
+/* Improved focus styles for accessibility */
+a:focus, button:focus, input:focus, textarea:focus, select:focus, 
+.btn:focus, .social-link:focus, .theme-switch:focus-within {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+}
+
+/* Dark theme specific styles */
+.theme-dark .floating-download {
+    background-color: var(--rose-pine-overlay);
+}
+
+.theme-dark .floating-download .btn {
+    background-color: var(--rose-pine-pine);
+    color: white;
+}
+
+.theme-dark .floating-download .btn:hover {
+    background-color: var(--rose-pine-foam);
+}
+
+@media (max-width: 768px) {
+    .theme-dark .floating-download {
+        background-color: rgba(38, 35, 58, 0.9); /* Dark background with transparency */
+    }
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .floating-download {
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        top: auto;
+        width: 100%;
+        padding: 0.5rem;
+        background-color: rgba(255, 255, 255, 0.9);
+        transition: background-color 0.3s ease;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .floating-download .btn {
+        width: 100%;
+        border-radius: 4px;
+        padding: 0.8rem 1rem;
+        font-size: 1rem;
+    }
+
+    header .container {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    nav {
+        flex-direction: column;
+    }
+
+    nav ul {
+        margin-top: 1rem;
+    }
+
+    nav ul li {
+        margin: 0 0.75rem;
+    }
+
+    .theme-switch-wrapper {
+        margin-top: 1rem;
+        margin-left: 0;
+    }
+
+    .profile-header {
+        flex-direction: column-reverse;
+        align-items: center;
+    }
+
+    .profile-info {
+        text-align: center;
+        margin-top: 1rem;
+    }
+
+    .profile-image {
+        margin-left: 0;
+    }
+
+    .cta-buttons {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .projects-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    .project-card {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .github-card {
+        margin: 0 auto 2rem;
+    }
+
+    .project-image {
+        height: 180px;
+    }
+
+    .project-content {
+        padding: 1.5rem;
+    }
+
+    .project-links {
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+
+    .project-link {
+        text-align: center;
+    }
+
+    .skills-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .blog-card.featured {
+        grid-template-columns: 1fr;
+    }
+
+    .blog-image {
+        height: 200px;
+    }
+
+    .form-group {
+        flex-direction: column;
+    }
+
+    .form-group input {
+        margin-bottom: 0.5rem;
+    }
+
+    .item-header {
+        flex-direction: column;
+    }
+
+    .item-date {
+        margin-top: 0.25rem;
+    }
+
+    .footer-content {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .footer-social .social-links {
+        justify-content: center;
+    }
+
+    .cv-section {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 2rem;
+    }
+
+    h2 {
+        font-size: 1.75rem;
+    }
+
+    h3 {
+        font-size: 1.5rem;
+    }
+
+    .hero {
+        padding: 3rem 0;
+    }
+
+    .container {
+        padding: 0 15px;
+    }
+
+    .cv-container {
+        padding: 1.5rem;
+        margin: 1rem;
+    }
+
+    .profile-image img {
+        width: 120px;
+        height: 120px;
+    }
+
+    .social-links {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .social-link {
+        margin-bottom: 0.5rem;
+    }
+
+    .blog-card {
+        padding: 1rem;
+    }
+
+    .blog-card-content {
+        padding: 1rem;
+    }
+
+    .github-card {
+        margin-bottom: 1.5rem;
+    }
+
+    .project-card {
+        margin-bottom: 1.5rem;
+    }
+
+    .card-header, .project-header {
+        padding: 12px 16px;
+    }
+
+    .repo-description, .project-description {
+        padding: 16px;
+        font-size: 0.9rem;
+    }
+
+    .technologies {
+        padding: 0 16px 8px;
+    }
+
+    .tech-tag {
+        padding: 3px 8px;
+        font-size: 0.75rem;
+    }
+
+    .card-footer, .project-links {
+        padding: 12px 16px;
+    }
+
+    .project-link {
+        font-size: 0.85rem;
+    }
+}
+
+/* Print Styles for CV */
+@media print {
+    body {
+        background-color: white;
+        color: black;
+        font-size: 12pt;
+    }
+
+    /* Hide elements not needed for print */
+    header, footer, .cta-buttons, .theme-switch-wrapper, .skip-link {
+        display: none !important;
+    }
+
+    /* Reset container for print */
+    .container, .cv-container {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+        background-color: white;
+    }
+
+    /* Ensure all text is visible */
+    .cv-section, .profile-header, .item-header {
+        background-color: white;
+        color: black;
+        box-shadow: none;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    /* Add page breaks before major sections */
+    .cv-section {
+        page-break-before: auto;
+        border: none;
+        padding: 0;
+        margin-bottom: 1.5cm;
+    }
+
+    /* Ensure section titles are visible */
+    .cv-section-title {
+        color: black;
+        border-bottom: 1pt solid #000;
+    }
+
+    .cv-section-title::after {
+        display: none;
+    }
+
+    /* Format links for print */
+    a {
+        text-decoration: none;
+        color: black;
+    }
+
+    /* Ensure proper spacing */
+    p, li {
+        line-height: 1.5;
+        color: black;
+    }
+
+    /* Adjust image size for print */
+    .profile-image img {
+        width: 100px;
+        height: 100px;
+        border: 1pt solid #000;
+    }
+
+    /* Format tech tags for print */
+    .tech-tag {
+        border: 1pt solid #000;
+        background: none;
+        color: black;
+        padding: 2pt 4pt;
+        margin-right: 4pt;
+    }
+
+    /* Ensure proper spacing between items */
+    .experience-item, .education-item, .project-item {
+        margin-bottom: 1cm;
+        padding-bottom: 0.5cm;
+        border-bottom: 1pt solid #ddd;
+    }
+
+    /* Format dates and subtitles */
+    .item-date, .item-subtitle {
+        color: #333;
+    }
+
+    /* Ensure proper column layout for skills */
+    .skills-grid {
+        display: block;
+        column-count: 2;
+        column-gap: 2cm;
+    }
+
+    .skill-category {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        margin-bottom: 0.5cm;
+    }
+
+    .skill-category h4 {
+        color: black;
+        font-weight: bold;
+    }
+
+    /* Format list markers */
+    .skill-list li::before {
+        color: black;
+    }
+}

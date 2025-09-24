@@ -1,0 +1,84 @@
+/* Nerd Font Icons CSS */
+
+/* General icon styling */
+.nf {
+  font-family: "0xProto Nerd Font", monospace;
+  font-weight: normal;
+  font-style: normal;
+  display: inline-block;
+  text-rendering: auto;
+  line-height: 1;
+  vertical-align: middle;
+  /* Inherit color from parent element */
+  color: inherit;
+}
+
+/* Icon definitions */
+.nf-star::before {
+  content: "★";
+}
+.nf-github::before {
+  content: "󰊤";
+}
+.nf-external-link::before {
+  content: "󰏌";
+}
+.nf-grid::before {
+  content: "󰕰";
+}
+.nf-arrow-right::before {
+  content: "→";
+}
+.nf-arrow-up::before {
+  content: "↑";
+}
+.nf-download::before {
+  content: "󰇚";
+}
+.nf-sun::before {
+  content: "☀";
+}
+.nf-moon::before {
+  content: "󰖔";
+}
+.nf-rust::before {
+  content: "󱘗";
+}
+.nf-file-pdf::before {
+  content: "󰈦";
+}
+.nf-box::before {
+  content: "󰏖";
+}
+.nf-cube::before {
+  content: "󰆧";
+}
+.nf-chevron-down::before {
+  content: "󰅀";
+}
+.nf-refresh::before {
+  content: "󰑐";
+}
+
+/* Social media icons */
+.nf-linkedin::before {
+  content: "󰌻";
+}
+.nf-twitter::before {
+  content: "󰕄";
+}
+.nf-facebook::before {
+  content: "󰈌";
+}
+.nf-instagram::before {
+  content: "󰋾";
+}
+.nf-youtube::before {
+  content: "󰗃";
+}
+.nf-gitlab::before {
+  content: "󰮠";
+}
+.nf-bitbucket::before {
+  content: "󰂨";
+}

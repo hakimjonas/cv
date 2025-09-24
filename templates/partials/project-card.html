@@ -1,0 +1,74 @@
+<!-- Project card template -->
+<div class="github-card">
+  <div
+    class="card-header{% if project.language.is_some() %} {{ project.language.as_ref().unwrap() }}{% endif %}"
+  >
+    <h3 class="project-title">
+      {% if project.language_icon.is_some() %}
+      <span class="{{ project.language.as_ref().unwrap() }}-icon"
+        >{{ project.language_icon.as_ref().unwrap() }}</span
+      >
+      {% endif %} {% if project.display_name.is_some() %} {{ project.display_name.as_ref().unwrap()
+      }} {% else %} {{ project.name }} {% endif %}
+    </h3>
+    {% if project.stars.is_some() %}
+    <div class="stars"><i class="nf nf-star"></i> {{ project.stars.unwrap() }}</div>
+    {% endif %}
+  </div>
+  <p class="repo-description">{{ project.description }}</p>
+
+  {% if !project.highlights.is_empty() %}
+  <div class="project-highlights">
+    <h4>Highlights:</h4>
+    <ul>
+      {% for highlight in project.highlights %}
+      <li>{{ highlight }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %} {% if !project.technologies.is_empty() %}
+  <div class="technologies">
+    {% for tech in project.technologies %}
+    <span class="tech-tag">{{ tech }}</span>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="card-footer">
+    <div class="owner-section">
+      {% if project.owner_avatar.is_some() %}
+      <img src="{{ project.owner_avatar.as_ref().unwrap() }}" alt="Owner avatar" class="avatar" loading="lazy" />
+      {% else %}
+      <div class="avatar-placeholder"></div>
+      {% endif %}
+
+      <div class="owner-info">
+        {% if project.owner_username.is_some() %}
+        <span class="owner-name">{{ project.owner_username.as_ref().unwrap() }}</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="project-links">
+      {% if project.repository.is_some() %}
+      <a
+        href="{{ project.repository.as_ref().unwrap() }}"
+        class="project-link"
+        target="_blank"
+        rel="noopener"
+      >
+        <i class="nf nf-github"></i> GitHub
+      </a>
+      {% endif %} {% if project.url.is_some() %}
+      <a
+        href="{{ project.url.as_ref().unwrap() }}"
+        class="project-link"
+        target="_blank"
+        rel="noopener"
+      >
+        <i class="nf nf-external-link"></i> Live Demo
+      </a>
+      {% endif %} {% if extra_links is defined %} {{ extra_links | safe }} {% endif %}
+    </div>
+  </div>
+</div>

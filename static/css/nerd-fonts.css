@@ -1,0 +1,56 @@
+/* Nerd Fonts CSS */
+@font-face {
+  font-family: "0xProto Nerd Font";
+  src:
+    local("0xProto Nerd Font Regular"),
+    local("0xProtoNerdFont-Regular"),
+    url("../fonts/0xProto/0xProtoNerdFont-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "0xProto Nerd Font";
+  src:
+    local("0xProto Nerd Font Bold"),
+    local("0xProtoNerdFont-Bold"),
+    url("../fonts/0xProto/0xProtoNerdFont-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "0xProto Nerd Font";
+  src:
+    local("0xProto Nerd Font Italic"),
+    local("0xProtoNerdFont-Italic"),
+    url("../fonts/0xProto/0xProtoNerdFont-Italic.ttf") format("truetype");
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Ensure icons are displayed correctly */
+[class$="-icon"] {
+  font-family: "0xProto Nerd Font", monospace !important;
+  font-weight: normal;
+  font-style: normal;
+  font-size: 1.2em;
+  line-height: 1;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 0.2em;
+  /* Ensure the icon is visible */
+  opacity: 1;
+  /* Add a slight shadow to make the icon more visible */
+  text-shadow: 0 0 1px rgba(0, 0, 0, 0.2);
+  /* Inherit color from parent element */
+  color: inherit;
+}
+
+/* Language-specific icons */
+/* We're not using ::before content anymore since the icons are directly in the HTML */
+/* The icons are loaded from the language_icons.json file */
+/* This ensures compatibility with the Nerd Font characters */

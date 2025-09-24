@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}{{ cv.personal_info.name }} - Personal Projects{% endblock %}
+{% block description %}Personal projects by {{ cv.personal_info.name }}, {{ cv.personal_info.title }}{% endblock %}
+{% block keywords %}projects, portfolio, {{ cv.personal_info.title }}, developer{% endblock %}
+
+{% block content %}
+      <section class="featured-projects" id="projects">
+        <div class="container">
+          <h2 class="section-title">Featured Personal Projects</h2>
+          <div class="projects-grid" id="featured-projects">
+            {% if !cv.projects.is_empty() %} {% for project in cv.projects %} {% include
+            "partials/project-card.html" %} {% endfor %} {% else %}
+            <p class="no-projects">No projects found.</p>
+            {% endif %}
+          </div>
+        </div>
+      </section>
+{% endblock %}

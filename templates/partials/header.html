@@ -1,0 +1,169 @@
+<!-- Common header with navigation -->
+<header>
+  <div class="container">
+    <div class="header-top">
+      <a href="index.html" class="logo">
+        <h1>{{ cv.personal_info.name }}</h1>
+      </a>
+      <button class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="main-navigation">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </button>
+    </div>
+    <nav aria-label="Main navigation" id="main-navigation">
+      <ul>
+        <li><a href="cv.html">CV</a></li>
+        <li><a href="projects.html">Projects</a></li>
+        <li><a href="blog.html">Blog</a></li>
+        <li><a href="index.html">About Me</a></li>
+      </ul>
+      <div class="theme-switch-wrapper">
+        <button class="theme-switch" title="Toggle dark/light theme" aria-pressed="false" aria-label="Toggle dark/light theme" role="switch">
+          <span class="slider round"></span>
+          <i class="nf nf-sun theme-icon light-icon" aria-hidden="true" title="Switch to light theme"></i>
+          <i class="nf nf-moon theme-icon dark-icon" aria-hidden="true" title="Switch to dark theme"></i>
+        </button>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<script>
+  // Theme switcher functionality
+  document.addEventListener('DOMContentLoaded', function() {
+    const themeToggle = document.querySelector('.theme-switch');
+    if (themeToggle) {
+      // Function to set a theme
+      function setTheme(theme) {
+        document.documentElement.className = theme;
+        localStorage.setItem("theme", theme);
+
+        if (theme === "theme-dark") {
+          themeToggle.setAttribute('aria-pressed', 'true');
+          themeToggle.classList.add('active');
+          // Update tooltip to indicate what will happen on next click
+          themeToggle.querySelector('.light-icon').setAttribute('title', 'Switch to light theme');
+        } else {
+          themeToggle.setAttribute('aria-pressed', 'false');
+          themeToggle.classList.remove('active');
+          // Update tooltip to indicate what will happen on next click
+          themeToggle.querySelector('.dark-icon').setAttribute('title', 'Switch to dark theme');
+        }
+      }
+
+      // Check for saved theme preference or use system preference
+      const currentTheme =
+        localStorage.getItem("theme") ||
+        (window.matchMedia("(prefers-color-scheme: dark)").matches ? "theme-dark" : "theme-light");
+
+      // Apply the theme
+      setTheme(currentTheme);
+
+      // Listen for theme toggle
+      themeToggle.addEventListener("click", function () {
+        if (this.getAttribute('aria-pressed') === 'false') {
+          setTheme("theme-dark");
+        } else {
+          setTheme("theme-light");
+        }
+      });
+
+      // Add keyboard support for better accessibility
+      themeToggle.addEventListener("keydown", function(e) {
+        // Toggle on Space or Enter key
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault();
+          this.click();
+        }
+      });
+    }
+  });
+
+  // Set aria-current for the active navigation link
+  document.addEventListener('DOMContentLoaded', function() {
+    // Get the current page filename from the URL
+    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    
+    // Find all navigation links
+    const navLinks = document.querySelectorAll('nav ul li a');
+    
+    // Set aria-current="page" on the active link
+    navLinks.forEach(link => {
+      const linkHref = link.getAttribute('href');
+      if (linkHref === currentPage) {
+        link.setAttribute('aria-current', 'page');
+        link.classList.add('active');
+      }
+    });
+  });
+
+  // Mobile menu toggle functionality
+  document.addEventListener('DOMContentLoaded', function() {
+    const menuToggle = document.querySelector('.mobile-menu-toggle');
+    const mainNav = document.getElementById('main-navigation');
+    
+    if (menuToggle && mainNav) {
+      // Function to toggle the mobile menu
+      function toggleMobileMenu() {
+        const isExpanded = menuToggle.getAttribute('aria-expanded') === 'true';
+        
+        // Toggle the aria-expanded attribute
+        menuToggle.setAttribute('aria-expanded', !isExpanded);
+        
+        // Toggle the active class on the navigation
+        mainNav.classList.toggle('active');
+        
+        // Announce the menu state for screen readers
+        const menuState = !isExpanded ? 'expanded' : 'collapsed';
+        const announcement = document.createElement('div');
+        announcement.setAttribute('aria-live', 'polite');
+        announcement.setAttribute('class', 'sr-only');
+        announcement.textContent = `Menu ${menuState}`;
+        document.body.appendChild(announcement);
+        
+        // Remove the announcement after it's been read
+        setTimeout(() => {
+          document.body.removeChild(announcement);
+        }, 1000);
+      }
+      
+      // Toggle menu on click
+      menuToggle.addEventListener('click', toggleMobileMenu);
+      
+      // Toggle menu on Enter or Space key
+      menuToggle.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleMobileMenu();
+        }
+      });
+      
+      // Close menu when clicking outside
+      document.addEventListener('click', function(e) {
+        const isMenuOpen = menuToggle.getAttribute('aria-expanded') === 'true';
+        const isClickInsideMenu = mainNav.contains(e.target);
+        const isClickOnToggle = menuToggle.contains(e.target);
+        
+        if (isMenuOpen && !isClickInsideMenu && !isClickOnToggle) {
+          toggleMobileMenu();
+        }
+      });
+      
+      // Close menu when pressing Escape key
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && menuToggle.getAttribute('aria-expanded') === 'true') {
+          toggleMobileMenu();
+        }
+      });
+      
+      // Close menu when window is resized to desktop size
+      window.addEventListener('resize', function() {
+        if (window.innerWidth > 768 && menuToggle.getAttribute('aria-expanded') === 'true') {
+          menuToggle.setAttribute('aria-expanded', 'false');
+          mainNav.classList.remove('active');
+        }
+      });
+    }
+  });
+</script>

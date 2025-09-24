@@ -1,0 +1,49 @@
+# GitHub repository settings
+# This file documents repository configuration
+
+repository:
+  name: cv
+  description: "A fast, functional CV/portfolio generator built in Rust"
+  topics:
+    - cv
+    - portfolio
+    - rust
+    - static-site-generator
+    - github-pages
+  has_issues: true
+  has_projects: false
+  has_wiki: false
+  has_downloads: true
+  default_branch: main
+
+branches:
+  - name: main
+    protection:
+      required_status_checks:
+        strict: false
+        contexts: []
+      enforce_admins: false
+      required_pull_request_reviews: null
+      restrictions: null
+
+  - name: content
+    # Content branch is for data only - never merged
+    # Contains CV data, blog posts, and personal content
+    protection:
+      enforce_admins: false
+      restrictions: null
+
+# Labels for issues
+labels:
+  - name: bug
+    color: d73a4a
+    description: Something isn't working
+  - name: enhancement
+    color: a2eeef
+    description: New feature or request
+  - name: documentation
+    color: 0075ca
+    description: Improvements or additions to documentation
+  - name: content
+    color: 7057ff
+    description: Related to CV data or blog content

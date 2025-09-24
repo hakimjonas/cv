@@ -1,0 +1,18 @@
+<!-- Skills section component -->
+{% if !cv.skill_categories.is_empty() %}
+<div class="cv-section">
+  <h2 class="cv-section-title">Skills</h2>
+  <div class="skills-grid">
+    {% for category in cv.skill_categories %}
+    <div class="skill-category">
+      <h4>{{ category.name }}</h4>
+      <ul class="skill-list">
+        {% for skill in category.skills %}
+        <li>{{ skill }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}

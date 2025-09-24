@@ -1,0 +1,101 @@
+/* Navigation styles */
+
+/* Main navigation */
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+nav ul {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: var(--spacing-md);
+}
+
+nav ul li {
+  margin: 0;
+  padding: 0;
+}
+
+nav ul li a {
+  color: var(--color-text);
+  text-decoration: none;
+  font-weight: 500;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  transition: all 0.3s ease;
+}
+
+nav ul li a:hover {
+  color: var(--color-primary);
+  background-color: var(--color-background-light);
+}
+
+/* Active menu item */
+nav ul li a.active {
+  color: var(--color-primary);
+  background-color: var(--color-background-light);
+  font-weight: 600;
+  position: relative;
+}
+
+nav ul li a.active::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--color-primary);
+  border-radius: var(--border-radius-sm);
+}
+
+/* Theme switch styles are now in header.css */
+
+/* Mobile navigation */
+@media (max-width: 768px) {
+  nav {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  nav ul {
+    flex-direction: column;
+    width: 100%;
+    gap: var(--spacing-sm);
+  }
+
+  nav ul li {
+    width: 100%;
+  }
+
+  nav ul li a {
+    display: block;
+    padding: var(--spacing-sm) var(--spacing-md);
+    width: 100%;
+    border-radius: var(--border-radius-md);
+  }
+
+  nav ul li a:hover,
+  nav ul li a:focus {
+    background-color: rgba(var(--color-primary-rgb), 0.1);
+  }
+
+  nav ul li a.active::after {
+    display: none;
+  }
+
+  nav ul li a.active {
+    background-color: rgba(var(--color-primary-rgb), 0.2);
+    color: var(--color-primary);
+  }
+
+  .theme-switch-wrapper {
+    margin-left: 0;
+    margin-top: var(--spacing-md);
+    align-self: center;
+  }
+}

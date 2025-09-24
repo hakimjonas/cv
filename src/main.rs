@@ -95,15 +95,20 @@ fn fetch_data_from_content_branch(repo: &str, branch: &str, file_path: &str) -> 
         .args([
             "api",
             &format!("/repos/{}/contents/{}", repo, file_path),
-            "--field", &format!("ref={}", branch),
-            "--jq", ".download_url",
+            "--field",
+            &format!("ref={}", branch),
+            "--jq",
+            ".download_url",
         ])
         .output()
         .context("Failed to get download URL from GitHub")?;
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
-        return Err(anyhow::anyhow!("GitHub CLI failed to get download URL: {}", stderr));
+        return Err(anyhow::anyhow!(
+            "GitHub CLI failed to get download URL: {}",
+            stderr
+        ));
     }
 
     let download_url = String::from_utf8(output.stdout)
@@ -123,13 +128,12 @@ fn fetch_data_from_content_branch(repo: &str, branch: &str, file_path: &str) -> 
         return Err(anyhow::anyhow!("Failed to download content: {}", stderr));
     }
 
-    let json_content = String::from_utf8(content_output.stdout)
-        .context("Invalid UTF-8 in downloaded content")?;
+    let json_content =
+        String::from_utf8(content_output.stdout).context("Invalid UTF-8 in downloaded content")?;
 
     info!("Successfully fetched CV data from content branch");
     Ok(json_content)
 }
-
 
 /// Gets a GitHub token from available sources with priority:
 /// 1. GitHub Actions environment (if running in GitHub Actions)
@@ -273,17 +277,24 @@ async fn main() -> Result<()> {
         // Check for data source configuration
         let repo = env::var("CV_REPO").unwrap_or_else(|_| "hakimjonas/cv".to_string());
         let branch = env::var("CV_BRANCH").unwrap_or_else(|_| "content".to_string());
-        let file_path = env::var("CV_DATA_PATH").unwrap_or_else(|_| "data/cv_data.json".to_string());
+        let file_path =
+            env::var("CV_DATA_PATH").unwrap_or_else(|_| "data/cv_data.json".to_string());
 
         match fetch_data_from_content_branch(&repo, &branch, &file_path) {
             Ok(json_content) => {
                 info!("Using CV data from content branch: {}:{}", repo, branch);
-                cv_data::Cv::from_json_str(&json_content, &format!("{}:{}/{}", repo, branch, file_path))
-                    .context("Failed to parse CV data from content branch")?
+                cv_data::Cv::from_json_str(
+                    &json_content,
+                    &format!("{}:{}/{}", repo, branch, file_path),
+                )
+                .context("Failed to parse CV data from content branch")?
             }
             Err(e) => {
                 warn!("Failed to fetch from content branch: {}", e);
-                info!("Falling back to local CV data: {}", config.data_path.display());
+                info!(
+                    "Falling back to local CV data: {}",
+                    config.data_path.display()
+                );
                 cv_data::Cv::from_json(&config.data_path.to_string_lossy())
                     .context("Failed to load local CV data")?
             }

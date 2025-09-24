@@ -100,6 +100,12 @@ gh-pages      → Auto-generated static site
 - ✅ Version control for your CV history
 - ✅ Leverages GitHub's native features
 
+**⚠️ IMPORTANT:**
+- **NEVER merge the `content` branch into `main`** - they are designed to remain separate
+- The `content` branch contains your personal data and should only be updated with your CV information
+- The `main` branch contains the application code and should only receive code improvements
+- Both branches are protected and require pull request reviews for changes
+
 ## 🛠️ Local Development
 
 ### Prerequisites

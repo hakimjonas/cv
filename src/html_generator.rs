@@ -3,7 +3,7 @@ use askama::Template;
 // use flate2::Compression;
 // use flate2::write::GzEncoder;
 use im::Vector;
-use minify_html::{Cfg, minify};
+use minify_html::{minify, Cfg};
 use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};

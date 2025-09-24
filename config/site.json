@@ -1,0 +1,25 @@
+{
+  "title": "Hakim's Portfolio",
+  "menu": [
+    {
+      "label": "Home",
+      "path": "/",
+      "item_type": "home"
+    },
+    {
+      "label": "CV",
+      "path": "/cv.html",
+      "item_type": "cv"
+    },
+    {
+      "label": "Projects",
+      "path": "/projects.html",
+      "item_type": "projects"
+    },
+    {
+      "label": "GitHub",
+      "path": "https://github.com/hakimjonas",
+      "external": true
+    }
+  ]
+}

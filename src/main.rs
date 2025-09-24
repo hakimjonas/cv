@@ -8,6 +8,7 @@ mod git_config;
 mod github;
 mod html_generator;
 mod language_icons;
+mod site_config;
 // #[allow(dead_code)]
 // mod runtime; // Disabled for now
 mod typst_generator;
@@ -16,6 +17,7 @@ mod unified_config;
 use anyhow::{Context, Result};
 // use cv::logging; // Disabled for now
 use im::Vector;
+use site_config::SiteConfig;
 use std::env;
 use tracing::{debug, error, info, warn};
 use unified_config::AppConfig;
@@ -329,9 +331,17 @@ async fn main() -> Result<()> {
     // based on the public_data configuration. For now, we'll just log the fields
     // that would be included.
 
+    // Load site configuration (menu, navigation, etc.)
+    info!("Loading site configuration");
+    let site_config = SiteConfig::from_json("config/site.json")
+        .unwrap_or_else(|e| {
+            warn!("Failed to load site config: {}. Using defaults.", e);
+            SiteConfig::default()
+        });
+
     // Generate HTML CV and index
     info!("Generating HTML files");
-    html_generator::generate_html(&cv, &config_with_token.html_output_str()?)
+    html_generator::generate_html(&cv, &site_config, &config_with_token.html_output_str()?)
         .context("Failed to generate HTML files")?;
 
     // Copy static assets (excluding generated HTML files)

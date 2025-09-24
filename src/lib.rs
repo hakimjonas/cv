@@ -6,6 +6,7 @@ pub mod git_config;
 pub mod github;
 pub mod html_generator;
 pub mod language_icons;
+pub mod site_config;
 pub mod typst_generator;
 pub mod unified_config;
 

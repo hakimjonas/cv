@@ -9,12 +9,14 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use crate::cv_data::Cv;
+use crate::site_config::SiteConfig;
 
 /// Template for the CV HTML page
 #[derive(Template)]
 #[template(path = "cv.html")]
 struct CvTemplate<'a> {
     cv: &'a Cv,
+    site_config: &'a SiteConfig,
 }
 
 /// Template for the index HTML page
@@ -22,6 +24,7 @@ struct CvTemplate<'a> {
 #[template(path = "index.html")]
 struct IndexTemplate<'a> {
     cv: &'a Cv,
+    site_config: &'a SiteConfig,
 }
 
 /// Template for the projects HTML page
@@ -29,6 +32,7 @@ struct IndexTemplate<'a> {
 #[template(path = "projects.html")]
 struct ProjectsTemplate<'a> {
     cv: &'a Cv,
+    site_config: &'a SiteConfig,
 }
 
 /// Template for the blog HTML page
@@ -36,6 +40,7 @@ struct ProjectsTemplate<'a> {
 #[template(path = "blog.html")]
 struct BlogTemplate<'a> {
     cv: &'a Cv,
+    site_config: &'a SiteConfig,
 }
 
 /// Generate HTML from CV data and save it to the specified path
@@ -48,9 +53,9 @@ struct BlogTemplate<'a> {
 /// # Returns
 ///
 /// A Result indicating success or failure
-pub fn generate_html(cv: &Cv, output_path: &str) -> Result<()> {
+pub fn generate_html(cv: &Cv, site_config: &SiteConfig, output_path: &str) -> Result<()> {
     // Generate CV HTML
-    generate_cv_html(cv, output_path)?;
+    generate_cv_html(cv, site_config, output_path)?;
 
     // Get parent directory for other HTML files
     let parent_dir = Path::new(output_path)
@@ -64,7 +69,7 @@ pub fn generate_html(cv: &Cv, output_path: &str) -> Result<()> {
         .context("Failed to convert path to string")?
         .to_string();
 
-    generate_index_html(cv, &index_path)?;
+    generate_index_html(cv, site_config, &index_path)?;
 
     // Generate projects HTML
     let projects_path = parent_dir
@@ -73,7 +78,7 @@ pub fn generate_html(cv: &Cv, output_path: &str) -> Result<()> {
         .context("Failed to convert path to string")?
         .to_string();
 
-    generate_projects_html(cv, &projects_path)?;
+    generate_projects_html(cv, site_config, &projects_path)?;
 
     // Generate blog HTML
     let blog_path = parent_dir
@@ -82,7 +87,7 @@ pub fn generate_html(cv: &Cv, output_path: &str) -> Result<()> {
         .context("Failed to convert path to string")?
         .to_string();
 
-    generate_blog_html(cv, &blog_path)?;
+    generate_blog_html(cv, site_config, &blog_path)?;
 
     // In release mode, generate server configuration files
     if !cfg!(debug_assertions) {
@@ -160,9 +165,9 @@ pub fn generate_html(cv: &Cv, output_path: &str) -> Result<()> {
 /// # Returns
 ///
 /// A Result indicating success or failure
-fn generate_cv_html(cv: &Cv, output_path: &str) -> Result<()> {
+fn generate_cv_html(cv: &Cv, site_config: &SiteConfig, output_path: &str) -> Result<()> {
     // Create the template with the CV data
-    let template = CvTemplate { cv };
+    let template = CvTemplate { cv, site_config };
 
     // Render the template to HTML
     let html = template
@@ -186,9 +191,9 @@ fn generate_cv_html(cv: &Cv, output_path: &str) -> Result<()> {
 /// # Returns
 ///
 /// A Result indicating success or failure
-fn generate_index_html(cv: &Cv, output_path: &str) -> Result<()> {
+fn generate_index_html(cv: &Cv, site_config: &SiteConfig, output_path: &str) -> Result<()> {
     // Create the template with the CV data
-    let template = IndexTemplate { cv };
+    let template = IndexTemplate { cv, site_config };
 
     // Render the template to HTML
     let html = template
@@ -212,9 +217,9 @@ fn generate_index_html(cv: &Cv, output_path: &str) -> Result<()> {
 /// # Returns
 ///
 /// A Result indicating success or failure
-fn generate_projects_html(cv: &Cv, output_path: &str) -> Result<()> {
+fn generate_projects_html(cv: &Cv, site_config: &SiteConfig, output_path: &str) -> Result<()> {
     // Create the template with the CV data
-    let template = ProjectsTemplate { cv };
+    let template = ProjectsTemplate { cv, site_config };
 
     // Render the template to HTML
     let html = template
@@ -238,9 +243,9 @@ fn generate_projects_html(cv: &Cv, output_path: &str) -> Result<()> {
 /// # Returns
 ///
 /// A Result indicating success or failure
-fn generate_blog_html(cv: &Cv, output_path: &str) -> Result<()> {
+fn generate_blog_html(cv: &Cv, site_config: &SiteConfig, output_path: &str) -> Result<()> {
     // Create the template with the CV data
-    let template = BlogTemplate { cv };
+    let template = BlogTemplate { cv, site_config };
 
     // Render the template to HTML
     let html = template

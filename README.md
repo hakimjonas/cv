@@ -238,14 +238,14 @@ The CV data follows this JSON schema (see `data/cv_data.json` in content branch)
 
 ```json
 {
-  "personal_info": { ... },      // Basic personal information
-  "experiences": [ ... ],        // Work experience
-  "education": [ ... ],          // Educational background
-  "skill_categories": [ ... ],   // Technical skills
-  "projects": [ ... ],           // Manual projects (GitHub ones are auto-fetched)
-  "languages": { ... },          // Spoken languages
-  "certifications": [ ... ],     // Professional certifications
-  "github_sources": [ ... ]      // GitHub accounts/orgs to fetch projects from
+  "personal_info": { "..." },      // Basic personal information
+  "experiences": [ "..." ],        // Work experience
+  "education": [ "..." ],          // Educational background
+  "skill_categories": [ "..." ],   // Technical skills
+  "projects": [ "..." ],           // Manual projects (GitHub ones are auto-fetched)
+  "languages": { "..." },          // Spoken languages
+  "certifications": [ "..." ],     // Professional certifications
+  "github_sources": [ "..." ]      // GitHub accounts/orgs to fetch projects from
 }
 ```
 

@@ -77,15 +77,12 @@ impl BlogPost {
     /// Result containing the parsed BlogPost or an error
     pub fn from_markdown(content: &str, slug: String) -> Result<Self> {
         let matter = Matter::<gray_matter::engine::YAML>::new();
-        let parsed = matter.parse(content);
+        let parsed = matter
+            .parse::<BlogFrontMatter>(content)
+            .context("Failed to parse blog post markdown")?;
 
-        // Parse front matter
-        let front_matter: BlogFrontMatter = if let Some(data) = parsed.data {
-            data.deserialize()
-                .context("Failed to parse blog post front matter")?
-        } else {
-            return Err(anyhow::anyhow!("Blog post requires front matter"));
-        };
+        // Extract front matter, returning an error if it's missing
+        let front_matter = parsed.data.context("Blog post requires front matter")?;
 
         // Parse date
         let date = DateTime::parse_from_rfc3339(&front_matter.date)

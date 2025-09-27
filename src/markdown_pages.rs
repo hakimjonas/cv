@@ -78,23 +78,19 @@ impl Page {
     /// Result containing the parsed Page or an error
     pub fn from_markdown(content: &str, slug: String) -> Result<Self> {
         let matter = Matter::<gray_matter::engine::YAML>::new();
-        let parsed = matter.parse(content);
+        let parsed = matter
+            .parse::<Option<PageFrontMatter>>(content)
+            .context("Failed to parse page markdown")?;
 
-        // Parse front matter
-        let front_matter: PageFrontMatter = if let Some(data) = parsed.data {
-            data.deserialize()
-                .context("Failed to parse page front matter")?
-        } else {
-            // Default front matter if none provided
-            PageFrontMatter {
-                title: slug.clone(),
-                layout: default_layout(),
-                menu_label: None,
-                custom_css: None,
-                custom_js: None,
-                order: None,
-            }
-        };
+        // Extract front matter. If front matter is missing, create a default.
+        let front_matter = parsed.data.flatten().unwrap_or_else(|| PageFrontMatter {
+            title: slug.clone(),
+            layout: default_layout(),
+            menu_label: None,
+            custom_css: None,
+            custom_js: None,
+            order: None,
+        });
 
         // Convert markdown to HTML
         let mut options = Options::empty();

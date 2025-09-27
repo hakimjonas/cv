@@ -2,7 +2,7 @@
 <header>
   <div class="container">
     <div class="header-top">
-      <a href="index.html" class="logo">
+      <a href="/" class="logo">
         <h1>{{ cv.personal_info.name }}</h1>
       </a>
       <button class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="main-navigation">
@@ -13,17 +13,18 @@
     </div>
     <nav aria-label="Main navigation" id="main-navigation">
       <ul>
-        {% for item in site_config.menu %}
+        {% for item in site_config.menu.iter() %}
         <li>
-          {% if item.external.is_some() && item.external.unwrap() %}
+          {% match item.external %}
+          {% when Some(true) %}
           <a href="{{ item.path }}" target="_blank" rel="noopener">
             {{ item.label }}
           </a>
-          {% else %}
+          {% when _ %}
           <a href="{{ item.path }}">
             {{ item.label }}
           </a>
-          {% endif %}
+          {% endmatch %}
         </li>
         {% endfor %}
       </ul>

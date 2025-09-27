@@ -37,7 +37,7 @@
               {% if cv.personal_info.profile_image.is_some() %}
                 {# Custom profile image from content branch #}
                 <img
-                  src="{{ cv.personal_info.profile_image.as_ref().unwrap() }}"
+                  src="{{ cv.personal_info.profile_image.as_ref().unwrap().replace("dist/", "/") }}"
                   alt="{{ cv.personal_info.name }}"
                   loading="lazy" />
               {% elif cv.personal_info.github_avatar_url.is_some() %}

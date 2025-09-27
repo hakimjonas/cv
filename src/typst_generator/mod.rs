@@ -12,6 +12,7 @@ use std::path::Path;
 use std::process::Command;
 
 use crate::cv_data::Cv;
+use crate::site_config::TypstConfig;
 use markup::generate_typst_markup;
 
 /// Generate a PDF from CV data using Typst
@@ -19,15 +20,21 @@ use markup::generate_typst_markup;
 /// # Arguments
 ///
 /// * `cv` - The CV data to generate a PDF from
+/// * `typst_config` - Typst configuration for theme and customization
 /// * `temp_path` - Path to a temporary file for Typst markup
 /// * `output_path` - Path where the PDF will be written
 ///
 /// # Returns
 ///
 /// A Result indicating success or failure
-pub fn generate_pdf(cv: &Cv, temp_path: &str, output_path: &str) -> Result<()> {
-    // Generate Typst markup
-    let typst_markup = generate_typst_markup(cv);
+pub fn generate_pdf(
+    cv: &Cv,
+    typst_config: &TypstConfig,
+    temp_path: &str,
+    output_path: &str,
+) -> Result<()> {
+    // Generate Typst markup with configuration
+    let typst_markup = generate_typst_markup(cv, typst_config);
 
     // Ensure the output directory exists
     if let Some(parent) = Path::new(output_path).parent() {

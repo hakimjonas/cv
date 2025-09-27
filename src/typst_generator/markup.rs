@@ -5,6 +5,7 @@ use super::sections::{
 use super::utils::{append_line, append_lines, append_markup, format_email_for_typst, split_name};
 /// Functions for generating complete Typst markup from CV data
 use crate::cv_data::Cv;
+use crate::site_config::TypstConfig;
 
 // Extension trait to enable method chaining with pipe
 trait Pipe: Sized {
@@ -24,60 +25,150 @@ impl Pipe for String {}
 /// # Arguments
 ///
 /// * `cv` - The CV data
+/// * `typst_config` - Typst configuration for theme and customization
 ///
 /// # Returns
 ///
 /// The complete Typst markup
-pub fn generate_typst_markup(cv: &Cv) -> String {
+pub fn generate_typst_markup(cv: &Cv, typst_config: &TypstConfig) -> String {
     String::new()
-        .pipe(|s| append_markup(s, &generate_imports()))
-        .pipe(|s| append_markup(s, &generate_layout_settings()))
-        .pipe(|s| append_markup(s, &generate_text_settings()))
+        .pipe(|s| append_markup(s, &generate_imports(typst_config)))
+        .pipe(|s| append_markup(s, &generate_layout_settings(typst_config)))
+        .pipe(|s| append_markup(s, &generate_text_settings(typst_config)))
         .pipe(|s| append_markup(s, &generate_section_icons()))
         .pipe(|s| append_markup(s, &generate_personal_info_icons()))
         .pipe(|s| append_markup(s, &generate_personal_info(cv)))
         .pipe(|s| append_markup(s, &generate_left_pane(cv)))
         .pipe(|s| append_markup(s, &generate_right_pane(cv)))
-        .pipe(|s| append_markup(s, &generate_final_template(cv)))
+        .pipe(|s| append_markup(s, &generate_final_template(cv, typst_config)))
 }
 
 /// Generates Typst imports and setup
 ///
+/// # Arguments
+///
+/// * `typst_config` - Typst configuration
+///
 /// # Returns
 ///
 /// The Typst markup for imports and setup
-fn generate_imports() -> String {
+fn generate_imports(typst_config: &TypstConfig) -> String {
     String::new()
         .pipe(|s| append_line(s, "#let meta = ()"))
-        .pipe(|s| append_line(s, "#import \"@preview/grotesk-cv:1.0.2\": cv"))
+        .pipe(|s| {
+            append_line(
+                s,
+                &format!(
+                    "#import \"{}:{}\": cv",
+                    typst_config.theme.source, typst_config.theme.version
+                ),
+            )
+        })
         .pipe(|s| append_lines(s, "#import \"@preview/fontawesome:0.5.0\": *"))
 }
 
 /// Generates Typst layout settings
 ///
+/// # Arguments
+///
+/// * `typst_config` - Typst configuration
+///
 /// # Returns
 ///
 /// The Typst markup for layout settings
-fn generate_layout_settings() -> String {
+fn generate_layout_settings(typst_config: &TypstConfig) -> String {
     String::new()
-        .pipe(|s| append_line(s, "#let fill_color = \"#f4f1eb\""))
-        .pipe(|s| append_line(s, "#let paper_size = \"a4\""))
-        .pipe(|s| append_line(s, "#let accent_color = \"#d4d2cc\""))
-        .pipe(|s| append_lines(s, "#let left_pane_width = \"71%\""))
+        .pipe(|s| {
+            append_line(
+                s,
+                &format!(
+                    "#let fill_color = \"{}\"",
+                    typst_config.customization.colors.fill
+                ),
+            )
+        })
+        .pipe(|s| {
+            append_line(
+                s,
+                &format!(
+                    "#let paper_size = \"{}\"",
+                    typst_config.customization.layout.paper_size
+                ),
+            )
+        })
+        .pipe(|s| {
+            append_line(
+                s,
+                &format!(
+                    "#let accent_color = \"{}\"",
+                    typst_config.customization.colors.accent
+                ),
+            )
+        })
+        .pipe(|s| {
+            append_lines(
+                s,
+                &format!(
+                    "#let left_pane_width = \"{}\"",
+                    typst_config.customization.layout.left_pane_width
+                ),
+            )
+        })
 }
 
 /// Generates Typst text settings
 ///
+/// # Arguments
+///
+/// * `typst_config` - Typst configuration
+///
 /// # Returns
 ///
 /// The Typst markup for text settings
-fn generate_text_settings() -> String {
+fn generate_text_settings(typst_config: &TypstConfig) -> String {
     String::new()
-        .pipe(|s| append_line(s, "#let font = \"HK Grotesk\""))
-        .pipe(|s| append_line(s, "#let size = \"9pt\""))
-        .pipe(|s| append_line(s, "#let text_color_light = \"#ededef\""))
-        .pipe(|s| append_line(s, "#let text_color_medium = \"#78787e\""))
-        .pipe(|s| append_lines(s, "#let text_color_dark = \"#3c3c42\""))
+        .pipe(|s| {
+            append_line(
+                s,
+                &format!("#let font = \"{}\"", typst_config.customization.layout.font),
+            )
+        })
+        .pipe(|s| {
+            append_line(
+                s,
+                &format!(
+                    "#let size = \"{}\"",
+                    typst_config.customization.layout.font_size
+                ),
+            )
+        })
+        .pipe(|s| {
+            append_line(
+                s,
+                &format!(
+                    "#let text_color_light = \"{}\"",
+                    typst_config.customization.colors.text_light
+                ),
+            )
+        })
+        .pipe(|s| {
+            append_line(
+                s,
+                &format!(
+                    "#let text_color_medium = \"{}\"",
+                    typst_config.customization.colors.text_medium
+                ),
+            )
+        })
+        .pipe(|s| {
+            append_lines(
+                s,
+                &format!(
+                    "#let text_color_dark = \"{}\"",
+                    typst_config.customization.colors.text_dark
+                ),
+            )
+        })
 }
 
 /// Generates Typst section icons
@@ -221,11 +312,12 @@ fn generate_right_pane(cv: &Cv) -> String {
 /// # Arguments
 ///
 /// * `cv` - The CV data
+/// * `typst_config` - Typst configuration
 ///
 /// # Returns
 ///
 /// The Typst markup for the final template
-fn generate_final_template(cv: &Cv) -> String {
+fn generate_final_template(cv: &Cv, typst_config: &TypstConfig) -> String {
     // Format document title and author
     let document_settings = format!(
         "#set document(title: \"{} - CV\", author: \"{}\")",
@@ -250,7 +342,7 @@ fn generate_final_template(cv: &Cv) -> String {
         })
         .pipe(|s| append_line(s, &document_settings))
         // Define meta variable with the appropriate structure
-        .pipe(|s| append_markup(s, &generate_meta_variable(cv)))
+        .pipe(|s| append_markup(s, &generate_meta_variable(cv, typst_config)))
         // Show the CV with the template
         .pipe(|s| append_line(s, "#show: cv.with("))
         .pipe(|s| append_line(s, "  meta,"))
@@ -267,11 +359,12 @@ fn generate_final_template(cv: &Cv) -> String {
 /// # Arguments
 ///
 /// * `cv` - The CV data
+/// * `typst_config` - Typst configuration
 ///
 /// # Returns
 ///
 /// The Typst markup for the meta variable
-fn generate_meta_variable(cv: &Cv) -> String {
+fn generate_meta_variable(cv: &Cv, typst_config: &TypstConfig) -> String {
     // Extract name components
     let (first_name, last_name) = split_name(&cv.personal_info.name);
 
@@ -290,17 +383,17 @@ fn generate_meta_variable(cv: &Cv) -> String {
         .pipe(|s| append_line(s, "#let meta = ("))
         // Layout section
         .pipe(|s| append_line(s, "  layout: ("))
-        .pipe(|s| append_line(s, "    fill_color: \"#f4f1eb\","))
-        .pipe(|s| append_line(s, "    paper_size: \"a4\","))
-        .pipe(|s| append_line(s, "    accent_color: \"#d4d2cc\","))
-        .pipe(|s| append_line(s, "    left_pane_width: \"71%\","))
+        .pipe(|s| append_line(s, &format!("    fill_color: \"{}\",", typst_config.customization.colors.fill)))
+        .pipe(|s| append_line(s, &format!("    paper_size: \"{}\",", typst_config.customization.layout.paper_size)))
+        .pipe(|s| append_line(s, &format!("    accent_color: \"{}\",", typst_config.customization.colors.accent)))
+        .pipe(|s| append_line(s, &format!("    left_pane_width: \"{}\",", typst_config.customization.layout.left_pane_width)))
         .pipe(|s| append_line(s, "    text: ("))
-        .pipe(|s| append_line(s, "      font: \"HK Grotesk\","))
-        .pipe(|s| append_line(s, "      size: \"9pt\","))
+        .pipe(|s| append_line(s, &format!("      font: \"{}\",", typst_config.customization.layout.font)))
+        .pipe(|s| append_line(s, &format!("      size: \"{}\",", typst_config.customization.layout.font_size)))
         .pipe(|s| append_line(s, "      color: ("))
-        .pipe(|s| append_line(s, "        light: \"#ededef\","))
-        .pipe(|s| append_line(s, "        medium: \"#78787e\","))
-        .pipe(|s| append_line(s, "        dark: \"#3c3c42\""))
+        .pipe(|s| append_line(s, &format!("        light: \"{}\",", typst_config.customization.colors.text_light)))
+        .pipe(|s| append_line(s, &format!("        medium: \"{}\",", typst_config.customization.colors.text_medium)))
+        .pipe(|s| append_line(s, &format!("        dark: \"{}\"", typst_config.customization.colors.text_dark)))
         .pipe(|s| append_line(s, "      )"))
         .pipe(|s| append_line(s, "    )"))
         .pipe(|s| append_line(s, "  ),"))
@@ -377,7 +470,15 @@ fn generate_meta_variable(cv: &Cv) -> String {
         .pipe(|s| append_line(s, "  ),"))
         // Imports
         .pipe(|s| append_line(s, "  imports: ("))
-        .pipe(|s| append_line(s, "    path: \"@preview/grotesk-cv:1.0.2\","))
+        .pipe(|s| {
+            append_line(
+                s,
+                &format!(
+                    "    path: \"{}:{}\",",
+                    typst_config.theme.source, typst_config.theme.version
+                ),
+            )
+        })
         .pipe(|s| append_line(s, "    fontawesome: \"@preview/fontawesome:0.5.0\""))
         .pipe(|s| append_line(s, "  )"))
         .pipe(|s| append_line(s, ")"))

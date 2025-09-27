@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="dist/css/main.css">
+    <style>
+        body { padding: 20px; }
+        .debug { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>CSS Debug Test</h1>
+
+    <div class="debug">
+        <h3>Color Variables Test</h3>
+        <div style="background: var(--color-warning); padding: 10px; color: white;">
+            Warning Color (should be orange): var(--color-warning)
+        </div>
+        <div style="background: var(--color-accent); padding: 10px; color: white;">
+            Accent Color (should be purple): var(--color-accent)
+        </div>
+        <div style="background: var(--color-primary); padding: 10px; color: white;">
+            Primary Color (should be cyan): var(--color-primary)
+        </div>
+    </div>
+
+    <div class="debug">
+        <h3>Card Header Test</h3>
+        <div class="card-header rust" style="padding: 10px; color: white;">
+            Rust Card Header (should be orange)
+        </div>
+        <div class="card-header scala" style="padding: 10px; color: white;">
+            Scala Card Header (should be purple)
+        </div>
+    </div>
+
+    <script>
+        // Log computed styles
+        const rustHeader = document.querySelector('.card-header.rust');
+        const scalaHeader = document.querySelector('.card-header.scala');
+
+        console.log('Rust header background:', getComputedStyle(rustHeader).backgroundColor);
+        console.log('Scala header background:', getComputedStyle(scalaHeader).backgroundColor);
+
+        // Log CSS variables
+        const root = document.documentElement;
+        console.log('--color-warning:', getComputedStyle(root).getPropertyValue('--color-warning'));
+        console.log('--color-accent:', getComputedStyle(root).getPropertyValue('--color-accent'));
+        console.log('--color-primary:', getComputedStyle(root).getPropertyValue('--color-primary'));
+    </script>
+</body>
+</html>

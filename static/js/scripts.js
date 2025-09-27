@@ -155,7 +155,18 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Theme switcher is now handled in header.html
+    // Mobile menu toggle
+    const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+    const navigation = document.querySelector('#main-navigation');
+
+    if (mobileMenuToggle && navigation) {
+        mobileMenuToggle.addEventListener('click', function() {
+            navigation.classList.toggle('active');
+            mobileMenuToggle.setAttribute('aria-expanded',
+                navigation.classList.contains('active') ? 'true' : 'false'
+            );
+        });
+    }
 });
 
 // Function to initialize language icons for GitHub cards

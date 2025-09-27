@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page.title }} - {{ cv.personal_info.name }}{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-section">
+        <article class="markdown-content">
+            <header class="page-header">
+                <h1 class="page-section-title">{{ page.title }}</h1>
+            </header>
+
+            <div class="page-content">
+                {{ page.content|safe }}
+            </div>
+        </article>
+    </div>
+</div>
+
+{% match page.custom_css %}
+{% when Some(css) %}
+<style>
+{{ css|safe }}
+</style>
+{% when None %}
+{% endmatch %}
+
+{% match page.custom_js %}
+{% when Some(js) %}
+<script>
+{{ js|safe }}
+</script>
+{% when None %}
+{% endmatch %}
+{% endblock %}

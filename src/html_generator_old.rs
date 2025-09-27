@@ -8,13 +8,18 @@ use std::fs;
 // use std::io::Write; // Disabled for now
 use std::path::{Path, PathBuf};
 
+use crate::blog_posts::{group_posts_by_tags, load_posts_from_directory, BlogPost};
+use crate::css_generator::generate_colorscheme_css;
 use crate::cv_data::Cv;
+use crate::markdown_pages::{load_pages_from_directory, Page};
+use crate::site_config::{FontConfig, SiteConfig};
 
 /// Template for the CV HTML page
 #[derive(Template)]
 #[template(path = "cv.html")]
 struct CvTemplate<'a> {
     cv: &'a Cv,
+    site_config: &'a SiteConfig,
 }
 
 /// Template for the index HTML page
@@ -29,6 +34,7 @@ struct IndexTemplate<'a> {
 #[template(path = "projects.html")]
 struct ProjectsTemplate<'a> {
     cv: &'a Cv,
+    site_config: &'a SiteConfig,
 }
 
 /// Template for the blog HTML page
@@ -36,6 +42,35 @@ struct ProjectsTemplate<'a> {
 #[template(path = "blog.html")]
 struct BlogTemplate<'a> {
     cv: &'a Cv,
+    site_config: &'a SiteConfig,
+}
+
+/// Template for static pages
+#[derive(Template)]
+#[template(path = "page.html")]
+struct PageTemplate<'a> {
+    cv: &'a Cv,
+    site_config: &'a SiteConfig,
+    page: &'a Page,
+}
+
+/// Template for blog list page
+#[derive(Template)]
+#[template(path = "blog_list.html")]
+struct BlogListTemplate<'a> {
+    cv: &'a Cv,
+    site_config: &'a SiteConfig,
+    posts: &'a Vector<BlogPost>,
+    tag_groups: &'a im::HashMap<String, Vector<BlogPost>>,
+}
+
+/// Template for individual blog post
+#[derive(Template)]
+#[template(path = "blog_post.html")]
+struct BlogPostTemplate<'a> {
+    cv: &'a Cv,
+    site_config: &'a SiteConfig,
+    post: &'a BlogPost,
 }
 
 /// Generate HTML from CV data and save it to the specified path
@@ -48,9 +83,9 @@ struct BlogTemplate<'a> {
 /// # Returns
 ///
 /// A Result indicating success or failure
-pub fn generate_html(cv: &Cv, output_path: &str) -> Result<()> {
+pub fn generate_html(cv: &Cv, site_config: &SiteConfig, output_path: &str) -> Result<()> {
     // Generate CV HTML
-    generate_cv_html(cv, output_path)?;
+    generate_cv_html(cv, site_config, output_path)?;
 
     // Get parent directory for other HTML files
     let parent_dir = Path::new(output_path)
@@ -64,7 +99,7 @@ pub fn generate_html(cv: &Cv, output_path: &str) -> Result<()> {
         .context("Failed to convert path to string")?
         .to_string();
 
-    generate_index_html(cv, &index_path)?;
+    generate_index_html(cv, site_config, &index_path)?;
 
     // Generate projects HTML
     let projects_path = parent_dir
@@ -73,7 +108,7 @@ pub fn generate_html(cv: &Cv, output_path: &str) -> Result<()> {
         .context("Failed to convert path to string")?
         .to_string();
 
-    generate_projects_html(cv, &projects_path)?;
+    generate_projects_html(cv, site_config, &projects_path)?;
 
     // Generate blog HTML
     let blog_path = parent_dir
@@ -82,7 +117,85 @@ pub fn generate_html(cv: &Cv, output_path: &str) -> Result<()> {
         .context("Failed to convert path to string")?
         .to_string();
 
-    generate_blog_html(cv, &blog_path)?;
+    // Generate static blog posts from markdown if configured
+    if let Some(blog_config) = &site_config.blog {
+        let blog_dir = blog_config.directory.as_deref().unwrap_or("content/blog");
+
+        let blog_path_dir = Path::new(blog_dir);
+        if blog_path_dir.exists() {
+            let posts = load_posts_from_directory(blog_path_dir)?;
+            let tag_groups = group_posts_by_tags(&posts);
+
+            // Generate blog list page
+            generate_blog_list_html(cv, site_config, &posts, &tag_groups, &blog_path)?;
+
+            // Create blog subdirectory for individual posts
+            let blog_posts_dir = parent_dir.join("blog");
+            fs::create_dir_all(&blog_posts_dir)?;
+
+            // Generate individual blog post pages
+            for post in posts.iter() {
+                let post_path = blog_posts_dir
+                    .join(format!("{}.html", post.slug))
+                    .to_str()
+                    .context("Failed to convert path to string")?
+                    .to_string();
+
+                generate_blog_post_html(cv, site_config, post, &post_path)?;
+            }
+        }
+    } else {
+        // Fallback to old blog template if not configured
+        generate_blog_html(cv, site_config, &blog_path)?;
+    }
+
+    // Generate dynamic font CSS based on configuration
+    if let Some(fonts_config) = &site_config.fonts {
+        let css_dir = parent_dir.join("css").join("generated");
+        fs::create_dir_all(&css_dir).context("Failed to create generated CSS directory")?;
+
+        let font_css_path = css_dir
+            .join("fonts.css")
+            .to_str()
+            .context("Failed to convert path to string")?
+            .to_string();
+
+        generate_font_css(fonts_config, &font_css_path)?;
+    }
+
+    // Generate colorscheme CSS based on configuration
+    if let Some(colorscheme_config) = &site_config.colorscheme {
+        let css_dir = parent_dir.join("css").join("generated");
+        fs::create_dir_all(&css_dir).context("Failed to create generated CSS directory")?;
+
+        let colorscheme_css_path = css_dir
+            .join("colorscheme.css")
+            .to_str()
+            .context("Failed to convert path to string")?
+            .to_string();
+
+        generate_colorscheme_css(colorscheme_config, &colorscheme_css_path)?;
+    }
+
+    // Generate static pages from markdown if configured
+    if let Some(pages_config) = &site_config.pages {
+        let pages_dir = pages_config.directory.as_deref().unwrap_or("content/pages");
+
+        let pages_path = Path::new(pages_dir);
+        if pages_path.exists() {
+            let pages = load_pages_from_directory(pages_path)?;
+
+            for page in pages.iter() {
+                let page_path = parent_dir
+                    .join(format!("{}.html", page.slug))
+                    .to_str()
+                    .context("Failed to convert path to string")?
+                    .to_string();
+
+                generate_page_html(cv, site_config, page, &page_path)?;
+            }
+        }
+    }
 
     // In release mode, generate server configuration files
     if !cfg!(debug_assertions) {
@@ -160,9 +273,9 @@ pub fn generate_html(cv: &Cv, output_path: &str) -> Result<()> {
 /// # Returns
 ///
 /// A Result indicating success or failure
-fn generate_cv_html(cv: &Cv, output_path: &str) -> Result<()> {
+fn generate_cv_html(cv: &Cv, site_config: &SiteConfig, output_path: &str) -> Result<()> {
     // Create the template with the CV data
-    let template = CvTemplate { cv };
+    let template = CvTemplate { cv, site_config };
 
     // Render the template to HTML
     let html = template
@@ -186,7 +299,7 @@ fn generate_cv_html(cv: &Cv, output_path: &str) -> Result<()> {
 /// # Returns
 ///
 /// A Result indicating success or failure
-fn generate_index_html(cv: &Cv, output_path: &str) -> Result<()> {
+fn generate_index_html(cv: &Cv, _site_config: &SiteConfig, output_path: &str) -> Result<()> {
     // Create the template with the CV data
     let template = IndexTemplate { cv };
 
@@ -212,9 +325,9 @@ fn generate_index_html(cv: &Cv, output_path: &str) -> Result<()> {
 /// # Returns
 ///
 /// A Result indicating success or failure
-fn generate_projects_html(cv: &Cv, output_path: &str) -> Result<()> {
+fn generate_projects_html(cv: &Cv, site_config: &SiteConfig, output_path: &str) -> Result<()> {
     // Create the template with the CV data
-    let template = ProjectsTemplate { cv };
+    let template = ProjectsTemplate { cv, site_config };
 
     // Render the template to HTML
     let html = template
@@ -238,14 +351,128 @@ fn generate_projects_html(cv: &Cv, output_path: &str) -> Result<()> {
 /// # Returns
 ///
 /// A Result indicating success or failure
-fn generate_blog_html(cv: &Cv, output_path: &str) -> Result<()> {
+fn generate_blog_html(cv: &Cv, site_config: &SiteConfig, output_path: &str) -> Result<()> {
     // Create the template with the CV data
-    let template = BlogTemplate { cv };
+    let template = BlogTemplate { cv, site_config };
 
     // Render the template to HTML
     let html = template
         .render()
         .context("Failed to render blog HTML template")?;
+
+    // Ensure the output directory exists and write the HTML
+    ensure_parent_dir_exists(output_path)?;
+    write_file(output_path, &html)?;
+
+    Ok(())
+}
+
+/// Generate HTML for a static page
+///
+/// # Arguments
+///
+/// * `cv` - The CV data for context
+/// * `site_config` - The site configuration
+/// * `page` - The page data to generate HTML from
+/// * `output_path` - Path where the HTML will be written
+///
+/// # Returns
+///
+/// A Result indicating success or failure
+fn generate_page_html(
+    cv: &Cv,
+    site_config: &SiteConfig,
+    page: &Page,
+    output_path: &str,
+) -> Result<()> {
+    // Create the template with the page data
+    let template = PageTemplate {
+        cv,
+        site_config,
+        page,
+    };
+
+    // Render the template to HTML
+    let html = template
+        .render()
+        .context("Failed to render page HTML template")?;
+
+    // Ensure the output directory exists and write the HTML
+    ensure_parent_dir_exists(output_path)?;
+    write_file(output_path, &html)?;
+
+    Ok(())
+}
+
+/// Generate HTML for blog list page
+///
+/// # Arguments
+///
+/// * `cv` - The CV data for context
+/// * `site_config` - The site configuration
+/// * `posts` - Vector of blog posts
+/// * `tag_groups` - HashMap of tags to posts
+/// * `output_path` - Path where the HTML will be written
+///
+/// # Returns
+///
+/// A Result indicating success or failure
+fn generate_blog_list_html(
+    cv: &Cv,
+    site_config: &SiteConfig,
+    posts: &Vector<BlogPost>,
+    tag_groups: &im::HashMap<String, Vector<BlogPost>>,
+    output_path: &str,
+) -> Result<()> {
+    // Create the template with the blog data
+    let template = BlogListTemplate {
+        cv,
+        site_config,
+        posts,
+        tag_groups,
+    };
+
+    // Render the template to HTML
+    let html = template
+        .render()
+        .context("Failed to render blog list HTML template")?;
+
+    // Ensure the output directory exists and write the HTML
+    ensure_parent_dir_exists(output_path)?;
+    write_file(output_path, &html)?;
+
+    Ok(())
+}
+
+/// Generate HTML for individual blog post
+///
+/// # Arguments
+///
+/// * `cv` - The CV data for context
+/// * `site_config` - The site configuration
+/// * `post` - The blog post to generate HTML from
+/// * `output_path` - Path where the HTML will be written
+///
+/// # Returns
+///
+/// A Result indicating success or failure
+fn generate_blog_post_html(
+    cv: &Cv,
+    site_config: &SiteConfig,
+    post: &BlogPost,
+    output_path: &str,
+) -> Result<()> {
+    // Create the template with the blog post data
+    let template = BlogPostTemplate {
+        cv,
+        site_config,
+        post,
+    };
+
+    // Render the template to HTML
+    let html = template
+        .render()
+        .context("Failed to render blog post HTML template")?;
 
     // Ensure the output directory exists and write the HTML
     ensure_parent_dir_exists(output_path)?;
@@ -908,6 +1135,117 @@ self.addEventListener("fetch", (event) => {
         .with_context(|| format!("Failed to write service-worker.js file to {path}"))?;
 
     println!("Generated service-worker.js file for offline support");
+
+    Ok(())
+}
+
+/// Generate dynamic font CSS based on configuration
+///
+/// # Arguments
+///
+/// * `font_config` - Font configuration from site config
+/// * `path` - Path where the CSS file will be written
+///
+/// # Returns
+///
+/// A Result indicating success or failure
+fn generate_font_css(font_config: &FontConfig, path: &str) -> Result<()> {
+    let mut css_content = String::new();
+
+    // Add Google Fonts import if using Google Fonts
+    if let Some(source) = &font_config.source {
+        if source == "google-fonts" {
+            if let Some(primary) = &font_config.primary {
+                // Map common font names to Google Fonts URLs
+                let google_font = match primary.as_str() {
+                    "JetBrainsMono" => "JetBrains+Mono:wght@400;500;600;700",
+                    "FiraCode" => "Fira+Code:wght@400;500;600;700",
+                    "Inter" => "Inter:wght@400;500;600;700",
+                    "Roboto" => "Roboto:wght@400;500;700",
+                    _ => &format!("{}:wght@400;500;600;700", primary.replace(' ', "+")),
+                };
+                css_content.push_str(&format!(
+                    "@import url('https://fonts.googleapis.com/css2?family={}&display=swap');\n\n",
+                    google_font
+                ));
+            }
+        } else if source == "nerd-fonts" {
+            // For Nerd Fonts, we'll use the CDN
+            if let Some(primary) = &font_config.primary {
+                let _nerd_font_name = match primary.as_str() {
+                    "JetBrainsMono" => "JetBrainsMono",
+                    "FiraCode" => "FiraCode",
+                    "Hack" => "Hack",
+                    "SourceCodePro" => "SourceCodePro",
+                    _ => primary,
+                };
+                css_content.push_str("@import url('https://www.nerdfonts.com/assets/css/webfont.css');\n\n");
+            }
+        }
+    }
+
+    // Generate CSS variables
+    css_content.push_str(":root {\n");
+
+    // Primary font
+    if let Some(primary) = &font_config.primary {
+        let font_family = if font_config.source.as_deref() == Some("nerd-fonts") {
+            format!("'{} Nerd Font'", primary)
+        } else {
+            format!("'{}'", primary)
+        };
+
+        if let Some(fallback) = &font_config.fallback {
+            css_content.push_str(&format!(
+                "  --font-family-primary: {}, {}, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;\n",
+                font_family, fallback
+            ));
+        } else {
+            css_content.push_str(&format!(
+                "  --font-family-primary: {}, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;\n",
+                font_family
+            ));
+        }
+    }
+
+    // Base font size
+    if let Some(base_size) = &font_config.base_size {
+        css_content.push_str(&format!("  --font-size-base: {};\n", base_size));
+    }
+
+    // Font weights
+    if let Some(weight_regular) = font_config.weight_regular {
+        css_content.push_str(&format!("  --font-weight-regular: {};\n", weight_regular));
+    }
+    if let Some(weight_bold) = font_config.weight_bold {
+        css_content.push_str(&format!("  --font-weight-bold: {};\n", weight_bold));
+    }
+
+    css_content.push_str("}\n\n");
+
+    // Apply to body
+    css_content.push_str("body {\n");
+    css_content.push_str("  font-family: var(--font-family-primary);\n");
+    if font_config.base_size.is_some() {
+        css_content.push_str("  font-size: var(--font-size-base);\n");
+    }
+    if font_config.weight_regular.is_some() {
+        css_content.push_str("  font-weight: var(--font-weight-regular);\n");
+    }
+    css_content.push_str("}\n\n");
+
+    // Apply bold weight
+    if font_config.weight_bold.is_some() {
+        css_content.push_str("b, strong, .font-bold {\n");
+        css_content.push_str("  font-weight: var(--font-weight-bold);\n");
+        css_content.push_str("}\n");
+    }
+
+    // Write the CSS file
+    fs::write(path, css_content)
+        .with_context(|| format!("Failed to write font CSS file to {path}"))?;
+
+    println!("Generated dynamic font CSS: {path}");
 
     Ok(())
 }

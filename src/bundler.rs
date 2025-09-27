@@ -11,6 +11,7 @@ use std::path::Path;
 use tracing::{debug, info};
 
 /// Represents a bundling configuration
+#[allow(dead_code)]
 #[derive(Debug, Deserialize, Serialize)]
 pub struct BundleConfig {
     /// Bundle definitions
@@ -20,6 +21,7 @@ pub struct BundleConfig {
 }
 
 /// Bundle definitions for different asset types
+#[allow(dead_code)]
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Bundles {
     /// CSS bundles
@@ -31,6 +33,7 @@ pub struct Bundles {
 }
 
 /// Output configuration
+#[allow(dead_code)]
 #[derive(Debug, Deserialize, Serialize)]
 pub struct OutputConfig {
     /// Output directory for bundled files
@@ -46,6 +49,7 @@ pub struct OutputConfig {
 /// # Returns
 ///
 /// A Result containing the parsed configuration
+#[allow(dead_code)]
 pub fn load_config(config_path: &str) -> Result<BundleConfig> {
     let config_content = fs::read_to_string(config_path)
         .with_context(|| format!("Failed to read bundling configuration from {config_path}"))?;
@@ -61,6 +65,7 @@ pub fn load_config(config_path: &str) -> Result<BundleConfig> {
 /// # Returns
 ///
 /// A default bundling configuration
+#[allow(dead_code)]
 pub fn default_config() -> BundleConfig {
     let mut css_bundles = HashMap::new();
     css_bundles.insert(
@@ -126,6 +131,7 @@ pub fn default_config() -> BundleConfig {
 /// # Returns
 ///
 /// A Result indicating success or failure
+#[allow(dead_code)]
 pub fn write_default_config(config_path: &str) -> Result<()> {
     let config = default_config();
     let config_content = toml::to_string_pretty(&config)
@@ -149,6 +155,7 @@ pub fn write_default_config(config_path: &str) -> Result<()> {
 /// # Returns
 ///
 /// A Result indicating success or failure
+#[allow(dead_code)]
 pub fn bundle_css(config: &BundleConfig, static_dir: &str) -> Result<()> {
     let output_dir = &config.output.directory;
     fs::create_dir_all(output_dir).context("Failed to create output directory")?;
@@ -207,6 +214,7 @@ pub fn bundle_css(config: &BundleConfig, static_dir: &str) -> Result<()> {
 /// # Returns
 ///
 /// A Result indicating success or failure
+#[allow(dead_code)]
 pub fn bundle_js(config: &BundleConfig, static_dir: &str) -> Result<()> {
     let output_dir = &config.output.directory;
     fs::create_dir_all(output_dir).context("Failed to create output directory")?;
@@ -314,6 +322,7 @@ fn minify_js(content: &str) -> Result<String> {
 /// # Returns
 ///
 /// A Result indicating success or failure
+#[allow(dead_code)]
 pub fn process_assets(config_path: &str, static_dir: &str) -> Result<()> {
     // Check if the configuration file exists
     if !Path::new(config_path).exists() {

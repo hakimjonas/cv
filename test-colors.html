@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="dist/css/main.css">
+    <style>
+        body { padding: 20px; background: #1a1a1a; color: white; }
+        .test { padding: 10px; margin: 10px; border-radius: 5px; }
+        .info { font-family: monospace; margin-left: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Color Variable Test</h1>
+
+    <div class="test" style="background: var(--color-warning)">
+        Warning Color (Rust): <span class="info"></span>
+    </div>
+
+    <div class="test" style="background: var(--color-accent)">
+        Accent Color (Scala): <span class="info"></span>
+    </div>
+
+    <div class="test" style="background: var(--color-primary)">
+        Primary Color (TypeScript): <span class="info"></span>
+    </div>
+
+    <div class="test" style="background: var(--color-success)">
+        Success Color (Python): <span class="info"></span>
+    </div>
+
+    <script>
+        document.querySelectorAll('.test').forEach(el => {
+            const computed = window.getComputedStyle(el);
+            const bg = computed.backgroundColor;
+            const varName = el.style.background;
+            el.querySelector('.info').textContent = `${varName} = ${bg}`;
+        });
+    </script>
+</body>
+</html>

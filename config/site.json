@@ -1,0 +1,84 @@
+{
+  "title": "Hakim's Portfolio",
+  "menu": [
+    {
+      "label": "Home",
+      "path": "/",
+      "item_type": "home"
+    },
+    {
+      "label": "CV",
+      "path": "/cv.html",
+      "item_type": "cv"
+    },
+    {
+      "label": "About",
+      "path": "/about.html",
+      "item_type": "page"
+    },
+    {
+      "label": "Projects",
+      "path": "/projects.html",
+      "item_type": "projects"
+    },
+    {
+      "label": "Blog",
+      "path": "/blog.html",
+      "item_type": "blog"
+    },
+    {
+      "label": "Contact",
+      "path": "/contact.html",
+      "item_type": "page"
+    },
+    {
+      "label": "GitHub",
+      "path": "https://github.com/hakimjonas",
+      "external": true
+    }
+  ],
+  "typst": {
+    "theme": {
+      "name": "grotesk-cv",
+      "version": "1.0.2",
+      "source": "@preview/grotesk-cv"
+    },
+    "customization": {
+      "colors": {
+        "fill": "#f4f1eb",
+        "accent": "#d4d2cc",
+        "text_light": "#ededef",
+        "text_medium": "#78787e",
+        "text_dark": "#3c3c42"
+      },
+      "layout": {
+        "paper_size": "a4",
+        "left_pane_width": "71%",
+        "font": "HK Grotesk",
+        "font_size": "9pt"
+      }
+    }
+  },
+  "pages": {
+    "directory": "content/pages",
+    "auto_menu": true
+  },
+  "blog": {
+    "directory": "content/blog",
+    "posts_per_page": 10,
+    "rss_feed": true
+  },
+  "fonts": {
+    "primary": "JetBrainsMono",
+    "fallback": "FiraCode, monospace",
+    "source": "nerd-fonts",
+    "base_size": "16px",
+    "weight_regular": 400,
+    "weight_bold": 700
+  },
+  "colorscheme": {
+    "name": "Rose Pine Moon",
+    "source": "iterm2",
+    "url": "https://github.com/mbadolato/iTerm2-Color-Schemes"
+  }
+}

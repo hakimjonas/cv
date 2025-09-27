@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}{{ cv.personal_info.name }} - Blog{% endblock %}
+{% block description %}Personal blog of {{ cv.personal_info.name }} featuring articles on technology, programming, and software development.{% endblock %}
+{% block keywords %}blog, articles, technology, programming, software development, {{ cv.personal_info.title }}{% endblock %}
+
+{% block content %}
+<section class="blog-hero" id="blog-hero">
+  <div class="container">
+    <h1 class="page-title">Blog</h1>
+    <p class="page-subtitle">
+      Thoughts, insights, and experiences in software development and technology.
+    </p>
+  </div>
+</section>
+
+<section class="blog-content" id="blog-content">
+  <div class="blog-container">
+    <div class="blog-section">
+      <div class="blog-posts" role="feed">
+        {% if posts.len() > 0 %}
+        {% for post in posts.iter() %}
+        <article class="blog-post-preview">
+          <header>
+            <h2><a href="/blog/{{ post.slug }}.html">{{ post.title }}</a></h2>
+            <div class="post-meta">
+              <time datetime="{{ post.date }}">{{ post.date.format("%B %d, %Y") }}</time>
+              {% match post.reading_time %}
+              {% when Some(time) %}
+              <span class="reading-time">{{ time }} min read</span>
+              {% when None %}
+              {% endmatch %}
+            </div>
+          </header>
+
+          {% match post.excerpt %}
+          {% when Some(excerpt) %}
+          <div class="post-excerpt">
+            <p>{{ excerpt }}</p>
+          </div>
+          {% when None %}
+          {% endmatch %}
+
+          {% if post.tags.len() > 0 %}
+          <div class="post-tags">
+            {% for tag in post.tags.iter() %}
+            <span class="tag">{{ tag }}</span>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <footer>
+            <a href="/blog/{{ post.slug }}.html" class="read-more">Read more →</a>
+          </footer>
+        </article>
+        {% endfor %}
+      {% else %}
+        <div class="no-posts">
+          <p>No blog posts yet. Check back soon!</p>
+        </div>
+      {% endif %}
+      </div>
+    </div>
+
+    {% if tag_groups.len() > 0 %}
+    <div class="blog-section blog-tags-section">
+      <h2 class="section-title">Tags</h2>
+      <div class="tags-list">
+        {% for (tag, _posts) in tag_groups.iter() %}
+        <span class="tag">{{ tag }} ({{ _posts.len() }})</span>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

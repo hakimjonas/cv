@@ -73,10 +73,10 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Install Typst CLI
-        uses: baptiste0928/cargo-install@v3 # Updated to v3
+        uses: baptiste0928/cargo-install@v3
         with:
           crate: typst-cli
-          version: "^0.13.0"
+          version: "^0.13.1"
 
       - name: Build CV generator
         run: cargo build --release --bin cv
@@ -125,7 +125,7 @@ jobs:
           toolchain: stable
 
       - name: Install cargo-audit
-        uses: baptiste0928/cargo-install@v3 # Updated to v3
+        uses: baptiste0928/cargo-install@v3
         with:
           crate: cargo-audit
 

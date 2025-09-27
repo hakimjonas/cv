@@ -1,10 +1,11 @@
-name: CV Generator CI
+name: CV Generator CI (Main Branch)
 
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -111,6 +112,13 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Summary
+        run: |
+          echo "🎉 Main branch deployment completed!"
+          echo "✅ Full code quality checks passed"
+          echo "🧪 All tests passed"
+          echo "🔗 Site URL: ${{ steps.deployment.outputs.page_url }}"
 
   security:
     name: Security Audit

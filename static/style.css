@@ -1584,16 +1584,7 @@ footer {
     margin-bottom: 1.5rem;
 }
 
-/* Additional padding for Profile and Certifications sections */
-.cv-section-profile,
-.cv-section-certifications {
-    padding-bottom: 4rem;
-}
-
-/* Add extra space after certification list items */
-.cv-section-certifications ul li {
-    margin-bottom: 1.5rem;
-}
+/* CV sections now use consistent spacing from layout/layout.css */
 
 .cv-section:hover {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);

@@ -125,8 +125,8 @@ main {
   max-width: 1200px;
   margin: var(--spacing-xxl) auto;
   padding: var(--spacing-xxl) var(--spacing-xxl);
-  background-color: var(--color-card-background);
-  box-shadow: var(--color-card-shadow);
+  background-color: var(--color-background-light);
+  box-shadow: var(--shadow-lg);
   border-radius: var(--border-radius-md);
 }
 
@@ -138,16 +138,11 @@ main {
 
 .cv-section:last-child {
   margin-bottom: 0;
-  padding-bottom: 0;
   border-bottom: none;
+  /* Keep consistent padding-bottom for visual consistency */
 }
 
-/* Additional padding for Profile and Certifications sections */
-
-.cv-section-profile,
-.cv-section-certifications {
-  padding-bottom: 4rem;
-}
+/* All CV sections use consistent spacing from .cv-section */
 
 .skills-grid {
   display: grid;

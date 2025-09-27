@@ -107,7 +107,7 @@ header h1 {
 }
 
 .slider {
-  background-color: var(--rose-pine-muted);
+  background-color: var(--color-muted);
   bottom: 0;
   cursor: pointer;
   left: 0;
@@ -120,7 +120,7 @@ header h1 {
 }
 
 .slider:before {
-  background-color: var(--rose-pine-surface);
+  background-color: var(--color-surface);
   bottom: 4px;
   content: "";
   height: 16px;
@@ -135,7 +135,7 @@ header h1 {
 /* Active state (dark theme) */
 .theme-switch.active .slider,
 .theme-switch[aria-pressed="true"] .slider {
-  background-color: var(--rose-pine-iris);
+  background-color: var(--color-accent);
 }
 
 .theme-switch.active .slider:before,
@@ -146,7 +146,7 @@ header h1 {
 /* Active state (high contrast) */
 .contrast-switch.active .slider,
 .contrast-switch[aria-pressed="true"] .slider {
-  background-color: var(--rose-pine-love);
+  background-color: var(--color-error);
 }
 
 .contrast-switch.active .slider:before,
@@ -156,7 +156,7 @@ header h1 {
 
 /* Contrast switch specific styling */
 .contrast-switch .slider {
-  background-color: var(--rose-pine-muted);
+  background-color: var(--color-muted);
 }
 
 .contrast-switch .theme-icon {
@@ -190,6 +190,26 @@ header h1 {
   color: var(--color-text-light);
 }
 
+/* Ensure navigation is visible on desktop - higher specificity */
+nav#main-navigation {
+  max-height: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  overflow: visible !important;
+  display: flex !important;
+}
+
+/* Additional fallback for desktop screens */
+@media (min-width: 769px) {
+  nav#main-navigation {
+    max-height: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    overflow: visible !important;
+    display: flex !important;
+  }
+}
+
 /* Mobile styles */
 @media (max-width: 768px) {
   .mobile-menu-toggle {
@@ -208,11 +228,12 @@ header h1 {
     transition: max-height var(--transition-medium);
     opacity: 0;
     visibility: hidden;
+    margin-top: 1rem;
   }
 
   /* Show navigation when mobile menu is expanded */
   nav.active {
-    max-height: 300px; /* Adjust based on content */
+    max-height: 400px; /* Increased for theme switcher */
     opacity: 1;
     visibility: visible;
     margin-top: 1rem;

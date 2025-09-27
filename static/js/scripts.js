@@ -57,6 +57,76 @@ const MenuModule = (function() {
     };
 })();
 
+// Theme Module - Light/Dark mode switcher with localStorage persistence
+const ThemeModule = (function() {
+    // Function to set a theme
+    function setTheme(theme) {
+        document.documentElement.className = theme;
+        localStorage.setItem("theme", theme);
+
+        const themeToggle = document.querySelector('.theme-switch');
+        if (themeToggle) {
+            if (theme === "theme-dark") {
+                themeToggle.setAttribute('aria-pressed', 'true');
+                themeToggle.classList.add('active');
+                // Update tooltip to indicate what will happen on next click
+                const lightIcon = themeToggle.querySelector('.light-icon');
+                if (lightIcon) {
+                    lightIcon.setAttribute('title', 'Switch to light theme');
+                }
+            } else {
+                themeToggle.setAttribute('aria-pressed', 'false');
+                themeToggle.classList.remove('active');
+                // Update tooltip to indicate what will happen on next click
+                const darkIcon = themeToggle.querySelector('.dark-icon');
+                if (darkIcon) {
+                    darkIcon.setAttribute('title', 'Switch to dark theme');
+                }
+            }
+        }
+    }
+
+    // Initialize theme system
+    function initTheme() {
+        const themeToggle = document.querySelector('.theme-switch');
+        if (!themeToggle) {
+            return;
+        }
+
+        // Check for saved theme preference or use system preference
+        const currentTheme =
+            localStorage.getItem("theme") ||
+            (window.matchMedia("(prefers-color-scheme: dark)").matches ? "theme-dark" : "theme-light");
+
+        // Apply the theme
+        setTheme(currentTheme);
+
+        // Listen for theme toggle
+        themeToggle.addEventListener("click", function () {
+            if (this.getAttribute('aria-pressed') === 'false') {
+                setTheme("theme-dark");
+            } else {
+                setTheme("theme-light");
+            }
+        });
+
+        // Add keyboard support for better accessibility
+        themeToggle.addEventListener("keydown", function(e) {
+            // Toggle on Space or Enter key
+            if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                this.click();
+            }
+        });
+    }
+
+    // Public API
+    return {
+        init: initTheme,
+        setTheme: setTheme
+    };
+})();
+
 // Load language icons from JSON file
 let languageIcons = {};
 
@@ -118,6 +188,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize the menu with the configuration
     MenuModule.init(menuConfig);
+
+    // Initialize the theme switcher
+    ThemeModule.init();
 
     // Update the current year in the footer
     const currentYearElement = document.getElementById('current-year');

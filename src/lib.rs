@@ -48,7 +48,6 @@ pub mod blog_posts;
 pub mod colorscheme_provider;
 pub mod css_generator;
 pub mod cv_data;
-pub mod git_config;
 pub mod github;
 pub mod github_cache;
 pub mod html_generator;

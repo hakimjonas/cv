@@ -629,3 +629,309 @@ impl<P: ColorSchemeProvider> ColorSchemeProvider for CachedProvider<P> {
         self.provider.provider_name()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::tempdir;
+
+    /// Mock provider for testing
+    struct MockProvider {
+        name: String,
+        schemes: std::collections::HashMap<String, ColorPalette>,
+    }
+
+    impl MockProvider {
+        fn new(name: &str) -> Self {
+            let mut schemes = std::collections::HashMap::new();
+
+            // Add a test scheme
+            schemes.insert(
+                "Test Theme".to_string(),
+                ColorPalette {
+                    black: "#000000".to_string(),
+                    red: "#FF0000".to_string(),
+                    green: "#00FF00".to_string(),
+                    yellow: "#FFFF00".to_string(),
+                    blue: "#0000FF".to_string(),
+                    magenta: "#FF00FF".to_string(),
+                    cyan: "#00FFFF".to_string(),
+                    white: "#FFFFFF".to_string(),
+                    bright_black: "#808080".to_string(),
+                    bright_red: "#FF8080".to_string(),
+                    bright_green: "#80FF80".to_string(),
+                    bright_yellow: "#FFFF80".to_string(),
+                    bright_blue: "#8080FF".to_string(),
+                    bright_magenta: "#FF80FF".to_string(),
+                    bright_cyan: "#80FFFF".to_string(),
+                    bright_white: "#FFFFFF".to_string(),
+                    background: "#000000".to_string(),
+                    foreground: "#FFFFFF".to_string(),
+                    cursor: Some("#FFFFFF".to_string()),
+                    selection: Some("#404040".to_string()),
+                },
+            );
+
+            MockProvider {
+                name: name.to_string(),
+                schemes,
+            }
+        }
+    }
+
+    impl ColorSchemeProvider for MockProvider {
+        fn fetch(&self, name: &str, _variant: Option<&str>) -> Result<ColorPalette> {
+            self.schemes
+                .get(name)
+                .cloned()
+                .ok_or_else(|| anyhow::anyhow!("Scheme '{}' not found", name))
+        }
+
+        fn list_available(&self) -> Result<Vec<String>> {
+            Ok(self.schemes.keys().cloned().collect())
+        }
+
+        fn provider_name(&self) -> &str {
+            &self.name
+        }
+    }
+
+    #[test]
+    fn test_color_palette_to_css_variables() {
+        let palette = ColorPalette {
+            black: "#000000".to_string(),
+            red: "#FF0000".to_string(),
+            green: "#00FF00".to_string(),
+            yellow: "#FFFF00".to_string(),
+            blue: "#0000FF".to_string(),
+            magenta: "#FF00FF".to_string(),
+            cyan: "#00FFFF".to_string(),
+            white: "#FFFFFF".to_string(),
+            bright_black: "#808080".to_string(),
+            bright_red: "#FF8080".to_string(),
+            bright_green: "#80FF80".to_string(),
+            bright_yellow: "#FFFF80".to_string(),
+            bright_blue: "#8080FF".to_string(),
+            bright_magenta: "#FF80FF".to_string(),
+            bright_cyan: "#80FFFF".to_string(),
+            bright_white: "#FFFFFF".to_string(),
+            background: "#1a1a1a".to_string(),
+            foreground: "#f0f0f0".to_string(),
+            cursor: Some("#ffffff".to_string()),
+            selection: Some("#404040".to_string()),
+        };
+
+        let css = palette.to_css_variables();
+
+        assert!(css.contains(":root {"), "Should contain root selector");
+        assert!(
+            css.contains("--color-background: #1a1a1a"),
+            "Should contain background color"
+        );
+        assert!(
+            css.contains("--color-text: #f0f0f0"),
+            "Should contain text color"
+        );
+        assert!(
+            css.contains("--color-primary: #0000FF"),
+            "Should contain primary color mapped to blue"
+        );
+        assert!(
+            css.contains("--color-secondary: #00FFFF"),
+            "Should contain secondary color mapped to cyan"
+        );
+        assert!(
+            css.contains("--color-accent: #FF00FF"),
+            "Should contain accent color mapped to magenta"
+        );
+        assert!(
+            css.contains("--color-cursor: #ffffff"),
+            "Should contain cursor color"
+        );
+        assert!(
+            css.contains("--color-selection: #404040"),
+            "Should contain selection color"
+        );
+        assert!(css.contains("}"), "Should close root selector");
+    }
+
+    #[test]
+    fn test_color_palette_to_theme_css() {
+        let palette = ColorPalette {
+            black: "#000000".to_string(),
+            red: "#FF0000".to_string(),
+            green: "#00FF00".to_string(),
+            yellow: "#FFFF00".to_string(),
+            blue: "#0000FF".to_string(),
+            magenta: "#FF00FF".to_string(),
+            cyan: "#00FFFF".to_string(),
+            white: "#FFFFFF".to_string(),
+            bright_black: "#808080".to_string(),
+            bright_red: "#FF8080".to_string(),
+            bright_green: "#80FF80".to_string(),
+            bright_yellow: "#FFFF80".to_string(),
+            bright_blue: "#8080FF".to_string(),
+            bright_magenta: "#FF80FF".to_string(),
+            bright_cyan: "#80FFFF".to_string(),
+            bright_white: "#FFFFFF".to_string(),
+            background: "#1a1a1a".to_string(),
+            foreground: "#f0f0f0".to_string(),
+            cursor: None,
+            selection: None,
+        };
+
+        let css = palette.to_theme_css(".theme-dark");
+
+        assert!(
+            css.contains(".theme-dark {"),
+            "Should contain theme class selector"
+        );
+        assert!(
+            css.contains("--color-background: #1a1a1a"),
+            "Should contain background color"
+        );
+        assert!(
+            css.contains("--color-text: #f0f0f0"),
+            "Should contain text color"
+        );
+        assert!(!css.contains(":root"), "Should not contain root selector");
+    }
+
+    #[test]
+    fn test_mock_provider_basic_functionality() {
+        let provider = MockProvider::new("Test Provider");
+
+        assert_eq!(provider.provider_name(), "Test Provider");
+
+        let schemes = provider.list_available().unwrap();
+        assert!(schemes.contains(&"Test Theme".to_string()));
+
+        let palette = provider.fetch("Test Theme", None).unwrap();
+        assert_eq!(palette.background, "#000000");
+        assert_eq!(palette.foreground, "#FFFFFF");
+
+        // Test missing scheme
+        let result = provider.fetch("Non-existent Theme", None);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_cached_provider_functionality() {
+        let temp_dir = tempdir().unwrap();
+        let cache_path = temp_dir.path().to_str().unwrap();
+
+        let base_provider = MockProvider::new("Base Provider");
+        let cached_provider = CachedProvider::new(base_provider, cache_path);
+
+        // First fetch should go to base provider
+        let palette1 = cached_provider.fetch("Test Theme", None).unwrap();
+        assert_eq!(palette1.background, "#000000");
+
+        // Verify cache file was created
+        let cache_file = format!("{}/Test Theme-default.json", cache_path);
+        assert!(
+            std::path::Path::new(&cache_file).exists(),
+            "Cache file should exist"
+        );
+
+        // Second fetch should use cache
+        let palette2 = cached_provider.fetch("Test Theme", None).unwrap();
+        assert_eq!(palette2.background, "#000000");
+        assert_eq!(palette1.foreground, palette2.foreground);
+
+        // Provider name should pass through
+        assert_eq!(cached_provider.provider_name(), "Base Provider");
+    }
+
+    #[test]
+    fn test_cached_provider_variant_handling() {
+        let temp_dir = tempdir().unwrap();
+        let cache_path = temp_dir.path().to_str().unwrap();
+
+        let base_provider = MockProvider::new("Base Provider");
+        let cached_provider = CachedProvider::new(base_provider, cache_path);
+
+        // Test with variant
+        let _palette = cached_provider
+            .fetch("Test Theme", Some("variant"))
+            .unwrap();
+
+        // Verify cache file includes variant in name
+        let cache_file = format!("{}/Test Theme-variant.json", cache_path);
+        assert!(
+            std::path::Path::new(&cache_file).exists(),
+            "Cache file with variant should exist"
+        );
+
+        // Test without variant (should default to "default")
+        let _palette = cached_provider.fetch("Test Theme", None).unwrap();
+
+        let default_cache_file = format!("{}/Test Theme-default.json", cache_path);
+        assert!(
+            std::path::Path::new(&default_cache_file).exists(),
+            "Default cache file should exist"
+        );
+    }
+
+    #[test]
+    fn test_github_scheme_provider_creation() {
+        let ghostty_provider = GitHubSchemeProvider::ghostty_colors();
+        assert_eq!(ghostty_provider.repo, "ghostty-org/ghostty-colors");
+        assert_eq!(ghostty_provider.branch, "main");
+        assert_eq!(ghostty_provider.path, "themes");
+        assert!(matches!(ghostty_provider.format, SchemeFormat::Toml));
+
+        let iterm2_provider = GitHubSchemeProvider::iterm2_schemes();
+        assert_eq!(iterm2_provider.repo, "mbadolato/iTerm2-Color-Schemes");
+        assert_eq!(iterm2_provider.branch, "master");
+        assert_eq!(iterm2_provider.path, "schemes");
+        assert!(matches!(iterm2_provider.format, SchemeFormat::ITerm2));
+
+        let base16_provider = GitHubSchemeProvider::base16_schemes();
+        assert_eq!(base16_provider.repo, "chriskempson/base16-schemes-source");
+        assert_eq!(base16_provider.branch, "main");
+        assert_eq!(base16_provider.path, "list.yaml");
+        assert!(matches!(base16_provider.format, SchemeFormat::Yaml));
+    }
+
+    #[test]
+    fn test_local_scheme_provider_creation() {
+        let provider = LocalSchemeProvider {
+            directory: "/test/dir".to_string(),
+            format: SchemeFormat::XResources,
+        };
+
+        assert_eq!(provider.provider_name(), "Local");
+
+        // Test error case for unsupported format with temporary file
+        let temp_dir = tempdir().unwrap();
+        let test_file = temp_dir.path().join("test.json");
+        std::fs::write(&test_file, "test content").unwrap();
+
+        let unsupported_provider = LocalSchemeProvider {
+            directory: temp_dir.path().to_str().unwrap().to_string(),
+            format: SchemeFormat::Json,
+        };
+
+        let result = unsupported_provider.fetch("test.json", None);
+        assert!(result.is_err());
+        assert!(result
+            .unwrap_err()
+            .to_string()
+            .contains("Local format not yet implemented"));
+    }
+
+    #[test]
+    fn test_scheme_format_types() {
+        // Test that all scheme formats can be created
+        let _iterm2 = SchemeFormat::ITerm2;
+        let _json = SchemeFormat::Json;
+        let _yaml = SchemeFormat::Yaml;
+        let _toml = SchemeFormat::Toml;
+        let _xresources = SchemeFormat::XResources;
+
+        // The formats should be different
+        assert!(!matches!(SchemeFormat::ITerm2, SchemeFormat::Json));
+        assert!(!matches!(SchemeFormat::Yaml, SchemeFormat::Toml));
+    }
+}

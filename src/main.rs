@@ -1,11 +1,8 @@
 #[allow(dead_code)]
 // mod asset_processor; // Disabled for now
 mod blog_posts;
-mod bundler;
 
 mod cv_data;
-#[allow(dead_code)]
-mod git_config;
 mod github;
 mod github_cache;
 mod html_generator;

@@ -40,56 +40,6 @@
 </header>
 
 <script>
-  // Theme switcher functionality
-  document.addEventListener('DOMContentLoaded', function() {
-    const themeToggle = document.querySelector('.theme-switch');
-    if (themeToggle) {
-      // Function to set a theme
-      function setTheme(theme) {
-        document.documentElement.className = theme;
-        localStorage.setItem("theme", theme);
-
-        if (theme === "theme-dark") {
-          themeToggle.setAttribute('aria-pressed', 'true');
-          themeToggle.classList.add('active');
-          // Update tooltip to indicate what will happen on next click
-          themeToggle.querySelector('.light-icon').setAttribute('title', 'Switch to light theme');
-        } else {
-          themeToggle.setAttribute('aria-pressed', 'false');
-          themeToggle.classList.remove('active');
-          // Update tooltip to indicate what will happen on next click
-          themeToggle.querySelector('.dark-icon').setAttribute('title', 'Switch to dark theme');
-        }
-      }
-
-      // Check for saved theme preference or use system preference
-      const currentTheme =
-        localStorage.getItem("theme") ||
-        (window.matchMedia("(prefers-color-scheme: dark)").matches ? "theme-dark" : "theme-light");
-
-      // Apply the theme
-      setTheme(currentTheme);
-
-      // Listen for theme toggle
-      themeToggle.addEventListener("click", function () {
-        if (this.getAttribute('aria-pressed') === 'false') {
-          setTheme("theme-dark");
-        } else {
-          setTheme("theme-light");
-        }
-      });
-
-      // Add keyboard support for better accessibility
-      themeToggle.addEventListener("keydown", function(e) {
-        // Toggle on Space or Enter key
-        if (e.key === ' ' || e.key === 'Enter') {
-          e.preventDefault();
-          this.click();
-        }
-      });
-    }
-  });
-
   // Set aria-current for the active navigation link
   document.addEventListener('DOMContentLoaded', function() {
     // Get the current page filename from the URL

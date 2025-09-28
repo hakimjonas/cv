@@ -76,22 +76,95 @@ pub fn minify_js(js_content: &str) -> String {
         .join("\n")
 }
 
-/// Optimize a CSS file by minifying it
+/// Bundle and optimize a CSS file by resolving @imports and minifying
 pub fn optimize_css_file(input_path: &Path, output_path: &Path) -> Result<()> {
-    let css_content = fs::read_to_string(input_path)
-        .with_context(|| format!("Failed to read CSS file: {:?}", input_path))?;
-
-    let minified = minify_css(&css_content);
+    let bundled_css = bundle_css_imports(input_path)?;
+    let minified = minify_css(&bundled_css);
 
     // Ensure output directory exists
     if let Some(parent) = output_path.parent() {
         fs::create_dir_all(parent)?;
     }
 
-    fs::write(output_path, minified)
-        .with_context(|| format!("Failed to write minified CSS: {:?}", output_path))?;
+    fs::write(output_path, minified).with_context(|| {
+        format!(
+            "Failed to write bundled and minified CSS: {:?}",
+            output_path
+        )
+    })?;
 
     Ok(())
+}
+
+/// Bundle CSS by resolving @import statements into a single file
+pub fn bundle_css_imports(css_path: &Path) -> Result<String> {
+    let css_content = fs::read_to_string(css_path)
+        .with_context(|| format!("Failed to read CSS file: {:?}", css_path))?;
+
+    let css_dir = css_path.parent().unwrap_or_else(|| Path::new("."));
+    let mut bundled_content = String::new();
+
+    for line in css_content.lines() {
+        let trimmed = line.trim();
+
+        if trimmed.starts_with("@import") {
+            // Extract the imported file path
+            if let Some(import_path) = extract_import_path(trimmed) {
+                let full_import_path = css_dir.join(&import_path);
+
+                if full_import_path.exists() {
+                    // Recursively bundle imported file
+                    match bundle_css_imports(&full_import_path) {
+                        Ok(imported_content) => {
+                            bundled_content
+                                .push_str(&format!("\n/* Bundled from {} */\n", import_path));
+                            bundled_content.push_str(&imported_content);
+                            bundled_content.push('\n');
+                        }
+                        Err(e) => {
+                            eprintln!("Warning: Failed to bundle {}: {}", import_path, e);
+                            // Keep the original @import line as fallback
+                            bundled_content.push_str(line);
+                            bundled_content.push('\n');
+                        }
+                    }
+                } else {
+                    // Keep external imports (like Google Fonts)
+                    bundled_content.push_str(line);
+                    bundled_content.push('\n');
+                }
+            } else {
+                // Keep the original line if we can't parse it
+                bundled_content.push_str(line);
+                bundled_content.push('\n');
+            }
+        } else {
+            // Keep non-import lines
+            bundled_content.push_str(line);
+            bundled_content.push('\n');
+        }
+    }
+
+    Ok(bundled_content)
+}
+
+/// Extract file path from @import statement
+fn extract_import_path(import_line: &str) -> Option<String> {
+    // Handle: @import "path/file.css";
+    // Handle: @import url("path/file.css");
+
+    if let Some(start) = import_line.find('"') {
+        if let Some(end) = import_line[start + 1..].find('"') {
+            let path = &import_line[start + 1..start + 1 + end];
+            // Skip external URLs
+            if path.starts_with("http") {
+                return None;
+            }
+            return Some(path.to_string());
+        }
+    }
+
+    None
 }
 
 /// Optimize a JavaScript file by minifying it

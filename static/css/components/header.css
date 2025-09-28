@@ -221,7 +221,7 @@ nav#main-navigation {
     align-items: flex-start;
   }
 
-  nav {
+  nav#main-navigation {
     width: 100%;
     max-height: 0;
     overflow: hidden;
@@ -232,7 +232,7 @@ nav#main-navigation {
   }
 
   /* Show navigation when mobile menu is expanded */
-  nav.active {
+  nav#main-navigation.active {
     max-height: 400px; /* Increased for theme switcher */
     opacity: 1;
     visibility: visible;

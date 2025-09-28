@@ -28,3 +28,32 @@
 /* Utility styles */
 @import "utilities/utilities.css";
 @import "markdown.css";
+
+/* Critical navigation visibility fix - ensure this loads */
+nav#main-navigation {
+  max-height: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  overflow: visible !important;
+  display: flex !important;
+}
+
+/* Mobile navigation override */
+@media (max-width: 768px) {
+  nav#main-navigation {
+    width: 100%;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    opacity: 0;
+    visibility: hidden;
+    margin-top: 1rem;
+  }
+
+  nav#main-navigation.active {
+    max-height: 400px;
+    opacity: 1;
+    visibility: visible;
+    margin-top: 1rem;
+  }
+}

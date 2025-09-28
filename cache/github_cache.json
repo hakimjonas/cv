@@ -1,9 +1,21 @@
 {
-  "projects": {},
-  "avatars": {},
+  "projects": {
+    "yourusername": {
+      "data": [],
+      "cached_at": "2025-09-28T15:42:35.831085533Z",
+      "ttl_minutes": 60
+    }
+  },
+  "avatars": {
+    "yourusername": {
+      "data": "https://avatars.githubusercontent.com/u/828141?v=4",
+      "cached_at": "2025-09-28T15:42:36.160316031Z",
+      "ttl_minutes": 240
+    }
+  },
   "metadata": {
     "version": "1.0.0",
     "created_at": "2025-09-27T12:12:35.716423881Z",
-    "updated_at": "2025-09-28T15:14:10.359714132Z"
+    "updated_at": "2025-09-28T15:51:17.961698483Z"
   }
 }

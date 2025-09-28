@@ -81,7 +81,8 @@ nav ul li a.active::after {
 
   nav ul li a:hover,
   nav ul li a:focus {
-    background-color: rgba(var(--color-primary-rgb), 0.1);
+    background-color: var(--color-background-light);
+    opacity: 0.9;
   }
 
   nav ul li a.active::after {
@@ -89,8 +90,9 @@ nav ul li a.active::after {
   }
 
   nav ul li a.active {
-    background-color: rgba(var(--color-primary-rgb), 0.2);
+    background-color: var(--color-background-light);
     color: var(--color-primary);
+    font-weight: 600;
   }
 
   .theme-switch-wrapper {

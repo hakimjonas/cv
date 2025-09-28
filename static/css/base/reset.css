@@ -105,7 +105,7 @@ textarea:focus,
 [tabindex]:focus {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(var(--color-primary-rgb), 0.2);
+  box-shadow: 0 0 0 4px var(--color-background-light);
 }
 
 /* High contrast focus style for users with "prefers-contrast: more" */

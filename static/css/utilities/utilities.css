@@ -512,10 +512,11 @@
 @media (hover: none) {
   /* Apply hover styles to active state for touch devices */
   a:active, button:active, .btn:active, .nav-link:active {
-    background-color: rgba(var(--color-primary-rgb), 0.1);
+    background-color: var(--color-background-light);
+    opacity: 0.9;
     transition: background-color 0.3s ease;
   }
-  
+
   /* Prevent sticky hover states on touch devices */
   a:hover, button:hover, .btn:hover, .nav-link:hover {
     background-color: transparent;

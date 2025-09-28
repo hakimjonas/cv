@@ -1,7 +1,7 @@
 /* Header styles */
 
 header {
-  background-color: var(--color-header-background);
+  background-color: var(--color-background);
   padding: 1rem 0;
   box-shadow: var(--shadow-sm);
   transition: background-color 0.3s ease;

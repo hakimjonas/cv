@@ -1,0 +1,130 @@
+{
+  "personal_info": {
+    "name": "Your Name",
+    "title": "Software Engineer",
+    "email": "your.email@example.com",
+    "phone": "+1 (555) 123-4567",
+    "website": "https://yourwebsite.com",
+    "location": "San Francisco, CA",
+    "summary": "Experienced software engineer with expertise in full-stack development, system design, and building scalable applications. Passionate about creating efficient solutions and contributing to open-source projects.",
+    "social_links": {
+      "GitHub": "https://github.com/yourusername",
+      "LinkedIn": "https://linkedin.com/in/yourprofile",
+      "Twitter": "https://twitter.com/yourhandle"
+    }
+  },
+  "experiences": [
+    {
+      "company": "Tech Company",
+      "position": "Senior Software Engineer",
+      "start_date": "2022-01",
+      "end_date": null,
+      "location": "San Francisco, CA",
+      "description": "Leading development of cloud-native applications and microservices architecture for a platform serving millions of users.",
+      "achievements": [
+        "Architected and implemented a microservices platform serving 1M+ daily active users",
+        "Reduced system latency by 40% through strategic optimization and caching",
+        "Led a team of 5 engineers in delivering critical features"
+      ],
+      "technologies": ["React", "Node.js", "AWS", "Docker", "Kubernetes", "PostgreSQL"]
+    },
+    {
+      "company": "Previous Company",
+      "position": "Software Engineer",
+      "start_date": "2019-06",
+      "end_date": "2021-12",
+      "location": "New York, NY",
+      "description": "Developed full-stack web applications and REST APIs for enterprise clients.",
+      "achievements": [
+        "Built a real-time analytics dashboard processing 100K events per minute",
+        "Implemented CI/CD pipelines reducing deployment time by 60%",
+        "Improved test coverage from 60% to 95%"
+      ],
+      "technologies": ["Vue.js", "Python", "Django", "Redis", "MongoDB"]
+    }
+  ],
+  "education": [
+    {
+      "institution": "University Name",
+      "degree": "Bachelor of Science",
+      "field": "Computer Science",
+      "start_date": "2015-09",
+      "end_date": "2019-05",
+      "location": "City, State",
+      "gpa": "3.8/4.0",
+      "achievements": [
+        "Dean's List (4 semesters)",
+        "Computer Science Honor Society",
+        "Undergraduate Research Assistant"
+      ]
+    }
+  ],
+  "skill_categories": [
+    {
+      "name": "Programming Languages",
+      "skills": ["JavaScript", "TypeScript", "Python", "Rust", "Go", "Java"]
+    },
+    {
+      "name": "Frontend",
+      "skills": ["React", "Vue.js", "Angular", "HTML5", "CSS3", "Webpack"]
+    },
+    {
+      "name": "Backend",
+      "skills": ["Node.js", "Express", "Django", "FastAPI", "GraphQL", "REST"]
+    },
+    {
+      "name": "Databases",
+      "skills": ["PostgreSQL", "MongoDB", "Redis", "MySQL", "DynamoDB"]
+    },
+    {
+      "name": "DevOps & Cloud",
+      "skills": ["Docker", "Kubernetes", "AWS", "CI/CD", "Terraform", "GitHub Actions"]
+    },
+    {
+      "name": "Tools",
+      "skills": ["Git", "Linux", "Vim", "VS Code", "Jira", "Figma"]
+    }
+  ],
+  "projects": [
+    {
+      "name": "Open Source Contribution",
+      "description": "Major contributor to popular open-source project with 10K+ stars",
+      "url": "https://project.example.com",
+      "repository": "https://github.com/org/project",
+      "technologies": ["TypeScript", "React", "Node.js"],
+      "highlights": [
+        "Implemented core authentication system",
+        "Added internationalization support for 10 languages",
+        "Reviewed 50+ pull requests from community"
+      ],
+      "stars": 10000
+    },
+    {
+      "name": "Personal Project",
+      "description": "A developer productivity tool that helps automate repetitive tasks",
+      "repository": "https://github.com/yourusername/tool",
+      "technologies": ["Rust", "TypeScript", "React"],
+      "highlights": [
+        "500+ GitHub stars",
+        "Used by 1000+ developers",
+        "Featured in developer newsletters"
+      ],
+      "stars": 500
+    }
+  ],
+  "languages": {
+    "English": "Native",
+    "Spanish": "Professional",
+    "French": "Intermediate"
+  },
+  "certifications": [
+    "AWS Certified Solutions Architect - Professional",
+    "Google Cloud Professional Developer",
+    "Kubernetes Certified Administrator"
+  ],
+  "github_sources": [
+    {
+      "username": "yourusername"
+    }
+  ]
+}

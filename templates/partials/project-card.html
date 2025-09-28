@@ -37,7 +37,7 @@
   <div class="card-footer">
     <div class="owner-section">
       {% if project.owner_avatar.is_some() %}
-      <img src="{{ project.owner_avatar.as_ref().unwrap() }}" alt="Owner avatar" class="avatar" loading="lazy" />
+      <img src="{{ project.owner_avatar.as_ref().unwrap() }}" alt="{% if project.owner_username.is_some() %}{{ project.owner_username.as_ref().unwrap() }} profile picture{% else %}Project owner profile picture{% endif %}" class="avatar" loading="lazy" />
       {% else %}
       <div class="avatar-placeholder"></div>
       {% endif %}

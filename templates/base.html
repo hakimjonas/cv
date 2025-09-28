@@ -8,6 +8,13 @@
     <meta name="description" content="{% block description %}Personal website of {{ cv.personal_info.name }}{% endblock %}">
     <meta name="keywords" content="{% block keywords %}developer, portfolio, cv, resume, {{ cv.personal_info.title }}{% endblock %}">
     <title>{% block title %}{{ cv.personal_info.name }}{% endblock %}</title>
+    <!-- Preconnect to font resources for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- DNS prefetch for external resources -->
+    <link rel="dns-prefetch" href="https://api.github.com">
+
     <link rel="stylesheet" href="/css/main.css">
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" type="image/png" sizes="192x192" href="/img/icon-192.png">

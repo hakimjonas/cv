@@ -53,6 +53,7 @@ pub mod github_cache;
 pub mod html_generator;
 pub mod language_icons;
 pub mod markdown_pages;
+pub mod optimization;
 pub mod performance;
 pub mod site_config;
 pub mod typst_generator;

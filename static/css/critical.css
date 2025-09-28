@@ -1,0 +1,88 @@
+/* Critical CSS - Above the fold styles for fast loading */
+
+/* Essential reset and box-sizing */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Body and font basics */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.6;
+  color: var(--color-text, #191724);
+  background-color: var(--color-background, #faf4ed);
+}
+
+/* Essential color variables */
+:root {
+  --color-background: #faf4ed;
+  --color-text: #191724;
+  --color-primary: #286983;
+  --color-border: #f2e9de;
+  --color-background-light: #fffaf3;
+}
+
+.theme-dark {
+  --color-background: #232136;
+  --color-text: #e0def4;
+  --color-primary: #3e8fb0;
+  --color-border: #393552;
+  --color-background-light: #2a273f;
+}
+
+/* Header structure */
+header {
+  background-color: var(--color-background);
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* Navigation basics */
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Skip link for accessibility */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--color-primary);
+  color: white;
+  padding: 12px 20px;
+  z-index: 100;
+  transition: top 0.3s ease;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* Container basics */
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* CV container */
+.cv-container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 3rem auto;
+  padding: 3rem;
+  background-color: var(--color-background-light);
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+}

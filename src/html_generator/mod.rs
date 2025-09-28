@@ -25,6 +25,7 @@ use crate::blog_posts::{group_posts_by_tags, load_posts_from_directory};
 use crate::css_generator::generate_colorscheme_css;
 use crate::cv_data::Cv;
 use crate::markdown_pages::load_pages_from_directory;
+use crate::optimization::{optimize_css_file, optimize_js_file};
 use crate::site_config::SiteConfig;
 
 // Re-export public functions from submodules
@@ -191,6 +192,9 @@ pub fn generate_html(cv: &Cv, site_config: &SiteConfig, output_path: &str) -> Re
     // Generate deployment and SEO configuration files
     generate_deployment_configs(parent_dir)?;
 
+    // Optimize CSS and JS files for production
+    optimize_assets(parent_dir)?;
+
     println!("HTML generation completed successfully");
     Ok(())
 }
@@ -258,6 +262,38 @@ fn generate_deployment_configs(parent_dir: &Path) -> Result<()> {
         .context("Failed to convert path to string")?
         .to_string();
     generate_service_worker(&sw_path)?;
+
+    Ok(())
+}
+
+/// Optimizes CSS and JavaScript assets for production
+///
+/// # Arguments
+///
+/// * `parent_dir` - Base directory containing assets to optimize
+///
+/// # Returns
+///
+/// A Result indicating success or failure
+fn optimize_assets(parent_dir: &Path) -> Result<()> {
+    let css_dir = parent_dir.join("css");
+    let js_dir = parent_dir.join("js");
+
+    // Optimize main CSS file if it exists
+    let main_css = css_dir.join("main.css");
+    if main_css.exists() {
+        let main_css_min = css_dir.join("main.min.css");
+        optimize_css_file(&main_css, &main_css_min)?;
+        println!("Optimized main.css → main.min.css");
+    }
+
+    // Optimize main JS file if it exists
+    let main_js = js_dir.join("scripts.js");
+    if main_js.exists() {
+        let main_js_min = js_dir.join("scripts.min.js");
+        optimize_js_file(&main_js, &main_js_min)?;
+        println!("Optimized scripts.js → scripts.min.js");
+    }
 
     Ok(())
 }

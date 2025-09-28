@@ -62,7 +62,13 @@ const ThemeModule = (function() {
     // Function to set a theme
     function setTheme(theme) {
         document.documentElement.className = theme;
-        localStorage.setItem("theme", theme);
+
+        // Safe localStorage access with error handling
+        try {
+            localStorage.setItem("theme", theme);
+        } catch (error) {
+            console.warn('localStorage not available:', error);
+        }
 
         const themeToggle = document.querySelector('.theme-switch');
         if (themeToggle) {
@@ -94,8 +100,14 @@ const ThemeModule = (function() {
         }
 
         // Check for saved theme preference or use system preference
-        const currentTheme =
-            localStorage.getItem("theme") ||
+        let savedTheme = null;
+        try {
+            savedTheme = localStorage.getItem("theme");
+        } catch (error) {
+            console.warn('localStorage not available:', error);
+        }
+
+        const currentTheme = savedTheme ||
             (window.matchMedia("(prefers-color-scheme: dark)").matches ? "theme-dark" : "theme-light");
 
         // Apply the theme
@@ -135,7 +147,7 @@ fetch('data/language_icons.json')
     .then(response => response.json())
     .then(data => {
         languageIcons = data;
-        console.log('Language icons loaded:', Object.keys(languageIcons).length);
+        // Language icons loaded successfully
 
         // Initialize language icons for GitHub cards after icons are loaded
         initializeLanguageIcons();
@@ -296,7 +308,7 @@ if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/service-worker.js')
             .then(registration => {
-                console.log('Service Worker registered with scope:', registration.scope);
+                // Service Worker registered successfully
             })
             .catch(error => {
                 console.error('Service Worker registration failed:', error);

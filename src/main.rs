@@ -14,6 +14,7 @@ mod site_config;
 // mod runtime; // Disabled for now
 mod colorscheme_provider;
 mod css_generator;
+mod optimization;
 mod typst_generator;
 mod unified_config;
 

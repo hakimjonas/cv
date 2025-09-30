@@ -1,0 +1,51 @@
+{
+  "title": "Test Portfolio",
+  "menu": [
+    {
+      "label": "Home",
+      "path": "index.html",
+      "item_type": "home"
+    },
+    {
+      "label": "CV",
+      "path": "cv.html",
+      "item_type": "cv"
+    }
+  ],
+  "typst": {
+    "theme": {
+      "name": "grotesk-cv",
+      "version": "1.0.2",
+      "source": "@preview/grotesk-cv"
+    },
+    "customization": {
+      "colors": {
+        "fill": "#ffffff",
+        "accent": "#cccccc",
+        "text_light": "#eeeeee",
+        "text_medium": "#888888",
+        "text_dark": "#333333"
+      },
+      "layout": {
+        "paper_size": "a4",
+        "left_pane_width": "71%",
+        "font": "Liberation Sans",
+        "font_size": "9pt"
+      }
+    }
+  },
+  "pages": {
+    "directory": "content/pages",
+    "auto_menu": false
+  },
+  "blog": {
+    "directory": "content/blog",
+    "posts_per_page": 10,
+    "rss_feed": false
+  },
+  "fonts": {
+    "primary": "sans-serif",
+    "fallback": "monospace",
+    "source": "system"
+  }
+}

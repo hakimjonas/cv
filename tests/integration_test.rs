@@ -14,8 +14,8 @@ fn test_full_cv_generation_workflow() -> Result<()> {
     let cv = Cv::from_json("data/cv_data.json")?;
     assert!(!cv.personal_info.name.is_empty(), "CV should have a name");
 
-    // Load site configuration
-    let site_config = SiteConfig::from_json("config/site.json")?;
+    // Load test site configuration (no external dependencies)
+    let site_config = SiteConfig::from_json("config/site.test.json")?;
     assert!(
         !site_config.menu.is_empty(),
         "Site config should have menu items"

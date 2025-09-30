@@ -25,8 +25,9 @@ jobs:
           echo "📥 Fetching main branch code..."
           git fetch origin main
           git checkout origin/main -- .
-          # Restore content branch data
+          # Restore content branch data and config
           git checkout content -- data/
+          git checkout content -- config/ 2>/dev/null || echo "⚠️  No config/ on content branch, using defaults from main"
           echo "✅ Code and data merged successfully."
 
       - name: Setup Rust toolchain

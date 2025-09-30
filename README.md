@@ -1,30 +1,36 @@
-# 🚀 CV Generator
+# CV Generator
 
-> A fast, modern CV generator that creates beautiful HTML and PDF outputs from JSON data
+A fast CV generator that creates HTML and PDF outputs from JSON data.
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Rust](https://img.shields.io/badge/rust-stable-orange.svg)](https://www.rust-lang.org)
-[![GitHub Pages](https://img.shields.io/badge/demo-GitHub%20Pages-brightgreen.svg)](https://hakimjonas.github.io/cv/)
 
-## 🎯 Quick Start
+## Getting Started
 
-### 1. Fork & Clone
+**Using GitHub Template (Recommended)**
+
+Click "Use this template" button at the top of this repository. This creates a fresh copy without the original author's content branch.
+
+Then:
+
 ```bash
-# Fork this repository on GitHub, then:
 git clone https://github.com/YOUR_USERNAME/cv.git
 cd cv
+git checkout -b content
 ```
 
-### 2. Add Your Data
+**Or Fork (Manual cleanup required)**
+
+If you fork instead, delete the original `content` branch and create your own:
+
 ```bash
-# Switch to the content branch
-git checkout content
-
-# Edit your CV data
-nano data/cv_data.json
+git clone https://github.com/YOUR_USERNAME/cv.git
+cd cv
+git push origin --delete content
+git checkout -b content
+git push -u origin content
 ```
 
-Update the JSON with your information:
+Edit `data/cv_data.json` with your information:
 ```json
 {
   "personal_info": {
@@ -49,274 +55,49 @@ Update the JSON with your information:
 }
 ```
 
-### 3. Deploy
+Commit and push:
+
 ```bash
-# Commit your data
 git add data/cv_data.json
-git commit -m "Add my CV data"
+git commit -m "Update CV data"
 git push origin content
-
-# Enable GitHub Pages:
-# Go to Settings → Pages → Source: "GitHub Actions"
 ```
 
-Your site will be live at: `https://yourusername.github.io/cv`
+Enable GitHub Pages in your repository settings: Settings → Pages → Source: "GitHub Actions"
 
-## 🔧 Branch Setup
+Your site will be live at `https://yourusername.github.io/cv`
 
-This project uses **two separate branches**:
+## Branch Structure
 
-- **`main`** → Application code (Rust, templates, CSS)
-- **`content`** → Your personal CV data (JSON files)
+This project uses two separate branches:
 
-**⚠️ Important:** Never merge `content` into `main` - they stay separate!
+- `main` - Application code (templates, styles, build system)
+- `content` - Your CV data and blog posts
 
-## 🛠️ Local Development
+Keep these branches separate. Never merge `content` into `main`.
 
-### Prerequisites
-- [Rust](https://rustup.rs/)
-- [GitHub CLI](https://cli.github.com/)
-- [Typst](https://typst.app/) (for PDF generation)
+## Configuration
 
-### Setup & Run
-```bash
-# Install dependencies
-cargo build
+Create `config/site.json` on the `content` branch to customize your site. The `main` branch contains generic defaults as fallback.
 
-# Authenticate GitHub CLI
-gh auth login
+### Menu
 
-# Generate CV locally (uses test data on main branch)
-cargo run
-
-# Serve locally
-cd dist && python3 -m http.server 3000
-```
-
-Visit: `http://localhost:3000`
-
-## 🎨 Key Features
-
-- ✅ **Automatic GitHub Integration** - Fetches your latest projects
-- ✅ **Responsive Design** - Works on all devices
-- ✅ **PDF Export** - Professional PDF generation
-- ✅ **Fast Builds** - Sub-second regeneration
-- ✅ **Dark/Light Themes** - Toggle with the switch in header
-
-## 📝 Content Management
-
-### 📊 CV Data (`content` branch)
-Edit `data/cv_data.json` with your professional information:
-
-<details>
-<summary><strong>📋 Complete CV Data Structure</strong></summary>
-
-```json
-{
-  "personal_info": {
-    "name": "Your Name",
-    "title": "Your Professional Title",
-    "email": "your.email@example.com",
-    "phone": "+1234567890",
-    "website": "https://yoursite.com",
-    "location": "Your City, Country",
-    "summary": "Your professional summary...",
-    "social_links": {
-      "LinkedIn": "https://linkedin.com/in/yourprofile",
-      "GitHub": "https://github.com/yourusername",
-      "Twitter": "https://twitter.com/yourhandle"
-    }
-  },
-  "experiences": [
-    {
-      "company": "Company Name",
-      "position": "Your Position",
-      "start_date": "2020-01",
-      "end_date": "2023-12",
-      "location": "City, Country",
-      "description": "What you did at this job...",
-      "achievements": [
-        "Specific achievement with metrics",
-        "Another accomplishment"
-      ],
-      "technologies": ["Rust", "TypeScript", "React"]
-    }
-  ],
-  "education": [
-    {
-      "institution": "University Name",
-      "degree": "Bachelor of Science",
-      "field": "Computer Science",
-      "start_date": "2016-09",
-      "end_date": "2020-05",
-      "location": "City, Country",
-      "gpa": "3.8",
-      "achievements": ["Magna Cum Laude", "Dean's List"]
-    }
-  ],
-  "skill_categories": [
-    {
-      "name": "Programming Languages",
-      "skills": ["Rust", "TypeScript", "Python", "Go"]
-    },
-    {
-      "name": "Technologies",
-      "skills": ["React", "Docker", "AWS", "PostgreSQL"]
-    }
-  ],
-  "projects": [
-    {
-      "name": "Project Name",
-      "description": "What this project does...",
-      "url": "https://project.com",
-      "repository": "https://github.com/you/project",
-      "technologies": ["Rust", "WebAssembly"],
-      "highlights": ["Key feature", "Impact metrics"]
-    }
-  ],
-  "languages": {
-    "English": "Native",
-    "Spanish": "Conversational",
-    "French": "Basic"
-  },
-  "certifications": [
-    "AWS Solutions Architect",
-    "Certified Kubernetes Administrator"
-  ],
-  "github_sources": [
-    { "username": "yourusername" },
-    { "organization": "yourcompany" }
-  ]
-}
-```
-</details>
-
-### 📰 Blog Posts (`content` branch)
-Create blog posts in `content/blog/` directory:
-
-```bash
-# Switch to content branch
-git checkout content
-
-# Create a new blog post
-mkdir -p content/blog
-cat > content/blog/my-first-post.md << 'EOF'
----
-title: "My First Blog Post"
-date: 2024-01-15
-tags: ["technology", "rust", "programming"]
-published: true
-excerpt: "A brief description of your post..."
----
-
-# My First Blog Post
-
-Your blog content here using **Markdown** syntax.
-
-## Code Examples
-
-```rust
-fn main() {
-    println!("Hello, world!");
-}
-```
-
-## Lists and Links
-
-- Point one
-- Point two
-- [Link to somewhere](https://example.com)
-EOF
-```
-
-**Blog Post Front Matter:**
-- `title`: Post title (required)
-- `date`: Publication date in YYYY-MM-DD format
-- `tags`: Array of tags for categorization
-- `published`: `true` to publish, `false` to keep as draft
-- `excerpt`: Short description for post previews
-
-### 📄 Static Pages (`content` branch)
-Create static pages in `content/pages/` directory:
-
-```bash
-# Create an about page
-cat > content/pages/about.md << 'EOF'
----
-title: "About Me"
-slug: "about"
----
-
-# About Me
-
-Tell your story here. This page will be available at `/about.html`.
-
-## Background
-
-Your background information...
-
-## Interests
-
-What you're passionate about...
-EOF
-
-# Create a contact page
-cat > content/pages/contact.md << 'EOF'
----
-title: "Contact"
-slug: "contact"
----
-
-# Get In Touch
-
-How people can reach you...
-EOF
-```
-
-### 🧭 Menu Configuration (`main` branch)
-Edit `config/site.json` to customize the navigation menu:
+Edit the navigation menu:
 
 ```json
 {
   "menu": [
-    {
-      "label": "Home",
-      "path": "/",
-      "item_type": "home"
-    },
-    {
-      "label": "CV",
-      "path": "/cv.html",
-      "item_type": "cv"
-    },
-    {
-      "label": "About",
-      "path": "/about.html",
-      "item_type": "page"
-    },
-    {
-      "label": "Projects",
-      "path": "/projects.html",
-      "item_type": "projects"
-    },
-    {
-      "label": "Blog",
-      "path": "/blog.html",
-      "item_type": "blog"
-    },
-    {
-      "label": "GitHub",
-      "path": "https://github.com/yourusername",
-      "external": true
-    }
+    { "label": "Home", "path": "index.html", "item_type": "home" },
+    { "label": "CV", "path": "cv.html", "item_type": "cv" },
+    { "label": "Projects", "path": "projects.html", "item_type": "projects" },
+    { "label": "Blog", "path": "blog.html", "item_type": "blog" }
   ]
 }
 ```
 
-## 🎨 Customization
+### Color Scheme
 
-### 🌈 Color Schemes
-Change the color scheme by editing `config/site.json`:
+Choose a color scheme:
 
 ```json
 {
@@ -328,49 +109,29 @@ Change the color scheme by editing `config/site.json`:
 }
 ```
 
-**Available sources:**
-- `"iterm2"` - [iTerm2 Color Schemes](https://github.com/mbadolato/iTerm2-Color-Schemes)
-- `"github"` - GitHub-based color schemes
-- `"local"` - Local color scheme files
+Available sources: `iterm2`, `github`, or `local`
 
-**Popular color schemes:**
-- Rose Pine (light/dark)
-- Dracula
-- Nord
-- Solarized Dark/Light
-- Monokai
-- Gruvbox
+Popular schemes: Dracula, Nord, Solarized, Gruvbox, Rose Pine
 
-### 🔤 Fonts
-Customize fonts in `config/site.json`:
+### Fonts
+
+Configure fonts:
 
 ```json
 {
   "fonts": {
     "primary": "JetBrainsMono",
     "fallback": "FiraCode, monospace",
-    "source": "nerd-fonts",
-    "base_size": "16px",
-    "weight_regular": 400,
-    "weight_bold": 700
+    "source": "nerd-fonts"
   }
 }
 ```
 
-**Font sources:**
-- `"nerd-fonts"` - [Nerd Fonts collection](https://www.nerdfonts.com/)
-- `"google-fonts"` - Google Fonts
-- `"system"` - System fonts
+Font sources: `nerd-fonts`, `google-fonts`, or `system`
 
-**Popular programming fonts:**
-- JetBrains Mono
-- Fira Code
-- Cascadia Code
-- SF Mono
-- Inter (for UI text)
+### PDF Generation
 
-### 📱 PDF Styling
-Customize PDF output in `config/site.json`:
+Configure PDF output using Typst:
 
 ```json
 {
@@ -380,16 +141,8 @@ Customize PDF output in `config/site.json`:
       "version": "1.0.2"
     },
     "customization": {
-      "colors": {
-        "fill": "#f4f1eb",
-        "accent": "#d4d2cc",
-        "text_light": "#ededef",
-        "text_medium": "#78787e",
-        "text_dark": "#3c3c42"
-      },
       "layout": {
         "paper_size": "a4",
-        "left_pane_width": "71%",
         "font": "HK Grotesk",
         "font_size": "9pt"
       }
@@ -398,34 +151,43 @@ Customize PDF output in `config/site.json`:
 }
 ```
 
-## 📁 Structure
+Paper sizes: `a4`, `letter`, `legal`, `a3`, `a5`, `a6`
 
-```
-main branch:     Code, templates, styles
-content branch:
-  ├── data/cv_data.json        # Your CV data
-  ├── content/blog/            # Blog posts (.md)
-  └── content/pages/           # Static pages (.md)
-GitHub Actions:  Auto-deploy on changes
-GitHub Pages:    Live site hosting
-```
+## Content Files
 
-## 🚀 Deployment Details
+All content files go on the `content` branch.
 
-**Automatic deployment triggers:**
-- Push to `content` branch → Rebuilds with your data
-- Push to `main` branch → Full code tests + rebuild
+### CV Data
 
-**Manual deployment:**
-```bash
-cargo run              # Generate site in dist/
-# Deploy dist/ folder to your hosting platform
-```
+Edit `data/cv_data.json` with your professional information.
 
-## 📄 License
+### Blog Posts
 
-MIT License - see [LICENSE](LICENSE) file for details.
+Create markdown files in `content/blog/`:
 
+```markdown
+---
+title: "Post Title"
+date: 2024-01-15
+published: true
 ---
 
-**🦀 Built with Rust • Fork and deploy in 5 minutes!**
+Your content here.
+```
+
+### Static Pages
+
+Create markdown files in `content/pages/`:
+
+```markdown
+---
+title: "Page Title"
+slug: "page-slug"
+---
+
+Your content here.
+```
+
+## License
+
+MIT License - see [LICENSE](LICENSE) file for details.

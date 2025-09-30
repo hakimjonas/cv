@@ -1,5 +1,5 @@
 {
-  "title": "Hakim's Portfolio",
+  "title": "Your Portfolio",
   "menu": [
     {
       "label": "Home",
@@ -12,11 +12,6 @@
       "item_type": "cv"
     },
     {
-      "label": "About",
-      "path": "about.html",
-      "item_type": "page"
-    },
-    {
       "label": "Projects",
       "path": "projects.html",
       "item_type": "projects"
@@ -27,13 +22,8 @@
       "item_type": "blog"
     },
     {
-      "label": "Contact",
-      "path": "contact.html",
-      "item_type": "page"
-    },
-    {
       "label": "GitHub",
-      "path": "https://github.com/hakimjonas",
+      "path": "https://github.com/yourusername",
       "external": true
     }
   ],
@@ -70,14 +60,14 @@
   },
   "fonts": {
     "primary": "JetBrainsMono",
-    "fallback": "FiraCode, monospace",
-    "source": "nerd-fonts",
+    "fallback": "monospace",
+    "source": "system",
     "base_size": "16px",
     "weight_regular": 400,
     "weight_bold": 700
   },
   "colorscheme": {
-    "name": "Rose Pine Moon",
+    "name": "Dracula",
     "source": "iterm2",
     "url": "https://github.com/mbadolato/iTerm2-Color-Schemes"
   }

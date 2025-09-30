@@ -55,47 +55,13 @@
               <i class="nf nf-chevron-down accordion-icon" aria-hidden="true"></i>
             </button>
             <ul id="dependencies-list" class="accordion-content accordion-collapsed">
+              {% for dep in dependencies %}
               <li>
                 <i class="nf nf-cube" aria-hidden="true"></i>
-                <a href="https://serde.rs/" target="_blank" rel="noopener">serde</a> (v1.0) -
-                Serialization framework
+                <a href="{{ dep.url.as_ref().unwrap_or(&"https://crates.io/".to_string()) }}" target="_blank" rel="noopener">{{ dep.name }}</a>
+                (v{{ dep.version }}){% if dep.description.is_some() %} - {{ dep.description.as_ref().unwrap() }}{% endif %}
               </li>
-              <li>
-                <i class="nf nf-cube" aria-hidden="true"></i>
-                <a href="https://github.com/serde-rs/json" target="_blank" rel="noopener"
-                  >serde_json</a
-                >
-                (v1.0) - JSON support
-              </li>
-              <li>
-                <i class="nf nf-cube" aria-hidden="true"></i>
-                <a href="https://github.com/djc/askama" target="_blank" rel="noopener">askama</a>
-                (v0.14.0) - Templating engine
-              </li>
-              <li>
-                <i class="nf nf-cube" aria-hidden="true"></i>
-                <a href="https://github.com/bodil/im-rs" target="_blank" rel="noopener">im</a>
-                (v15.1) - Immutable data structures
-              </li>
-              <li>
-                <i class="nf nf-cube" aria-hidden="true"></i>
-                <a href="https://github.com/dtolnay/anyhow" target="_blank" rel="noopener"
-                  >anyhow</a
-                >
-                (v1.0) - Error handling
-              </li>
-              <li>
-                <i class="nf nf-cube" aria-hidden="true"></i>
-                <a href="https://github.com/seanmonstar/reqwest" target="_blank" rel="noopener"
-                  >reqwest</a
-                >
-                (v0.12.15) - HTTP client
-              </li>
-              <li>
-                <i class="nf nf-cube" aria-hidden="true"></i>
-                <a href="https://tokio.rs/" target="_blank" rel="noopener">tokio</a> (v1) - Async
-                runtime
-              </li>
+              {% endfor %}
             </ul>
           </li>
         </ul>

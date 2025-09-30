@@ -48,6 +48,7 @@ pub mod blog_posts;
 pub mod colorscheme_provider; // Now a directory module
 pub mod css_generator;
 pub mod cv_data;
+pub mod dependencies;
 pub mod github;
 pub mod github_cache;
 pub mod html_generator;

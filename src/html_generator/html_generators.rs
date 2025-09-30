@@ -10,6 +10,7 @@ use im::{HashMap, Vector};
 use super::utils::{ensure_parent_dir_exists, get_cache_version, write_file};
 use crate::blog_posts::BlogPost;
 use crate::cv_data::Cv;
+use crate::dependencies::Dependency;
 use crate::markdown_pages::Page;
 use crate::site_config::SiteConfig;
 
@@ -20,6 +21,7 @@ struct CvTemplate<'a> {
     cv: &'a Cv,
     site_config: &'a SiteConfig,
     version: &'a str,
+    dependencies: &'a [Dependency],
 }
 
 /// Template for the index HTML page
@@ -36,6 +38,7 @@ struct ProjectsTemplate<'a> {
     cv: &'a Cv,
     site_config: &'a SiteConfig,
     version: &'a str,
+    dependencies: &'a [Dependency],
 }
 
 /// Template for the blog HTML page
@@ -45,6 +48,7 @@ struct BlogTemplate<'a> {
     cv: &'a Cv,
     site_config: &'a SiteConfig,
     version: &'a str,
+    dependencies: &'a [Dependency],
 }
 
 /// Template for static pages
@@ -55,6 +59,7 @@ struct PageTemplate<'a> {
     site_config: &'a SiteConfig,
     page: &'a Page,
     version: &'a str,
+    dependencies: &'a [Dependency],
 }
 
 /// Template for blog list page
@@ -66,6 +71,7 @@ struct BlogListTemplate<'a> {
     posts: &'a Vector<BlogPost>,
     tag_groups: &'a HashMap<String, Vector<BlogPost>>,
     version: &'a str,
+    dependencies: &'a [Dependency],
 }
 
 /// Template for individual blog post
@@ -76,6 +82,7 @@ struct BlogPostTemplate<'a> {
     site_config: &'a SiteConfig,
     post: &'a BlogPost,
     version: &'a str,
+    dependencies: &'a [Dependency],
 }
 
 /// Generates the main CV HTML page
@@ -84,12 +91,18 @@ struct BlogPostTemplate<'a> {
 ///
 /// * `cv` - CV data
 /// * `site_config` - Site configuration
+/// * `dependencies` - Project dependencies from Cargo.toml
 /// * `output_path` - Path where the CV HTML will be written
 ///
 /// # Returns
 ///
 /// A Result indicating success or failure
-pub fn generate_cv_html(cv: &Cv, site_config: &SiteConfig, output_path: &str) -> Result<()> {
+pub fn generate_cv_html(
+    cv: &Cv,
+    site_config: &SiteConfig,
+    dependencies: &[Dependency],
+    output_path: &str,
+) -> Result<()> {
     ensure_parent_dir_exists(output_path)?;
 
     let version = get_cache_version();
@@ -97,6 +110,7 @@ pub fn generate_cv_html(cv: &Cv, site_config: &SiteConfig, output_path: &str) ->
         cv,
         site_config,
         version: &version,
+        dependencies,
     };
     let rendered = template.render().context("Failed to render CV template")?;
 
@@ -137,12 +151,18 @@ pub fn generate_index_html(cv: &Cv, _site_config: &SiteConfig, output_path: &str
 ///
 /// * `cv` - CV data
 /// * `site_config` - Site configuration
+/// * `dependencies` - Project dependencies from Cargo.toml
 /// * `output_path` - Path where the projects HTML will be written
 ///
 /// # Returns
 ///
 /// A Result indicating success or failure
-pub fn generate_projects_html(cv: &Cv, site_config: &SiteConfig, output_path: &str) -> Result<()> {
+pub fn generate_projects_html(
+    cv: &Cv,
+    site_config: &SiteConfig,
+    dependencies: &[Dependency],
+    output_path: &str,
+) -> Result<()> {
     ensure_parent_dir_exists(output_path)?;
 
     let version = get_cache_version();
@@ -150,6 +170,7 @@ pub fn generate_projects_html(cv: &Cv, site_config: &SiteConfig, output_path: &s
         cv,
         site_config,
         version: &version,
+        dependencies,
     };
     let rendered = template
         .render()
@@ -167,12 +188,18 @@ pub fn generate_projects_html(cv: &Cv, site_config: &SiteConfig, output_path: &s
 ///
 /// * `cv` - CV data
 /// * `site_config` - Site configuration
+/// * `dependencies` - Project dependencies from Cargo.toml
 /// * `output_path` - Path where the blog HTML will be written
 ///
 /// # Returns
 ///
 /// A Result indicating success or failure
-pub fn generate_blog_html(cv: &Cv, site_config: &SiteConfig, output_path: &str) -> Result<()> {
+pub fn generate_blog_html(
+    cv: &Cv,
+    site_config: &SiteConfig,
+    dependencies: &[Dependency],
+    output_path: &str,
+) -> Result<()> {
     ensure_parent_dir_exists(output_path)?;
 
     let version = get_cache_version();
@@ -180,6 +207,7 @@ pub fn generate_blog_html(cv: &Cv, site_config: &SiteConfig, output_path: &str) 
         cv,
         site_config,
         version: &version,
+        dependencies,
     };
     let rendered = template
         .render()
@@ -198,6 +226,7 @@ pub fn generate_blog_html(cv: &Cv, site_config: &SiteConfig, output_path: &str) 
 /// * `cv` - CV data
 /// * `site_config` - Site configuration
 /// * `page` - Page data with content and metadata
+/// * `dependencies` - Project dependencies from Cargo.toml
 /// * `output_path` - Path where the page HTML will be written
 ///
 /// # Returns
@@ -207,6 +236,7 @@ pub fn generate_page_html(
     cv: &Cv,
     site_config: &SiteConfig,
     page: &Page,
+    dependencies: &[Dependency],
     output_path: &str,
 ) -> Result<()> {
     ensure_parent_dir_exists(output_path)?;
@@ -217,6 +247,7 @@ pub fn generate_page_html(
         site_config,
         page,
         version: &version,
+        dependencies,
     };
     let rendered = template
         .render()
@@ -236,6 +267,7 @@ pub fn generate_page_html(
 /// * `site_config` - Site configuration
 /// * `posts` - Vector of blog posts
 /// * `tag_groups` - Posts grouped by tags
+/// * `dependencies` - Project dependencies from Cargo.toml
 /// * `output_path` - Path where the blog list HTML will be written
 ///
 /// # Returns
@@ -246,6 +278,7 @@ pub fn generate_blog_list_html(
     site_config: &SiteConfig,
     posts: &Vector<BlogPost>,
     tag_groups: &HashMap<String, Vector<BlogPost>>,
+    dependencies: &[Dependency],
     output_path: &str,
 ) -> Result<()> {
     ensure_parent_dir_exists(output_path)?;
@@ -257,6 +290,7 @@ pub fn generate_blog_list_html(
         posts,
         tag_groups,
         version: &version,
+        dependencies,
     };
     let rendered = template
         .render()
@@ -275,6 +309,7 @@ pub fn generate_blog_list_html(
 /// * `cv` - CV data
 /// * `site_config` - Site configuration
 /// * `post` - Blog post data
+/// * `dependencies` - Project dependencies from Cargo.toml
 /// * `output_path` - Path where the blog post HTML will be written
 ///
 /// # Returns
@@ -284,6 +319,7 @@ pub fn generate_blog_post_html(
     cv: &Cv,
     site_config: &SiteConfig,
     post: &BlogPost,
+    dependencies: &[Dependency],
     output_path: &str,
 ) -> Result<()> {
     ensure_parent_dir_exists(output_path)?;
@@ -294,6 +330,7 @@ pub fn generate_blog_post_html(
         site_config,
         post,
         version: &version,
+        dependencies,
     };
     let rendered = template
         .render()

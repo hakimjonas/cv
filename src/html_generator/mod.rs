@@ -24,6 +24,7 @@ use std::path::Path;
 use crate::blog_posts::{group_posts_by_tags, load_posts_from_directory};
 use crate::css_generator::generate_colorscheme_css;
 use crate::cv_data::Cv;
+use crate::dependencies::parse_dependencies;
 use crate::markdown_pages::load_pages_from_directory;
 use crate::optimization::{optimize_css_file, optimize_js_file};
 use crate::site_config::SiteConfig;
@@ -68,8 +69,11 @@ pub mod utils;
 /// }
 /// ```
 pub fn generate_html(cv: &Cv, site_config: &SiteConfig, output_path: &str) -> Result<()> {
+    // Parse dependencies from Cargo.toml
+    let dependencies = parse_dependencies("Cargo.toml").unwrap_or_default();
+
     // Generate main CV HTML
-    generate_cv_html(cv, site_config, output_path)?;
+    generate_cv_html(cv, site_config, &dependencies, output_path)?;
 
     // Get parent directory for other HTML files
     let parent_dir = Path::new(output_path)
@@ -92,7 +96,7 @@ pub fn generate_html(cv: &Cv, site_config: &SiteConfig, output_path: &str) -> Re
         .context("Failed to convert path to string")?
         .to_string();
 
-    generate_projects_html(cv, site_config, &projects_path)?;
+    generate_projects_html(cv, site_config, &dependencies, &projects_path)?;
 
     // Generate blog HTML
     let blog_path = parent_dir
@@ -111,7 +115,7 @@ pub fn generate_html(cv: &Cv, site_config: &SiteConfig, output_path: &str) -> Re
             let tag_groups = group_posts_by_tags(&posts);
 
             // Generate blog list page
-            generate_blog_list_html(cv, site_config, &posts, &tag_groups, &blog_path)?;
+            generate_blog_list_html(cv, site_config, &posts, &tag_groups, &dependencies, &blog_path)?;
 
             // Create blog subdirectory for individual posts
             let blog_posts_dir = parent_dir.join("blog");
@@ -125,12 +129,12 @@ pub fn generate_html(cv: &Cv, site_config: &SiteConfig, output_path: &str) -> Re
                     .context("Failed to convert path to string")?
                     .to_string();
 
-                generate_blog_post_html(cv, site_config, post, &post_path)?;
+                generate_blog_post_html(cv, site_config, post, &dependencies, &post_path)?;
             }
         }
     } else {
         // Fallback to old blog template if not configured
-        generate_blog_html(cv, site_config, &blog_path)?;
+        generate_blog_html(cv, site_config, &dependencies, &blog_path)?;
     }
 
     // Generate static pages from markdown if configured
@@ -149,7 +153,7 @@ pub fn generate_html(cv: &Cv, site_config: &SiteConfig, output_path: &str) -> Re
                     .context("Failed to convert path to string")?
                     .to_string();
 
-                generate_page_html(cv, site_config, page, &page_path)?;
+                generate_page_html(cv, site_config, page, &dependencies, &page_path)?;
             }
         }
     }

@@ -115,7 +115,14 @@ pub fn generate_html(cv: &Cv, site_config: &SiteConfig, output_path: &str) -> Re
             let tag_groups = group_posts_by_tags(&posts);
 
             // Generate blog list page
-            generate_blog_list_html(cv, site_config, &posts, &tag_groups, &dependencies, &blog_path)?;
+            generate_blog_list_html(
+                cv,
+                site_config,
+                &posts,
+                &tag_groups,
+                &dependencies,
+                &blog_path,
+            )?;
 
             // Create blog subdirectory for individual posts
             let blog_posts_dir = parent_dir.join("blog");

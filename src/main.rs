@@ -1,34 +1,20 @@
-#[allow(dead_code)]
-// mod asset_processor; // Disabled for now
-mod blog_posts;
-
-mod cv_data;
-mod github;
-mod github_cache;
-mod html_generator;
-mod language_icons;
-mod markdown_pages;
-mod performance;
-mod site_config;
-// #[allow(dead_code)]
-// mod runtime; // Disabled for now
-mod colorscheme_provider;
-mod css_generator;
-mod optimization;
-mod typst_generator;
-mod unified_config;
-
 use anyhow::{Context, Result};
-// use cv::logging; // Disabled for now
-use github_cache::GitHubCache;
+use cv_generator::{
+    cv_data::Cv,
+    github,
+    github_cache::GitHubCache,
+    html_generator,
+    language_icons::LanguageIcons,
+    performance::BuildProfiler,
+    site_config::SiteConfig,
+    typst_generator,
+    unified_config::{self, AppConfig},
+};
 use im::Vector;
-use performance::BuildProfiler;
-use site_config::SiteConfig;
 use std::env;
 use std::fs;
 use std::path::Path;
 use tracing::{debug, info, warn};
-use unified_config::AppConfig;
 
 // Extension trait to enable method chaining with pipe
 #[allow(dead_code)]
@@ -125,8 +111,7 @@ async fn main() -> Result<()> {
             "Loading CV data from local file: {}",
             config.data_path.display()
         );
-        cv_data::Cv::from_json(&config.data_path.to_string_lossy())
-            .context("Failed to load CV data")
+        Cv::from_json(&config.data_path.to_string_lossy()).context("Failed to load CV data")
     })?;
 
     // We're using GitHub CLI (gh) which handles authentication automatically
@@ -207,7 +192,7 @@ async fn main() -> Result<()> {
         .parent()
         .unwrap()
         .join("language_icons.json");
-    match language_icons::LanguageIcons::from_json(icons_path.to_str().unwrap()) {
+    match LanguageIcons::from_json(icons_path.to_str().unwrap()) {
         Ok(icons) => {
             info!("Found {} language icons", icons.0.len());
 

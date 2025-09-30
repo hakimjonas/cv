@@ -3,8 +3,7 @@ use im::Vector;
 use serde::{Deserialize, Serialize};
 use std::fs;
 
-/// Valid paper sizes for Typst PDF generation
-const VALID_PAPER_SIZES: &[&str] = &["a4", "letter", "legal", "a3", "a5"];
+use crate::validation::validate_paper_size;
 
 /// Site configuration including menu and navigation
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -415,14 +414,13 @@ impl TypstLayout {
     ///
     /// A Result indicating success or failure
     pub fn validate(&self) -> Result<()> {
-        // Validate paper size
-        if !VALID_PAPER_SIZES.contains(&self.paper_size.as_str()) {
-            return Err(anyhow::anyhow!(
-                "Invalid Typst paper size '{}'. Valid options: {:?}",
-                self.paper_size,
-                VALID_PAPER_SIZES
-            ));
-        }
+        // Validate paper size using validation module
+        validate_paper_size(&self.paper_size).with_context(|| {
+            format!(
+                "Invalid paper size in Typst layout configuration: {}",
+                self.paper_size
+            )
+        })?;
 
         // Validate left pane width (should be percentage)
         if !self.left_pane_width.ends_with('%') {
@@ -597,7 +595,7 @@ mod tests {
         assert!(result
             .unwrap_err()
             .to_string()
-            .contains("Invalid Typst paper size"));
+            .contains("Invalid paper size"));
     }
 
     #[test]

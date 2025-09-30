@@ -65,12 +65,26 @@ pub fn generate_pdf(
         .arg(temp_path)
         .arg(output_path)
         .status()
-        .context("Failed to execute Typst CLI. Make sure it's installed and in your PATH")?;
+        .context(
+            "Failed to execute 'typst' command.\n\
+                  \n\
+                  Is Typst installed?\n\
+                  - Install from: https://typst.app/\n\
+                  - Or run: cargo install typst-cli\n\
+                  - Or run: brew install typst (macOS) / sudo snap install typst (Ubuntu)",
+        )?;
 
     if !status.success() {
         return Err(anyhow::anyhow!(
-            "Typst compilation failed with status: {}",
-            status
+            "Typst compilation failed with status: {}\n\
+             \n\
+             Check the following:\n\
+             - Verify paper size is valid (a4, letter, legal, a3, a5)\n\
+             - Ensure font '{}' is available on your system\n\
+             - Check temporary file for syntax errors: {}",
+            status,
+            "HK Grotesk (or configured font)",
+            temp_path
         ));
     }
 

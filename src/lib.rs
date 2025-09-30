@@ -45,7 +45,7 @@
 //!
 // Core CV generation modules
 pub mod blog_posts;
-pub mod colorscheme_provider;
+pub mod colorscheme_provider; // Now a directory module
 pub mod css_generator;
 pub mod cv_data;
 pub mod github;
@@ -58,6 +58,7 @@ pub mod performance;
 pub mod site_config;
 pub mod typst_generator;
 pub mod unified_config;
+pub mod validation;
 
 // Utility modules
 // pub mod logging; // Disabled for now

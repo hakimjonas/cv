@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use im::Vector;
 use serde::{Deserialize, Serialize};
-use std::fs;
+use std::{env, fs};
 
 /// Represents personal information in a CV
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -113,8 +113,18 @@ impl Cv {
     /// let cv = Cv::from_json("data/cv_data.json").expect("Failed to load CV data");
     /// ```
     pub fn from_json(path: &str) -> Result<Self> {
-        let data = fs::read_to_string(path)
-            .with_context(|| format!("Failed to read CV data from {path}"))?;
+        let data = fs::read_to_string(path).with_context(|| {
+            format!(
+                "Failed to read CV data file: {}\n\
+                                      \n\
+                                      Please ensure:\n\
+                                      - The file exists at the specified path\n\
+                                      - You have read permissions\n\
+                                      - Current directory: {}",
+                path,
+                env::current_dir().unwrap_or_default().display()
+            )
+        })?;
 
         Self::from_json_str(&data, path)
     }
@@ -130,8 +140,17 @@ impl Cv {
     ///
     /// A Result containing the parsed CV data or an error
     pub fn from_json_str(json_str: &str, source: &str) -> Result<Self> {
-        serde_json::from_str(json_str)
-            .with_context(|| format!("Failed to parse CV data from {source}"))
+        serde_json::from_str(json_str).with_context(|| {
+            format!(
+                "Failed to parse CV data from: {}\n\
+                                      \n\
+                                      JSON parsing error. Please check:\n\
+                                      - Valid JSON syntax (use https://jsonlint.com/ to validate)\n\
+                                      - Required fields are present (name, title, email, summary)\n\
+                                      - See example structure in README.md or data/cv_data.json",
+                source
+            )
+        })
     }
 
     /// Create a minimal CV data structure for testing
@@ -214,7 +233,7 @@ mod tests {
         assert!(result
             .unwrap_err()
             .to_string()
-            .contains("Failed to parse CV data from test"));
+            .contains("Failed to parse CV data from: test"));
     }
 
     #[test]
@@ -262,7 +281,7 @@ mod tests {
         assert!(result
             .unwrap_err()
             .to_string()
-            .contains("Failed to read CV data from nonexistent_file.json"));
+            .contains("Failed to read CV data file: nonexistent_file.json"));
     }
 
     #[test]

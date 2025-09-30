@@ -39,6 +39,7 @@ use std::process::Command;
 
 use crate::cv_data::{GitHubSource, Project};
 use crate::github_cache::GitHubCache;
+use crate::validation::validate_github_username;
 
 /// GitHub repository information
 #[derive(Debug, Deserialize, Serialize)]
@@ -80,6 +81,10 @@ struct GitHubOwner {
 ///
 /// To avoid rate limiting, provide a GitHub API token.
 pub fn fetch_github_projects(username: &str) -> Result<Vector<Project>> {
+    // Validate username format before making API call
+    validate_github_username(username)
+        .with_context(|| format!("Invalid GitHub username: {}", username))?;
+
     // Use GitHub CLI to fetch repositories
     let output = Command::new("gh")
         .args([
@@ -89,12 +94,26 @@ pub fn fetch_github_projects(username: &str) -> Result<Vector<Project>> {
             "map(select(.private == false and .fork == false)) | sort_by(.updated_at) | reverse | .[0:10]",
         ])
         .output()
-        .context("Failed to execute gh command. Make sure GitHub CLI is installed and authenticated.")?;
+        .context("Failed to execute 'gh' command.\n\
+                  \n\
+                  Is GitHub CLI installed?\n\
+                  - Install from: https://cli.github.com/\n\
+                  - Or run: brew install gh (macOS) / sudo apt install gh (Ubuntu)\n\
+                  \n\
+                  Is GitHub CLI authenticated?\n\
+                  - Run: gh auth login")?;
 
     if !output.status.success() {
         let error = String::from_utf8_lossy(&output.stderr);
         return Err(anyhow::anyhow!(
-            "GitHub CLI request failed for user {}: {}",
+            "GitHub CLI request failed for user '{}':\n\
+             {}\n\
+             \n\
+             Possible causes:\n\
+             - User does not exist\n\
+             - Network connectivity issues\n\
+             - Rate limit exceeded (try: gh auth login for higher limits)\n\
+             - GitHub CLI not authenticated properly",
             username,
             error
         ));
@@ -360,6 +379,10 @@ pub fn fetch_projects_from_sources(sources: &Vector<GitHubSource>) -> Result<Vec
 ///
 /// A Result containing the avatar URL string
 pub fn fetch_github_avatar(username: &str) -> Result<String> {
+    // Validate username format before making API call
+    validate_github_username(username)
+        .with_context(|| format!("Invalid GitHub username: {}", username))?;
+
     let output = Command::new("gh")
         .args([
             "api",

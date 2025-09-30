@@ -82,20 +82,22 @@ jobs:
       - name: Install required fonts
         run: |
           echo "📥 Installing fonts for PDF generation..."
+
           # Install Font Awesome for icons
-          wget -q https://github.com/FortAwesome/Font-Awesome/releases/download/6.5.1/fontawesome-free-6.5.1-desktop.zip
-          unzip -q fontawesome-free-6.5.1-desktop.zip
+          echo "Downloading Font Awesome..."
+          wget https://github.com/FortAwesome/Font-Awesome/releases/download/6.5.1/fontawesome-free-6.5.1-desktop.zip
+          unzip fontawesome-free-6.5.1-desktop.zip
           sudo mkdir -p /usr/share/fonts/truetype/fontawesome
           sudo cp fontawesome-free-6.5.1-desktop/otfs/*.otf /usr/share/fonts/truetype/fontawesome/
 
-          # Install Hanken Grotesk from GitHub release
-          wget -q https://github.com/marcologous/hanken-grotesk/releases/download/v1.0.0/hanken-grotesk.zip
-          unzip -q hanken-grotesk.zip
+          # Install Hanken Grotesk
+          echo "Downloading Hanken Grotesk..."
+          git clone --depth 1 https://github.com/marcologous/hanken-grotesk.git
           sudo mkdir -p /usr/share/fonts/truetype/hanken-grotesk
-          sudo cp *.ttf /usr/share/fonts/truetype/hanken-grotesk/ 2>/dev/null || true
-          sudo cp */*.ttf /usr/share/fonts/truetype/hanken-grotesk/ 2>/dev/null || true
+          sudo cp hanken-grotesk/fonts/ttf/*.ttf /usr/share/fonts/truetype/hanken-grotesk/
 
           # Update font cache
+          echo "Updating font cache..."
           sudo fc-cache -fv
           echo "✅ Fonts installed (Hanken Grotesk + Font Awesome)"
 

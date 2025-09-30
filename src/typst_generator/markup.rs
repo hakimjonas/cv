@@ -400,10 +400,14 @@ fn generate_meta_variable(cv: &Cv, typst_config: &TypstConfig) -> String {
         // Language section
         .pipe(|s| append_line(s, "  language: ("))
         .pipe(|s| append_line(s, "    en: ("))
-        .pipe(|s| append_line(s, "      subtitle: \"Data Engineer with a focus on functional programming and scalable solutions\""))
+        .pipe(|s| append_line(s, "      subtitle: \"Data Engineer with a focus on functional programming and scalable solutions\","))
+        .pipe(|s| append_line(s, "      ai_prompt: \"\","))  // Empty AI prompt - users can enable if desired
+        .pipe(|s| append_line(s, "      cv_document_name: \"CV\""))
         .pipe(|s| append_line(s, "    ),"))
         .pipe(|s| append_line(s, "    dk: ("))
-        .pipe(|s| append_line(s, "      subtitle: \"\""))
+        .pipe(|s| append_line(s, "      subtitle: \"\","))
+        .pipe(|s| append_line(s, "      ai_prompt: \"\","))
+        .pipe(|s| append_line(s, "      cv_document_name: \"CV\""))
         .pipe(|s| append_line(s, "    )"))
         .pipe(|s| append_line(s, "  ),"))
         // Personal section
@@ -456,6 +460,11 @@ fn generate_meta_variable(cv: &Cv, typst_config: &TypstConfig) -> String {
         .pipe(|s| append_line(s, "      linkedin: \"linkedin\","))
         .pipe(|s| append_line(s, "      github: \"github\","))
         .pipe(|s| append_line(s, "      homepage: \"globe\""))
+        .pipe(|s| append_line(s, "    ),"))
+        .pipe(|s| append_line(s, "    ia: ("))  // AI injection settings - keep disabled
+        .pipe(|s| append_line(s, "      inject_ai_prompt: false,"))
+        .pipe(|s| append_line(s, "      inject_keywords: false,"))
+        .pipe(|s| append_line(s, "      keywords_list: []"))
         .pipe(|s| append_line(s, "    )"))
         .pipe(|s| append_line(s, "  ),"))
         // Section icons

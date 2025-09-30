@@ -40,7 +40,7 @@
   "typst": {
     "theme": {
       "name": "grotesk-cv",
-      "version": "1.0.2",
+      "version": "1.0.5",
       "source": "@preview/grotesk-cv"
     },
     "customization": {

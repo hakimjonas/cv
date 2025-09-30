@@ -4,10 +4,18 @@
 //!
 //! ## Features
 //!
-//! - **🚀 GitHub CLI Integration**: Uses `gh` CLI for authenticated API access
+//! - **🔐 Automatic Authentication**: Automatically detects and uses available authentication methods
 //! - **🧠 Smart Caching**: TTL-based caching system reduces API calls by 100%
-//! - **⚡ Performance**: Cache-aware functions avoid unnecessary API requests
-//! - **🔄 Automatic Fallback**: Falls back to fresh API calls when cache misses
+//! - **⚡ Performance**: Direct HTTP API calls via reqwest for maximum speed
+//! - **🔄 Automatic Fallback**: Multiple fallback strategies ensure reliability
+//!
+//! ## Authentication Strategy
+//!
+//! The module automatically selects the best authentication method:
+//! 1. **GITHUB_TOKEN** - Automatically provided by GitHub Actions (5,000 req/hr)
+//! 2. **GH_TOKEN** - User-provided token via environment variable (5,000 req/hr)
+//! 3. **gh CLI** - Falls back to gh CLI if installed (5,000 req/hr if authenticated)
+//! 4. **Public API** - Unauthenticated requests as last resort (60 req/hr)
 //!
 //! ## Cache Performance
 //!
@@ -35,6 +43,7 @@
 use anyhow::{Context, Result};
 use im::Vector;
 use serde::{Deserialize, Serialize};
+use std::env;
 use std::process::Command;
 
 use crate::cv_data::{GitHubSource, Project};
@@ -62,30 +71,106 @@ struct GitHubOwner {
     avatar_url: String,
 }
 
-/// Fetches public GitHub repositories for a user
-///
-/// # Arguments
-///
-/// * `username` - GitHub username
-/// * `token` - Optional GitHub API token for authentication
-///
-/// # Returns
-///
-/// A Result containing a Vector of Project structs
-///
-/// # Rate Limits
-///
-/// GitHub API has rate limits:
-/// - Unauthenticated requests: 60 requests per hour
-/// - Authenticated requests: 5,000 requests per hour
-///
-/// To avoid rate limiting, provide a GitHub API token.
-pub fn fetch_github_projects(username: &str) -> Result<Vector<Project>> {
-    // Validate username format before making API call
-    validate_github_username(username)
-        .with_context(|| format!("Invalid GitHub username: {}", username))?;
+/// Authentication strategy for GitHub API
+enum AuthStrategy {
+    Token(String),
+    GhCli,
+    Public,
+}
 
-    // Use GitHub CLI to fetch repositories
+/// Determine the best authentication strategy
+fn get_auth_strategy() -> AuthStrategy {
+    // Priority 1: GITHUB_TOKEN (provided by GitHub Actions)
+    if let Ok(token) = env::var("GITHUB_TOKEN") {
+        if !token.is_empty() {
+            return AuthStrategy::Token(token);
+        }
+    }
+
+    // Priority 2: GH_TOKEN (user-provided)
+    if let Ok(token) = env::var("GH_TOKEN") {
+        if !token.is_empty() {
+            return AuthStrategy::Token(token);
+        }
+    }
+
+    // Priority 3: gh CLI (if available)
+    if Command::new("gh").arg("--version").output().is_ok() {
+        return AuthStrategy::GhCli;
+    }
+
+    // Priority 4: Public API (unauthenticated, 60 req/hr)
+    AuthStrategy::Public
+}
+
+/// Fetch repositories using GitHub API with token (async)
+async fn fetch_repos_with_api_async(
+    username: &str,
+    token: Option<&str>,
+) -> Result<Vec<GitHubRepo>> {
+    let url = format!("https://api.github.com/users/{}/repos", username);
+    let client = reqwest::Client::new();
+
+    let mut request = client
+        .get(&url)
+        .header("User-Agent", "cv-generator")
+        .query(&[
+            ("per_page", "100"),
+            ("sort", "updated"),
+            ("direction", "desc"),
+        ]);
+
+    if let Some(token) = token {
+        request = request.header("Authorization", format!("Bearer {}", token));
+    }
+
+    let response = request
+        .send()
+        .await
+        .with_context(|| format!("Failed to fetch repositories for user '{}'", username))?;
+
+    if !response.status().is_success() {
+        let status = response.status();
+        let error_body = response.text().await.unwrap_or_default();
+        return Err(anyhow::anyhow!(
+            "GitHub API request failed with status {}:\n{}\n\
+             \n\
+             Possible causes:\n\
+             - User does not exist\n\
+             - Network connectivity issues\n\
+             - Rate limit exceeded ({})",
+            status,
+            error_body,
+            if token.is_some() {
+                "authenticated: 5,000 req/hr"
+            } else {
+                "unauthenticated: 60 req/hr - set GITHUB_TOKEN for higher limits"
+            }
+        ));
+    }
+
+    let mut repos: Vec<GitHubRepo> = response
+        .json()
+        .await
+        .context("Failed to parse GitHub API response")?;
+
+    // Filter and sort
+    repos.retain(|repo| !repo.fork && !repo.archived && repo.description.is_some());
+    repos.sort_by(|a, b| b.stargazers_count.cmp(&a.stargazers_count));
+    repos.truncate(10);
+
+    Ok(repos)
+}
+
+/// Fetch repositories using GitHub API with token (blocking wrapper)
+fn fetch_repos_with_api(username: &str, token: Option<&str>) -> Result<Vec<GitHubRepo>> {
+    tokio::task::block_in_place(|| {
+        tokio::runtime::Handle::current().block_on(fetch_repos_with_api_async(username, token))
+    })
+}
+
+/// Fetch repositories using gh CLI (fallback)
+fn fetch_repos_with_gh_cli(username: &str) -> Result<Vec<GitHubRepo>> {
     let output = Command::new("gh")
         .args([
             "api",
@@ -94,62 +179,138 @@ pub fn fetch_github_projects(username: &str) -> Result<Vector<Project>> {
             "map(select(.private == false and .fork == false)) | sort_by(.updated_at) | reverse | .[0:10]",
         ])
         .output()
-        .context("Failed to execute 'gh' command.\n\
-                  \n\
-                  Is GitHub CLI installed?\n\
-                  - Install from: https://cli.github.com/\n\
-                  - Or run: brew install gh (macOS) / sudo apt install gh (Ubuntu)\n\
-                  \n\
-                  Is GitHub CLI authenticated?\n\
-                  - Run: gh auth login")?;
+        .context("Failed to execute 'gh' command")?;
 
     if !output.status.success() {
         let error = String::from_utf8_lossy(&output.stderr);
-        return Err(anyhow::anyhow!(
-            "GitHub CLI request failed for user '{}':\n\
-             {}\n\
-             \n\
-             Possible causes:\n\
-             - User does not exist\n\
-             - Network connectivity issues\n\
-             - Rate limit exceeded (try: gh auth login for higher limits)\n\
-             - GitHub CLI not authenticated properly",
-            username,
-            error
-        ));
+        return Err(anyhow::anyhow!("GitHub CLI request failed: {}", error));
     }
 
-    // Parse the JSON response
     let json_str =
         String::from_utf8(output.stdout).context("Invalid UTF-8 in gh command output")?;
 
-    let repos: Vec<GitHubRepo> =
-        serde_json::from_str(&json_str).context("Failed to parse GitHub API response")?;
-
-    // Convert GitHub repositories to Project structs
-    Ok(convert_repos_to_projects(repos))
+    serde_json::from_str(&json_str).context("Failed to parse GitHub API response")
 }
 
-/// Fetches public GitHub repositories for an organization
+/// Fetches public GitHub repositories for a user
 ///
 /// # Arguments
 ///
-/// * `org_name` - GitHub organization name
-/// * `token` - Optional GitHub API token for authentication
+/// * `username` - GitHub username
 ///
 /// # Returns
 ///
 /// A Result containing a Vector of Project structs
 ///
+/// # Authentication Strategy
+///
+/// Uses automatic fallback in this order:
+/// 1. GITHUB_TOKEN environment variable (GitHub Actions provides this)
+/// 2. GH_TOKEN environment variable (user-provided)
+/// 3. gh CLI (if installed and authenticated)
+/// 4. Public API (unauthenticated, 60 req/hr limit)
+///
 /// # Rate Limits
 ///
-/// GitHub API has rate limits:
-/// - Unauthenticated requests: 60 requests per hour
-/// - Authenticated requests: 5,000 requests per hour
-///
-/// To avoid rate limiting, provide a GitHub API token.
-pub fn fetch_github_org_projects(org_name: &str) -> Result<Vector<Project>> {
-    // Use GitHub CLI to fetch organization repositories
+/// - Authenticated: 5,000 requests per hour
+/// - Unauthenticated: 60 requests per hour
+pub fn fetch_github_projects(username: &str) -> Result<Vector<Project>> {
+    // Validate username format before making API call
+    validate_github_username(username)
+        .with_context(|| format!("Invalid GitHub username: {}", username))?;
+
+    let auth_strategy = get_auth_strategy();
+
+    let repos = match auth_strategy {
+        AuthStrategy::Token(ref token) => {
+            println!("🔐 Using GitHub API with token authentication");
+            fetch_repos_with_api(username, Some(token))
+                .or_else(|e| {
+                    eprintln!("⚠️  Token auth failed: {}. Trying gh CLI...", e);
+                    fetch_repos_with_gh_cli(username)
+                })
+                .or_else(|e| {
+                    eprintln!("⚠️  gh CLI failed: {}. Trying public API...", e);
+                    fetch_repos_with_api(username, None)
+                })?
+        }
+        AuthStrategy::GhCli => {
+            println!("🔧 Using GitHub CLI");
+            fetch_repos_with_gh_cli(username).or_else(|e| {
+                eprintln!("⚠️  gh CLI failed: {}. Trying public API...", e);
+                fetch_repos_with_api(username, None)
+            })?
+        }
+        AuthStrategy::Public => {
+            println!("🌐 Using public GitHub API (60 req/hr limit)");
+            fetch_repos_with_api(username, None)?
+        }
+    };
+
+    // Convert GitHub repositories to Project structs
+    Ok(convert_repos_to_projects(repos))
+}
+
+/// Fetch organization repositories using GitHub API with token (async)
+async fn fetch_org_repos_with_api_async(
+    org_name: &str,
+    token: Option<&str>,
+) -> Result<Vec<GitHubRepo>> {
+    let url = format!("https://api.github.com/orgs/{}/repos", org_name);
+    let client = reqwest::Client::new();
+
+    let mut request = client
+        .get(&url)
+        .header("User-Agent", "cv-generator")
+        .query(&[
+            ("per_page", "100"),
+            ("sort", "updated"),
+            ("direction", "desc"),
+        ]);
+
+    if let Some(token) = token {
+        request = request.header("Authorization", format!("Bearer {}", token));
+    }
+
+    let response = request.send().await.with_context(|| {
+        format!(
+            "Failed to fetch repositories for organization '{}'",
+            org_name
+        )
+    })?;
+
+    if !response.status().is_success() {
+        let status = response.status();
+        let error_body = response.text().await.unwrap_or_default();
+        return Err(anyhow::anyhow!(
+            "GitHub API request failed with status {}:\n{}",
+            status,
+            error_body
+        ));
+    }
+
+    let mut repos: Vec<GitHubRepo> = response
+        .json()
+        .await
+        .context("Failed to parse GitHub API response")?;
+
+    // Filter and sort
+    repos.retain(|repo| !repo.fork && !repo.archived && repo.description.is_some());
+    repos.sort_by(|a, b| b.stargazers_count.cmp(&a.stargazers_count));
+    repos.truncate(10);
+
+    Ok(repos)
+}
+
+/// Fetch organization repositories using GitHub API with token (blocking wrapper)
+fn fetch_org_repos_with_api(org_name: &str, token: Option<&str>) -> Result<Vec<GitHubRepo>> {
+    tokio::task::block_in_place(|| {
+        tokio::runtime::Handle::current().block_on(fetch_org_repos_with_api_async(org_name, token))
+    })
+}
+
+/// Fetch organization repositories using gh CLI (fallback)
+fn fetch_org_repos_with_gh_cli(org_name: &str) -> Result<Vec<GitHubRepo>> {
     let output = Command::new("gh")
         .args([
             "api",
@@ -158,23 +319,58 @@ pub fn fetch_github_org_projects(org_name: &str) -> Result<Vector<Project>> {
             "map(select(.private == false and .fork == false)) | sort_by(.updated_at) | reverse | .[0:10]",
         ])
         .output()
-        .context("Failed to execute gh command. Make sure GitHub CLI is installed and authenticated.")?;
+        .context("Failed to execute 'gh' command")?;
 
     if !output.status.success() {
         let error = String::from_utf8_lossy(&output.stderr);
-        return Err(anyhow::anyhow!(
-            "GitHub CLI request failed for organization {}: {}",
-            org_name,
-            error
-        ));
+        return Err(anyhow::anyhow!("GitHub CLI request failed: {}", error));
     }
 
-    // Parse the JSON response
     let json_str =
         String::from_utf8(output.stdout).context("Invalid UTF-8 in gh command output")?;
 
-    let repos: Vec<GitHubRepo> =
-        serde_json::from_str(&json_str).context("Failed to parse GitHub API response")?;
+    serde_json::from_str(&json_str).context("Failed to parse GitHub API response")
+}
+
+/// Fetches public GitHub repositories for an organization
+///
+/// # Arguments
+///
+/// * `org_name` - GitHub organization name
+///
+/// # Returns
+///
+/// A Result containing a Vector of Project structs
+///
+/// Uses the same authentication strategy as fetch_github_projects
+pub fn fetch_github_org_projects(org_name: &str) -> Result<Vector<Project>> {
+    let auth_strategy = get_auth_strategy();
+
+    let repos = match auth_strategy {
+        AuthStrategy::Token(ref token) => {
+            println!("🔐 Using GitHub API with token authentication");
+            fetch_org_repos_with_api(org_name, Some(token))
+                .or_else(|e| {
+                    eprintln!("⚠️  Token auth failed: {}. Trying gh CLI...", e);
+                    fetch_org_repos_with_gh_cli(org_name)
+                })
+                .or_else(|e| {
+                    eprintln!("⚠️  gh CLI failed: {}. Trying public API...", e);
+                    fetch_org_repos_with_api(org_name, None)
+                })?
+        }
+        AuthStrategy::GhCli => {
+            println!("🔧 Using GitHub CLI");
+            fetch_org_repos_with_gh_cli(org_name).or_else(|e| {
+                eprintln!("⚠️  gh CLI failed: {}. Trying public API...", e);
+                fetch_org_repos_with_api(org_name, None)
+            })?
+        }
+        AuthStrategy::Public => {
+            println!("🌐 Using public GitHub API (60 req/hr limit)");
+            fetch_org_repos_with_api(org_name, None)?
+        }
+    };
 
     // Convert GitHub repositories to Project structs
     Ok(convert_repos_to_projects(repos))
@@ -369,20 +565,54 @@ pub fn fetch_projects_from_sources(sources: &Vector<GitHubSource>) -> Result<Vec
     Ok(all_projects)
 }
 
-/// Fetches GitHub user's avatar URL
-///
-/// # Arguments
-///
-/// * `username` - The GitHub username
-///
-/// # Returns
-///
-/// A Result containing the avatar URL string
-pub fn fetch_github_avatar(username: &str) -> Result<String> {
-    // Validate username format before making API call
-    validate_github_username(username)
-        .with_context(|| format!("Invalid GitHub username: {}", username))?;
+/// Fetch avatar using GitHub API with token (async)
+async fn fetch_avatar_with_api_async(username: &str, token: Option<&str>) -> Result<String> {
+    let url = format!("https://api.github.com/users/{}", username);
+    let client = reqwest::Client::new();
 
+    let mut request = client.get(&url).header("User-Agent", "cv-generator");
+
+    if let Some(token) = token {
+        request = request.header("Authorization", format!("Bearer {}", token));
+    }
+
+    let response = request
+        .send()
+        .await
+        .with_context(|| format!("Failed to fetch avatar for user '{}'", username))?;
+
+    if !response.status().is_success() {
+        let status = response.status();
+        let error_body = response.text().await.unwrap_or_default();
+        return Err(anyhow::anyhow!(
+            "GitHub API request failed with status {}:\n{}",
+            status,
+            error_body
+        ));
+    }
+
+    #[derive(Deserialize)]
+    struct UserResponse {
+        avatar_url: String,
+    }
+
+    let user: UserResponse = response
+        .json()
+        .await
+        .context("Failed to parse GitHub user response")?;
+
+    Ok(user.avatar_url)
+}
+
+/// Fetch avatar using GitHub API with token (blocking wrapper)
+fn fetch_avatar_with_api(username: &str, token: Option<&str>) -> Result<String> {
+    tokio::task::block_in_place(|| {
+        tokio::runtime::Handle::current().block_on(fetch_avatar_with_api_async(username, token))
+    })
+}
+
+/// Fetch avatar using gh CLI (fallback)
+fn fetch_avatar_with_gh_cli(username: &str) -> Result<String> {
     let output = Command::new("gh")
         .args([
             "api",
@@ -408,6 +638,42 @@ pub fn fetch_github_avatar(username: &str) -> Result<String> {
         .to_string();
 
     Ok(avatar_url)
+}
+
+/// Fetches GitHub user's avatar URL
+///
+/// # Arguments
+///
+/// * `username` - The GitHub username
+///
+/// # Returns
+///
+/// A Result containing the avatar URL string
+///
+/// Uses the same authentication strategy as fetch_github_projects
+pub fn fetch_github_avatar(username: &str) -> Result<String> {
+    // Validate username format before making API call
+    validate_github_username(username)
+        .with_context(|| format!("Invalid GitHub username: {}", username))?;
+
+    let auth_strategy = get_auth_strategy();
+
+    match auth_strategy {
+        AuthStrategy::Token(ref token) => fetch_avatar_with_api(username, Some(token))
+            .or_else(|e| {
+                eprintln!("⚠️  Token auth failed: {}. Trying gh CLI...", e);
+                fetch_avatar_with_gh_cli(username)
+            })
+            .or_else(|e| {
+                eprintln!("⚠️  gh CLI failed: {}. Trying public API...", e);
+                fetch_avatar_with_api(username, None)
+            }),
+        AuthStrategy::GhCli => fetch_avatar_with_gh_cli(username).or_else(|e| {
+            eprintln!("⚠️  gh CLI failed: {}. Trying public API...", e);
+            fetch_avatar_with_api(username, None)
+        }),
+        AuthStrategy::Public => fetch_avatar_with_api(username, None),
+    }
 }
 
 /// Cache-aware version of fetch_projects_from_sources

@@ -15,7 +15,7 @@
     <!-- DNS prefetch for external resources -->
     <link rel="dns-prefetch" href="https://api.github.com">
 
-    <link rel="stylesheet" href="css/main.min.css">
+    <link rel="stylesheet" href="css/main.min.css?v={{ version }}">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" sizes="192x192" href="img/icon-192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="img/icon-512.png">
@@ -33,7 +33,7 @@
 
     {% include "partials/footer.html" %}
 
-    <script src="js/scripts.js"></script>
+    <script src="js/scripts.js?v={{ version }}"></script>
     {% block scripts %}{% endblock %}
   </body>
 </html>

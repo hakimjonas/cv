@@ -153,6 +153,31 @@ Configure PDF output using Typst:
 
 Paper sizes: `a4`, `letter`, `legal`, `a3`, `a5`, `a6`
 
+## GitHub Integration
+
+The generator automatically fetches your GitHub projects and avatar. It uses multiple fallback strategies for reliability:
+
+**Authentication Priority:**
+1. `GITHUB_TOKEN` - Automatically provided by GitHub Actions (5,000 req/hr)
+2. `GH_TOKEN` - Optional user-provided token (5,000 req/hr)
+3. `gh` CLI - Falls back to gh CLI if installed
+4. Public API - Unauthenticated requests as last resort (60 req/hr)
+
+**Setting a Token (Optional):**
+
+If you want to test locally with higher rate limits, set the `GH_TOKEN` environment variable:
+
+```bash
+export GH_TOKEN=your_github_token
+cargo run --bin cv
+```
+
+GitHub Actions automatically provides `GITHUB_TOKEN`, so no configuration is needed for deployment.
+
+**Cache System:**
+
+The generator caches GitHub data in `cache/github_cache.json` to avoid unnecessary API calls and speed up rebuilds. The cache is automatically managed and respects TTL settings.
+
 ## Content Files
 
 All content files go on the `content` branch.

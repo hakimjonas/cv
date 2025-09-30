@@ -7,6 +7,7 @@ use anyhow::{Context, Result};
 use minify_html::{minify, Cfg};
 use std::fs;
 use std::path::Path;
+use std::process::Command;
 
 /// Ensures the parent directory of a file path exists, creating it if necessary
 ///
@@ -146,4 +147,39 @@ pub fn write_gzipped_file(_path: &str, _content: &[u8]) -> Result<()> {
     */
 
     Ok(())
+}
+
+/// Gets the current git commit hash for cache busting
+///
+/// Returns a short git commit hash (8 characters) to use as a version string
+/// for CSS and JS URLs. If git is not available or fails, returns a timestamp
+/// as fallback.
+///
+/// # Returns
+///
+/// A String containing the version identifier
+pub fn get_cache_version() -> String {
+    // Try to get git commit hash
+    if let Ok(output) = Command::new("git")
+        .args(["rev-parse", "--short=8", "HEAD"])
+        .output()
+    {
+        if output.status.success() {
+            if let Ok(hash) = String::from_utf8(output.stdout) {
+                let trimmed = hash.trim();
+                if !trimmed.is_empty() {
+                    return trimmed.to_string();
+                }
+            }
+        }
+    }
+
+    // Fallback: use build timestamp
+    use std::time::{SystemTime, UNIX_EPOCH};
+    let timestamp = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs();
+
+    format!("{}", timestamp)
 }

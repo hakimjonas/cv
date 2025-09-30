@@ -7,7 +7,7 @@ use anyhow::{Context, Result};
 use askama::Template;
 use im::{HashMap, Vector};
 
-use super::utils::{ensure_parent_dir_exists, write_file};
+use super::utils::{ensure_parent_dir_exists, get_cache_version, write_file};
 use crate::blog_posts::BlogPost;
 use crate::cv_data::Cv;
 use crate::markdown_pages::Page;
@@ -19,6 +19,7 @@ use crate::site_config::SiteConfig;
 struct CvTemplate<'a> {
     cv: &'a Cv,
     site_config: &'a SiteConfig,
+    version: &'a str,
 }
 
 /// Template for the index HTML page
@@ -34,6 +35,7 @@ struct IndexTemplate<'a> {
 struct ProjectsTemplate<'a> {
     cv: &'a Cv,
     site_config: &'a SiteConfig,
+    version: &'a str,
 }
 
 /// Template for the blog HTML page
@@ -42,6 +44,7 @@ struct ProjectsTemplate<'a> {
 struct BlogTemplate<'a> {
     cv: &'a Cv,
     site_config: &'a SiteConfig,
+    version: &'a str,
 }
 
 /// Template for static pages
@@ -51,6 +54,7 @@ struct PageTemplate<'a> {
     cv: &'a Cv,
     site_config: &'a SiteConfig,
     page: &'a Page,
+    version: &'a str,
 }
 
 /// Template for blog list page
@@ -61,6 +65,7 @@ struct BlogListTemplate<'a> {
     site_config: &'a SiteConfig,
     posts: &'a Vector<BlogPost>,
     tag_groups: &'a HashMap<String, Vector<BlogPost>>,
+    version: &'a str,
 }
 
 /// Template for individual blog post
@@ -70,6 +75,7 @@ struct BlogPostTemplate<'a> {
     cv: &'a Cv,
     site_config: &'a SiteConfig,
     post: &'a BlogPost,
+    version: &'a str,
 }
 
 /// Generates the main CV HTML page
@@ -86,7 +92,12 @@ struct BlogPostTemplate<'a> {
 pub fn generate_cv_html(cv: &Cv, site_config: &SiteConfig, output_path: &str) -> Result<()> {
     ensure_parent_dir_exists(output_path)?;
 
-    let template = CvTemplate { cv, site_config };
+    let version = get_cache_version();
+    let template = CvTemplate {
+        cv,
+        site_config,
+        version: &version,
+    };
     let rendered = template.render().context("Failed to render CV template")?;
 
     write_file(output_path, &rendered)?;
@@ -134,7 +145,12 @@ pub fn generate_index_html(cv: &Cv, _site_config: &SiteConfig, output_path: &str
 pub fn generate_projects_html(cv: &Cv, site_config: &SiteConfig, output_path: &str) -> Result<()> {
     ensure_parent_dir_exists(output_path)?;
 
-    let template = ProjectsTemplate { cv, site_config };
+    let version = get_cache_version();
+    let template = ProjectsTemplate {
+        cv,
+        site_config,
+        version: &version,
+    };
     let rendered = template
         .render()
         .context("Failed to render projects template")?;
@@ -159,7 +175,12 @@ pub fn generate_projects_html(cv: &Cv, site_config: &SiteConfig, output_path: &s
 pub fn generate_blog_html(cv: &Cv, site_config: &SiteConfig, output_path: &str) -> Result<()> {
     ensure_parent_dir_exists(output_path)?;
 
-    let template = BlogTemplate { cv, site_config };
+    let version = get_cache_version();
+    let template = BlogTemplate {
+        cv,
+        site_config,
+        version: &version,
+    };
     let rendered = template
         .render()
         .context("Failed to render blog template")?;
@@ -190,10 +211,12 @@ pub fn generate_page_html(
 ) -> Result<()> {
     ensure_parent_dir_exists(output_path)?;
 
+    let version = get_cache_version();
     let template = PageTemplate {
         cv,
         site_config,
         page,
+        version: &version,
     };
     let rendered = template
         .render()
@@ -227,11 +250,13 @@ pub fn generate_blog_list_html(
 ) -> Result<()> {
     ensure_parent_dir_exists(output_path)?;
 
+    let version = get_cache_version();
     let template = BlogListTemplate {
         cv,
         site_config,
         posts,
         tag_groups,
+        version: &version,
     };
     let rendered = template
         .render()
@@ -263,10 +288,12 @@ pub fn generate_blog_post_html(
 ) -> Result<()> {
     ensure_parent_dir_exists(output_path)?;
 
+    let version = get_cache_version();
     let template = BlogPostTemplate {
         cv,
         site_config,
         post,
+        version: &version,
     };
     let rendered = template
         .render()

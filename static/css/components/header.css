@@ -190,15 +190,6 @@ header h1 {
   color: var(--color-text-light);
 }
 
-/* Ensure navigation is visible on desktop - higher specificity */
-nav#main-navigation {
-  max-height: none !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-  overflow: visible !important;
-  display: flex !important;
-}
-
 /* Additional fallback for desktop screens */
 @media (min-width: 769px) {
   nav#main-navigation {

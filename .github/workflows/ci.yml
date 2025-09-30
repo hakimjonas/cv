@@ -79,17 +79,24 @@ jobs:
           crate: typst-cli
           version: "^0.13.1"
 
-      - name: Install Hanken Grotesk font
+      - name: Install required fonts
         run: |
-          echo "📥 Downloading Hanken Grotesk font..."
-          wget -q https://github.com/marcologous/hanken-grotesk/raw/main/fonts/ttf/HankenGrotesk-Regular.ttf
-          wget -q https://github.com/marcologous/hanken-grotesk/raw/main/fonts/ttf/HankenGrotesk-Bold.ttf
-          echo "📁 Installing fonts to system..."
+          echo "📥 Installing fonts for PDF generation..."
+          # Install Font Awesome for icons
+          wget -q https://github.com/FortAwesome/Font-Awesome/releases/download/6.5.1/fontawesome-free-6.5.1-desktop.zip
+          unzip -q fontawesome-free-6.5.1-desktop.zip
+          sudo mkdir -p /usr/share/fonts/truetype/fontawesome
+          sudo cp fontawesome-free-6.5.1-desktop/otfs/*.otf /usr/share/fonts/truetype/fontawesome/
+
+          # Install Hanken Grotesk from Google Fonts
+          wget -q -O hanken-grotesk.zip "https://fonts.google.com/download?family=Hanken%20Grotesk"
+          unzip -q hanken-grotesk.zip -d hanken-grotesk
           sudo mkdir -p /usr/share/fonts/truetype/hanken-grotesk
-          sudo cp *.ttf /usr/share/fonts/truetype/hanken-grotesk/
-          echo "🔄 Updating font cache..."
+          sudo cp hanken-grotesk/*.ttf /usr/share/fonts/truetype/hanken-grotesk/
+
+          # Update font cache
           sudo fc-cache -fv
-          echo "✅ Hanken Grotesk font installed"
+          echo "✅ Fonts installed (Hanken Grotesk + Font Awesome)"
 
       - name: Build CV generator
         run: cargo build --release --bin cv

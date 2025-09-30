@@ -461,7 +461,7 @@ fn generate_meta_variable(cv: &Cv, typst_config: &TypstConfig) -> String {
         .pipe(|s| append_line(s, "      github: \"github\","))
         .pipe(|s| append_line(s, "      homepage: \"globe\""))
         .pipe(|s| append_line(s, "    ),"))
-        .pipe(|s| append_line(s, "    ia: ("))  // AI injection settings - keep disabled
+        .pipe(|s| append_line(s, "    ia: (")) // AI injection settings - keep disabled
         .pipe(|s| append_line(s, "      inject_ai_prompt: false,"))
         .pipe(|s| append_line(s, "      inject_keywords: false,"))
         .pipe(|s| append_line(s, "      keywords_list: []"))

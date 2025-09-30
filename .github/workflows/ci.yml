@@ -88,11 +88,12 @@ jobs:
           sudo mkdir -p /usr/share/fonts/truetype/fontawesome
           sudo cp fontawesome-free-6.5.1-desktop/otfs/*.otf /usr/share/fonts/truetype/fontawesome/
 
-          # Install Hanken Grotesk from Google Fonts
-          wget -q -O hanken-grotesk.zip "https://fonts.google.com/download?family=Hanken%20Grotesk"
-          unzip -q hanken-grotesk.zip -d hanken-grotesk
+          # Install Hanken Grotesk from GitHub release
+          wget -q https://github.com/marcologous/hanken-grotesk/releases/download/v1.0.0/hanken-grotesk.zip
+          unzip -q hanken-grotesk.zip
           sudo mkdir -p /usr/share/fonts/truetype/hanken-grotesk
-          sudo cp hanken-grotesk/*.ttf /usr/share/fonts/truetype/hanken-grotesk/
+          sudo cp *.ttf /usr/share/fonts/truetype/hanken-grotesk/ 2>/dev/null || true
+          sudo cp */*.ttf /usr/share/fonts/truetype/hanken-grotesk/ 2>/dev/null || true
 
           # Update font cache
           sudo fc-cache -fv

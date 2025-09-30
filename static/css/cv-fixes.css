@@ -1,0 +1,52 @@
+/* CV Page Style Fixes */
+
+/* 1. Add spacing before headlines in Professional Experience section */
+.experience-item {
+  margin-top: 2rem;
+}
+
+.experience-item:first-child {
+  margin-top: 0;
+}
+
+/* Also apply to education items for consistency */
+.education-item {
+  margin-top: 2rem;
+}
+
+.education-item:first-child {
+  margin-top: 0;
+}
+
+/* 2. Fix Certifications section styling to match other sections */
+.cv-section-certifications {
+  background: var(--color-card-background);
+  border-radius: 8px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-sm);
+  /* Remove the extra bottom padding that was causing the issue */
+  padding-bottom: 2rem !important;
+}
+
+/* 3. Fix project card background in dark theme */
+.theme-dark .github-card {
+  /* Use overlay color instead of card-background in dark theme */
+  background-color: var(--color-overlay);
+}
+
+/* Also fix the card footer to be even darker for contrast */
+.theme-dark .card-footer {
+  background-color: var(--color-background);
+  border-top-color: var(--color-border);
+}
+
+/* Fix the repo-description section to match */
+.theme-dark .repo-description {
+  background-color: var(--color-overlay);
+}
+
+/* Ensure project cards on CV page also get the fix */
+.theme-dark .project-card {
+  background-color: var(--color-overlay);
+}

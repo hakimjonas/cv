@@ -30,8 +30,8 @@
 
 {% block scripts %}
 <!-- Include scripts for blog functionality -->
-<script src="/static/js/api-client.js"></script>
-<script src="/static/js/blog-integration.js"></script>
+<script src="js/api-client.js"></script>
+<script src="js/blog-integration.js"></script>
 
 <script>
 // Blog page specific functionality
@@ -62,8 +62,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const tagsList = document.getElementById('blog-tags-list');
         
         if (tagsContainer && tagsList) {
-          tagsList.innerHTML = tags.map(tag => 
-            `<a href="/blog/tag/${tag.slug}" class="tag">${tag.name}</a>`
+          tagsList.innerHTML = tags.map(tag =>
+            `<a href="blog/tag/${tag.slug}" class="tag">${tag.name}</a>`
           ).join('');
           tagsContainer.style.display = 'block';
         }

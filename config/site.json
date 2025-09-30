@@ -3,32 +3,32 @@
   "menu": [
     {
       "label": "Home",
-      "path": "/",
+      "path": "index.html",
       "item_type": "home"
     },
     {
       "label": "CV",
-      "path": "/cv.html",
+      "path": "cv.html",
       "item_type": "cv"
     },
     {
       "label": "About",
-      "path": "/about.html",
+      "path": "about.html",
       "item_type": "page"
     },
     {
       "label": "Projects",
-      "path": "/projects.html",
+      "path": "projects.html",
       "item_type": "projects"
     },
     {
       "label": "Blog",
-      "path": "/blog.html",
+      "path": "blog.html",
       "item_type": "blog"
     },
     {
       "label": "Contact",
-      "path": "/contact.html",
+      "path": "contact.html",
       "item_type": "page"
     },
     {

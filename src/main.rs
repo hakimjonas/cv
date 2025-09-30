@@ -257,6 +257,13 @@ async fn main() -> Result<()> {
         .context("Failed to copy static assets")
     })?;
 
+    // Optimize CSS and JS files after copying static assets
+    info!("Optimizing CSS and JS assets");
+    profiler.time_operation("Optimize assets", || {
+        html_generator::optimize_assets(Path::new(&config.output_dir_str()?))
+            .context("Failed to optimize assets")
+    })?;
+
     // Generate PDF CV
     info!("Generating PDF CV");
     profiler.time_operation("Generate PDF CV", || {

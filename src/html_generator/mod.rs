@@ -192,9 +192,6 @@ pub fn generate_html(cv: &Cv, site_config: &SiteConfig, output_path: &str) -> Re
     // Generate deployment and SEO configuration files
     generate_deployment_configs(parent_dir)?;
 
-    // Optimize CSS and JS files for production
-    optimize_assets(parent_dir)?;
-
     println!("HTML generation completed successfully");
     Ok(())
 }
@@ -275,7 +272,7 @@ fn generate_deployment_configs(parent_dir: &Path) -> Result<()> {
 /// # Returns
 ///
 /// A Result indicating success or failure
-fn optimize_assets(parent_dir: &Path) -> Result<()> {
+pub fn optimize_assets(parent_dir: &Path) -> Result<()> {
     let css_dir = parent_dir.join("css");
     let js_dir = parent_dir.join("js");
 

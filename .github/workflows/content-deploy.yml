@@ -1,0 +1,87 @@
+name: Deploy CV (Content Branch)
+
+on:
+  push:
+    branches: [ content ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    name: Quick Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout content branch
+        uses: actions/checkout@v5
+        with:
+          ref: content
+
+      - name: Checkout main branch code
+        run: |
+          echo "📥 Fetching main branch code..."
+          git fetch origin main
+          git checkout origin/main -- .
+          # Restore content branch data and config
+          git checkout content -- data/
+          git checkout content -- config/ 2>/dev/null || echo "⚠️  No config/ on content branch, using defaults from main"
+          echo "✅ Code and data merged successfully."
+
+      - name: Setup Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install Typst CLI
+        uses: baptiste0928/cargo-install@v3
+        with:
+          crate: typst-cli
+          version: "^0.13.1"
+
+      - name: Build CV generator (release mode)
+        run: cargo build --release --bin cv
+
+      - name: Generate CV files
+        run: |
+          echo "🚀 Generating CV with updated content..."
+          cargo run --release --bin cv
+          echo "✅ CV generation successful."
+          echo "🔍 Verifying output files..."
+          test -f dist/cv.html && echo "  - cv.html found."
+          test -f dist/cv.pdf && echo "  - cv.pdf found."
+          test -f dist/index.html && echo "  - index.html found."
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload CV artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: './dist'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Summary
+        run: |
+          echo "🎉 Content deployment completed!"
+          echo "📊 Build optimized for content-only changes"
+          echo "⚡ Skipped: code formatting, linting, and tests"
+          echo "🔗 Site URL: ${{ steps.deployment.outputs.page_url }}"

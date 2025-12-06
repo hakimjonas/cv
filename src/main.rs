@@ -145,9 +145,28 @@ async fn main() -> Result<()> {
         }
     }
 
-    // Fetch GitHub avatar URL if no custom profile image is provided
+    // Check if custom profile image exists, clear it if not
+    if let Some(ref profile_path) = cv.personal_info.profile_image {
+        // Resolve the profile image path relative to static dir or as absolute
+        let resolved_path = if profile_path.starts_with("dist/") {
+            Path::new(profile_path).to_path_buf()
+        } else {
+            config.static_dir.join(profile_path)
+        };
+
+        if !resolved_path.exists() {
+            warn!(
+                "Profile image not found at '{}', will fall back to GitHub avatar",
+                resolved_path.display()
+            );
+            cv.personal_info.profile_image = None;
+        } else {
+            info!("Using custom profile image: {}", resolved_path.display());
+        }
+    }
+
+    // Fetch GitHub avatar URL if no valid profile image is available
     if cv.personal_info.profile_image.is_none() {
-        // Try to get GitHub username from sources for avatar
         let github_username = cv
             .github_sources
             .iter()
@@ -181,8 +200,6 @@ async fn main() -> Result<()> {
         } else {
             info!("No GitHub username found in sources, using default placeholder image");
         }
-    } else {
-        info!("Using custom profile image from CV data");
     }
 
     // Load language icons and associate them with projects

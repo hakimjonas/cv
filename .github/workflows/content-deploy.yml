@@ -52,6 +52,28 @@ jobs:
           crate: typst-cli
           version: "^0.13.1"
 
+      - name: Install required fonts
+        run: |
+          echo "📥 Installing fonts for PDF generation..."
+
+          # Install Font Awesome for icons
+          echo "Downloading Font Awesome..."
+          wget -q https://github.com/FortAwesome/Font-Awesome/releases/download/6.5.1/fontawesome-free-6.5.1-desktop.zip
+          unzip -q fontawesome-free-6.5.1-desktop.zip
+          sudo mkdir -p /usr/share/fonts/truetype/fontawesome
+          sudo cp fontawesome-free-6.5.1-desktop/otfs/*.otf /usr/share/fonts/truetype/fontawesome/
+
+          # Install Hanken Grotesk
+          echo "Downloading Hanken Grotesk..."
+          git clone --depth 1 -q https://github.com/marcologous/hanken-grotesk.git
+          sudo mkdir -p /usr/share/fonts/truetype/hanken-grotesk
+          sudo cp hanken-grotesk/fonts/ttf/*.ttf /usr/share/fonts/truetype/hanken-grotesk/
+
+          # Update font cache
+          echo "Updating font cache..."
+          sudo fc-cache -f
+          echo "✅ Fonts installed (Hanken Grotesk + Font Awesome)"
+
       - name: Build CV generator (release mode)
         run: cargo build --release --bin cv
 

@@ -210,14 +210,15 @@ async fn main() -> Result<()> {
         // 1. Absolute path or dist/ prefix (as-is)
         // 2. Relative to static directory (static/img/...)
         // 3. Relative to repo root (img/...)
-        let candidates = if profile_path.starts_with("dist/") || Path::new(profile_path).is_absolute() {
-            vec![Path::new(profile_path).to_path_buf()]
-        } else {
-            vec![
-                config.static_dir.join(profile_path),
-                Path::new(profile_path).to_path_buf(),
-            ]
-        };
+        let candidates =
+            if profile_path.starts_with("dist/") || Path::new(profile_path).is_absolute() {
+                vec![Path::new(profile_path).to_path_buf()]
+            } else {
+                vec![
+                    config.static_dir.join(profile_path),
+                    Path::new(profile_path).to_path_buf(),
+                ]
+            };
 
         let resolved_path = candidates.iter().find(|p| p.exists());
 
@@ -230,7 +231,11 @@ async fn main() -> Result<()> {
             None => {
                 warn!(
                     "Profile image not found (tried: {}), will fall back to GitHub avatar",
-                    candidates.iter().map(|p| p.display().to_string()).collect::<Vec<_>>().join(", ")
+                    candidates
+                        .iter()
+                        .map(|p| p.display().to_string())
+                        .collect::<Vec<_>>()
+                        .join(", ")
                 );
                 cv.personal_info.profile_image = None;
             }

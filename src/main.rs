@@ -48,15 +48,21 @@ async fn download_and_save_image(url: &str, path: &str) -> Result<()> {
         fs::create_dir_all(parent)?;
     }
 
+    // Build client with proper headers for GitHub
+    let client = reqwest::Client::builder()
+        .user_agent("cv-generator")
+        .build()?;
+
     // Download the image
-    let response = reqwest::get(url).await?;
+    debug!("Downloading image from: {}", url);
+    let response = client.get(url).send().await?;
 
     // Check for successful response
-    if !response.status().is_success() {
-        anyhow::bail!(
-            "Failed to download image: HTTP {}",
-            response.status()
-        );
+    let status = response.status();
+    debug!("Response status: {}", status);
+
+    if !status.is_success() {
+        anyhow::bail!("Failed to download image: HTTP {}", status);
     }
 
     // Verify content type is an image
@@ -66,6 +72,8 @@ async fn download_and_save_image(url: &str, path: &str) -> Result<()> {
         .and_then(|v| v.to_str().ok())
         .unwrap_or("");
 
+    debug!("Content-Type: {}", content_type);
+
     if !content_type.starts_with("image/") {
         anyhow::bail!(
             "Downloaded content is not an image (content-type: {})",
@@ -74,17 +82,22 @@ async fn download_and_save_image(url: &str, path: &str) -> Result<()> {
     }
 
     let bytes = response.bytes().await?;
+    debug!("Downloaded {} bytes", bytes.len());
 
     // Validate PNG signature (first 8 bytes)
-    if bytes.len() < 8 || &bytes[0..8] != b"\x89PNG\r\n\x1a\n" {
-        // Not a PNG, but might be JPEG - check JPEG signature
-        if bytes.len() < 2 || &bytes[0..2] != b"\xff\xd8" {
-            anyhow::bail!("Downloaded file is not a valid PNG or JPEG image");
-        }
+    let is_png = bytes.len() >= 8 && &bytes[0..8] == b"\x89PNG\r\n\x1a\n";
+    let is_jpeg = bytes.len() >= 2 && &bytes[0..2] == b"\xff\xd8";
+
+    if !is_png && !is_jpeg {
+        anyhow::bail!(
+            "Downloaded file is not a valid PNG or JPEG image (first bytes: {:02x?})",
+            &bytes[0..bytes.len().min(8)]
+        );
     }
 
     // Save to file
     fs::write(path, bytes)?;
+    debug!("Saved image to: {}", path);
     Ok(())
 }
 

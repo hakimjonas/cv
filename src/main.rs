@@ -50,7 +50,38 @@ async fn download_and_save_image(url: &str, path: &str) -> Result<()> {
 
     // Download the image
     let response = reqwest::get(url).await?;
+
+    // Check for successful response
+    if !response.status().is_success() {
+        anyhow::bail!(
+            "Failed to download image: HTTP {}",
+            response.status()
+        );
+    }
+
+    // Verify content type is an image
+    let content_type = response
+        .headers()
+        .get("content-type")
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("");
+
+    if !content_type.starts_with("image/") {
+        anyhow::bail!(
+            "Downloaded content is not an image (content-type: {})",
+            content_type
+        );
+    }
+
     let bytes = response.bytes().await?;
+
+    // Validate PNG signature (first 8 bytes)
+    if bytes.len() < 8 || &bytes[0..8] != b"\x89PNG\r\n\x1a\n" {
+        // Not a PNG, but might be JPEG - check JPEG signature
+        if bytes.len() < 2 || &bytes[0..2] != b"\xff\xd8" {
+            anyhow::bail!("Downloaded file is not a valid PNG or JPEG image");
+        }
+    }
 
     // Save to file
     fs::write(path, bytes)?;

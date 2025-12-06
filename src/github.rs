@@ -103,6 +103,48 @@ fn get_auth_strategy() -> AuthStrategy {
     AuthStrategy::Public
 }
 
+/// Execute a GitHub API call with automatic authentication fallback
+///
+/// This helper encapsulates the common pattern of trying authenticated requests
+/// first, then falling back to gh CLI, then to public API.
+///
+/// # Arguments
+/// * `with_token` - Function to call with token authentication (receives token as argument)
+/// * `with_cli` - Function to call using gh CLI
+/// * `without_token` - Function to call without authentication (public API)
+fn with_auth_fallback<T, F1, F2, F3>(with_token: F1, with_cli: F2, without_token: F3) -> Result<T>
+where
+    F1: FnOnce(&str) -> Result<T>,
+    F2: Fn() -> Result<T>,
+    F3: Fn() -> Result<T>,
+{
+    match get_auth_strategy() {
+        AuthStrategy::Token(ref token) => {
+            println!("🔐 Using GitHub API with token authentication");
+            with_token(token)
+                .or_else(|e| {
+                    eprintln!("⚠️  Token auth failed: {}. Trying gh CLI...", e);
+                    with_cli()
+                })
+                .or_else(|e| {
+                    eprintln!("⚠️  gh CLI failed: {}. Trying public API...", e);
+                    without_token()
+                })
+        }
+        AuthStrategy::GhCli => {
+            println!("🔧 Using GitHub CLI");
+            with_cli().or_else(|e| {
+                eprintln!("⚠️  gh CLI failed: {}. Trying public API...", e);
+                without_token()
+            })
+        }
+        AuthStrategy::Public => {
+            println!("🌐 Using public GitHub API (60 req/hr limit)");
+            without_token()
+        }
+    }
+}
+
 /// Fetch repositories using GitHub API with token (async)
 async fn fetch_repos_with_api_async(
     username: &str,
@@ -219,35 +261,12 @@ pub fn fetch_github_projects(username: &str) -> Result<Vector<Project>> {
     validate_github_username(username)
         .with_context(|| format!("Invalid GitHub username: {}", username))?;
 
-    let auth_strategy = get_auth_strategy();
+    let repos = with_auth_fallback(
+        |token| fetch_repos_with_api(username, Some(token)),
+        || fetch_repos_with_gh_cli(username),
+        || fetch_repos_with_api(username, None),
+    )?;
 
-    let repos = match auth_strategy {
-        AuthStrategy::Token(ref token) => {
-            println!("🔐 Using GitHub API with token authentication");
-            fetch_repos_with_api(username, Some(token))
-                .or_else(|e| {
-                    eprintln!("⚠️  Token auth failed: {}. Trying gh CLI...", e);
-                    fetch_repos_with_gh_cli(username)
-                })
-                .or_else(|e| {
-                    eprintln!("⚠️  gh CLI failed: {}. Trying public API...", e);
-                    fetch_repos_with_api(username, None)
-                })?
-        }
-        AuthStrategy::GhCli => {
-            println!("🔧 Using GitHub CLI");
-            fetch_repos_with_gh_cli(username).or_else(|e| {
-                eprintln!("⚠️  gh CLI failed: {}. Trying public API...", e);
-                fetch_repos_with_api(username, None)
-            })?
-        }
-        AuthStrategy::Public => {
-            println!("🌐 Using public GitHub API (60 req/hr limit)");
-            fetch_repos_with_api(username, None)?
-        }
-    };
-
-    // Convert GitHub repositories to Project structs
     Ok(convert_repos_to_projects(repos))
 }
 
@@ -344,35 +363,12 @@ fn fetch_org_repos_with_gh_cli(org_name: &str) -> Result<Vec<GitHubRepo>> {
 ///
 /// Uses the same authentication strategy as fetch_github_projects
 pub fn fetch_github_org_projects(org_name: &str) -> Result<Vector<Project>> {
-    let auth_strategy = get_auth_strategy();
+    let repos = with_auth_fallback(
+        |token| fetch_org_repos_with_api(org_name, Some(token)),
+        || fetch_org_repos_with_gh_cli(org_name),
+        || fetch_org_repos_with_api(org_name, None),
+    )?;
 
-    let repos = match auth_strategy {
-        AuthStrategy::Token(ref token) => {
-            println!("🔐 Using GitHub API with token authentication");
-            fetch_org_repos_with_api(org_name, Some(token))
-                .or_else(|e| {
-                    eprintln!("⚠️  Token auth failed: {}. Trying gh CLI...", e);
-                    fetch_org_repos_with_gh_cli(org_name)
-                })
-                .or_else(|e| {
-                    eprintln!("⚠️  gh CLI failed: {}. Trying public API...", e);
-                    fetch_org_repos_with_api(org_name, None)
-                })?
-        }
-        AuthStrategy::GhCli => {
-            println!("🔧 Using GitHub CLI");
-            fetch_org_repos_with_gh_cli(org_name).or_else(|e| {
-                eprintln!("⚠️  gh CLI failed: {}. Trying public API...", e);
-                fetch_org_repos_with_api(org_name, None)
-            })?
-        }
-        AuthStrategy::Public => {
-            println!("🌐 Using public GitHub API (60 req/hr limit)");
-            fetch_org_repos_with_api(org_name, None)?
-        }
-    };
-
-    // Convert GitHub repositories to Project structs
     Ok(convert_repos_to_projects(repos))
 }
 
@@ -656,24 +652,11 @@ pub fn fetch_github_avatar(username: &str) -> Result<String> {
     validate_github_username(username)
         .with_context(|| format!("Invalid GitHub username: {}", username))?;
 
-    let auth_strategy = get_auth_strategy();
-
-    match auth_strategy {
-        AuthStrategy::Token(ref token) => fetch_avatar_with_api(username, Some(token))
-            .or_else(|e| {
-                eprintln!("⚠️  Token auth failed: {}. Trying gh CLI...", e);
-                fetch_avatar_with_gh_cli(username)
-            })
-            .or_else(|e| {
-                eprintln!("⚠️  gh CLI failed: {}. Trying public API...", e);
-                fetch_avatar_with_api(username, None)
-            }),
-        AuthStrategy::GhCli => fetch_avatar_with_gh_cli(username).or_else(|e| {
-            eprintln!("⚠️  gh CLI failed: {}. Trying public API...", e);
-            fetch_avatar_with_api(username, None)
-        }),
-        AuthStrategy::Public => fetch_avatar_with_api(username, None),
-    }
+    with_auth_fallback(
+        |token| fetch_avatar_with_api(username, Some(token)),
+        || fetch_avatar_with_gh_cli(username),
+        || fetch_avatar_with_api(username, None),
+    )
 }
 
 /// Cache-aware version of fetch_projects_from_sources

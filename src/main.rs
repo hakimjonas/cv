@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use cv_generator::{
-    cv_data::Cv,
+    cv_data::{Cv, Project},
     github,
     github_cache::GitHubCache,
     html_generator,
@@ -289,36 +289,49 @@ async fn main() -> Result<()> {
         .parent()
         .unwrap()
         .join("language_icons.json");
-    match LanguageIcons::from_json(icons_path.to_str().unwrap()) {
-        Ok(icons) => {
-            info!("Found {} language icons", icons.0.len());
 
-            // Associate language icons with projects
-            for project in cv.projects.iter_mut() {
-                // Extract project name without language suffix
-                let mut project_name = project.name.clone();
-                if let Some(lang_pos) = project_name.find(" - ") {
-                    project_name = project_name[..lang_pos].to_string();
-                }
+    let icons = LanguageIcons::from_json(icons_path.to_str().unwrap()).ok();
 
-                // Set the display name
-                project.display_name = Some(project_name.clone());
-
-                // Detect language from project name or technologies
-                if let Some(lang) =
-                    icons.detect_language_vector(&project.name, &project.technologies)
-                {
-                    project.language = Some(lang.clone());
-                    project.language_icon = Some(icons.get_icon(&lang).to_string());
-                    debug!("Detected language for project {}: {}", project_name, lang);
-                }
-            }
-        }
-        Err(e) => {
-            warn!("Failed to load language icons: {}", e);
-            info!("Continuing without language icons");
-        }
+    if let Some(ref icons) = icons {
+        info!("Found {} language icons", icons.0.len());
+    } else {
+        warn!("Failed to load language icons, continuing without them");
     }
+
+    // Transform projects with display names and language icons (functional style)
+    cv.projects = cv
+        .projects
+        .iter()
+        .map(|project| {
+            // Extract display name (without language suffix)
+            let display_name = project
+                .name
+                .find(" - ")
+                .map(|pos| project.name[..pos].to_string())
+                .unwrap_or_else(|| project.name.clone());
+
+            // Detect language and icon if icons are available
+            let (language, language_icon) = icons
+                .as_ref()
+                .and_then(|icons| {
+                    icons
+                        .detect_language_vector(&project.name, &project.technologies)
+                        .map(|lang| {
+                            let icon = icons.get_icon(&lang).to_string();
+                            debug!("Detected language for project {}: {}", display_name, lang);
+                            (Some(lang), Some(icon))
+                        })
+                })
+                .unwrap_or((None, None));
+
+            Project {
+                display_name: Some(display_name),
+                language,
+                language_icon,
+                ..project.clone()
+            }
+        })
+        .collect();
 
     // Filter CV data based on public_data configuration
     info!("Filtering CV data based on public_data configuration");

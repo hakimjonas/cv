@@ -5,9 +5,8 @@
 
 use anyhow::{Context, Result};
 use chrono::{DateTime, Utc};
-use im::Vector;
+use im::{HashMap, Vector};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 
@@ -188,13 +187,25 @@ impl GitHubCache {
         );
     }
 
-    /// Clean up expired entries from cache
+    /// Clean up expired entries from cache (returns new cache with expired entries removed)
     pub fn cleanup_expired(&mut self) -> usize {
         let initial_projects = self.projects.len();
         let initial_avatars = self.avatars.len();
 
-        self.projects.retain(|_, entry| entry.is_valid());
-        self.avatars.retain(|_, entry| entry.is_valid());
+        // Filter to keep only valid entries (functional approach with im::HashMap)
+        self.projects = self
+            .projects
+            .iter()
+            .filter(|(_, entry)| entry.is_valid())
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect();
+
+        self.avatars = self
+            .avatars
+            .iter()
+            .filter(|(_, entry)| entry.is_valid())
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect();
 
         let cleaned_projects = initial_projects - self.projects.len();
         let cleaned_avatars = initial_avatars - self.avatars.len();

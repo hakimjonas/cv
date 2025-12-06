@@ -41,8 +41,9 @@ fn init_logging() {
     info!("Logging initialized with tracing");
 }
 
-/// Download and save an image from URL
-async fn download_and_save_image(url: &str, path: &str) -> Result<()> {
+/// Download and save an image from URL, returning the actual path used
+/// (may differ from requested path if format detection changes extension)
+async fn download_and_save_image(url: &str, path: &str) -> Result<String> {
     // Ensure the parent directory exists
     if let Some(parent) = Path::new(path).parent() {
         fs::create_dir_all(parent)?;
@@ -84,7 +85,7 @@ async fn download_and_save_image(url: &str, path: &str) -> Result<()> {
     let bytes = response.bytes().await?;
     debug!("Downloaded {} bytes", bytes.len());
 
-    // Validate PNG signature (first 8 bytes)
+    // Detect actual format from magic bytes
     let is_png = bytes.len() >= 8 && &bytes[0..8] == b"\x89PNG\r\n\x1a\n";
     let is_jpeg = bytes.len() >= 2 && &bytes[0..2] == b"\xff\xd8";
 
@@ -95,10 +96,24 @@ async fn download_and_save_image(url: &str, path: &str) -> Result<()> {
         );
     }
 
+    // Determine correct extension based on actual format
+    let actual_path = if is_jpeg && path.ends_with(".png") {
+        path.replace(".png", ".jpg")
+    } else if is_png && path.ends_with(".jpg") {
+        path.replace(".jpg", ".png")
+    } else {
+        path.to_string()
+    };
+
+    debug!(
+        "Image format: {}, saving to: {}",
+        if is_png { "PNG" } else { "JPEG" },
+        actual_path
+    );
+
     // Save to file
-    fs::write(path, bytes)?;
-    debug!("Saved image to: {}", path);
-    Ok(())
+    fs::write(&actual_path, bytes)?;
+    Ok(actual_path)
 }
 
 /// Main entry point for the CV generator application
@@ -191,21 +206,34 @@ async fn main() -> Result<()> {
 
     // Check if custom profile image exists, clear it if not
     if let Some(ref profile_path) = cv.personal_info.profile_image {
-        // Resolve the profile image path relative to static dir or as absolute
-        let resolved_path = if profile_path.starts_with("dist/") {
-            Path::new(profile_path).to_path_buf()
+        // Try multiple locations for the profile image:
+        // 1. Absolute path or dist/ prefix (as-is)
+        // 2. Relative to static directory (static/img/...)
+        // 3. Relative to repo root (img/...)
+        let candidates = if profile_path.starts_with("dist/") || Path::new(profile_path).is_absolute() {
+            vec![Path::new(profile_path).to_path_buf()]
         } else {
-            config.static_dir.join(profile_path)
+            vec![
+                config.static_dir.join(profile_path),
+                Path::new(profile_path).to_path_buf(),
+            ]
         };
 
-        if !resolved_path.exists() {
-            warn!(
-                "Profile image not found at '{}', will fall back to GitHub avatar",
-                resolved_path.display()
-            );
-            cv.personal_info.profile_image = None;
-        } else {
-            info!("Using custom profile image: {}", resolved_path.display());
+        let resolved_path = candidates.iter().find(|p| p.exists());
+
+        match resolved_path {
+            Some(path) => {
+                info!("Using custom profile image: {}", path.display());
+                // Update the path to the resolved location for downstream use
+                cv.personal_info.profile_image = Some(path.to_string_lossy().to_string());
+            }
+            None => {
+                warn!(
+                    "Profile image not found (tried: {}), will fall back to GitHub avatar",
+                    candidates.iter().map(|p| p.display().to_string()).collect::<Vec<_>>().join(", ")
+                );
+                cv.personal_info.profile_image = None;
+            }
         }
     }
 
@@ -227,13 +255,16 @@ async fn main() -> Result<()> {
 
                     // Download and save avatar for PDF generation
                     let avatar_path = format!("{}/img/profile.png", config.output_dir.display());
-                    if let Err(e) = download_and_save_image(&avatar_url, &avatar_path).await {
-                        warn!("Failed to download GitHub avatar: {}", e);
-                    } else {
-                        // Keep GitHub avatar URL for HTML, and use local file for PDF
-                        // The profile_image will be used by Typst, github_avatar_url by HTML
-                        cv.personal_info.profile_image = Some("dist/img/profile.png".to_string());
-                        info!("Downloaded GitHub avatar for PDF generation");
+                    match download_and_save_image(&avatar_url, &avatar_path).await {
+                        Ok(actual_path) => {
+                            // Keep GitHub avatar URL for HTML, and use local file for PDF
+                            // The profile_image will be used by Typst, github_avatar_url by HTML
+                            cv.personal_info.profile_image = Some(actual_path);
+                            info!("Downloaded GitHub avatar for PDF generation");
+                        }
+                        Err(e) => {
+                            warn!("Failed to download GitHub avatar: {}", e);
+                        }
                     }
                 }
                 Err(e) => {

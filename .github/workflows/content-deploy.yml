@@ -25,10 +25,12 @@ jobs:
           echo "📥 Fetching main branch code..."
           git fetch origin main
           git checkout origin/main -- .
-          # Restore content branch data and config
+          # Restore content branch data, config, and static assets
           git checkout content -- data/
-          git checkout content -- config/ 2>/dev/null || echo "⚠️  No config/ on content branch, using defaults from main"
-          echo "✅ Code and data merged successfully."
+          git checkout content -- config/ 2>/dev/null || echo "ℹ️  No config/ on content branch, using defaults from main"
+          git checkout content -- img/ 2>/dev/null || echo "ℹ️  No img/ on content branch"
+          git checkout content -- static/ 2>/dev/null || echo "ℹ️  No static/ on content branch"
+          echo "✅ Code and content merged successfully."
 
       - name: Setup Rust toolchain
         uses: actions-rust-lang/setup-rust-toolchain@v1

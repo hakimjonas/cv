@@ -6,7 +6,7 @@
     "phone": "+45 26335577",
     "website": null,
     "location": "Hothers Plads 11, 3, 2200 Cph. N",
-    "summary": "Data Engineer with 3+ years of experience designing, optimizing, and managing large-scale data pipelines using Scala, Spark, and Python. Skilled in building robust ETL processes, implementing test-driven development, and leveraging AWS cloud services. Key projects at LiveIntent (acquired by Zeta Global) include Dormant Email Reactivation and PersonID/offline graph pipelines. Currently exploring compiler and language design through a personal functional programming language project in Rust, focusing on type systems and parsing techniques.",
+    "summary": "Data Engineer with four years of experience architecting and scaling distributed data systems processing billions of records daily. Expert in Scala, Apache Spark, and functional programming, with a proven track record of building privacy-compliant data frameworks, modernizing legacy pipelines, and pioneering AI agent systems. Led initiatives including warehouse-wide data governance frameworks, metacognitive AI agents, and developer productivity tooling. Strong background in Kubernetes, CI/CD, NLP, and building internal tools that accelerate engineering velocity.",
     "social_links": {
       "LinkedIn": "https://linkedin.com/in/hakimghoula",
       "GitHub": "https://github.com/hakimjonas"
@@ -15,31 +15,27 @@
   },
   "experiences": [
     {
-      "company": "LiveIntent (acquired by Zeta Global in November 2024)",
+      "company": "LiveIntent (acquired by Zeta Global, November 2024)",
       "position": "Data Engineer",
-      "start_date": "2022",
+      "start_date": "2022-01",
       "end_date": null,
       "location": "Copenhagen, Denmark",
-      "description": "Designed and maintained large-scale ETL pipelines using Scala and Spark, improving data processing efficiency.",
+      "description": "Technical owner of distributed data systems processing billions of identity records. Four years focused on Apache Spark pipeline development and testing, with additional contributions spanning data governance frameworks, infrastructure automation, and AI agent systems.",
       "achievements": [
-        "Collaborated on data ingestion and delivery processes for external partners",
-        "Contributed to Dormant Email Reactivation and PersonID/offline graph projects, supporting business objectives",
-        "Emphasized functional programming and TDD to create maintainable and reliable code"
+        "Developed and maintained large-scale Apache Spark ETL pipelines with comprehensive Specs2 test coverage, processing billions of records daily for AdTech/MarTech identity resolution",
+        "Designed warehouse-wide data governance framework enabling configurable privacy controls and hash filtering across all pipelines",
+        "Architected metacognitive AI agent system with dual-process cognitive architecture (Fast/Slow brain), combining deterministic validation with LLM reasoning for hallucination-free autonomous operations",
+        "Trained NLP intent classification models using spaCy for automated ticket routing and analysis",
+        "Built compile-time JSON schema derivation system using Scala 3 metaprogramming for configuration validation",
+        "Created Akka Streams testing framework providing standardized patterns for stream-based component validation",
+        "Developed developer productivity CLI integrating issue tracking, version control, and AI assistant protocols"
       ],
       "technologies": [
-        "Scala", "Spark", "AWS", "Functional Programming", "TDD"
-      ]
-    },
-    {
-      "company": "LiveIntent (acquired by Zeta Global in November 2024)",
-      "position": "Associate Data Scientist",
-      "start_date": "2022",
-      "end_date": "2022",
-      "location": "Copenhagen, Denmark",
-      "description": "Supported the development of analytical pipelines using Scala-based systems.",
-      "achievements": [],
-      "technologies": [
-        "Scala", "Data Analysis"
+        "Apache Spark", "Scala", "Python", "AWS (S3, Athena, Bedrock)",
+        "Functional Programming", "Specs2", "Akka Streams",
+        "Kubernetes", "Helm", "Docker", "Terraform",
+        "LLM/AI Engineering", "spaCy/NLP", "FastAPI",
+        "Apache Airflow", "CircleCI", "GitHub Actions"
       ]
     },
     {
@@ -129,25 +125,90 @@
   ],
   "skill_categories": [
     {
-      "name": "Languages",
+      "name": "Programming Languages",
       "skills": [
-        "Scala: Functional & OOP, strongly typed systems, TDD",
-        "Python: Airflow (DAGs), data processing (Pandas, NumPy), machine learning, NLP",
-        "SQL: AWS Athena, performance tuning, complex queries",
-        "Rust: Compiler/language design project & more"
+        "Scala: Advanced FP, Spark applications, Scala 3 metaprogramming, compile-time derivation",
+        "Python: FastAPI, Airflow DAGs, CLI tooling, NLP/ML pipelines",
+        "SQL: AWS Athena, analytical queries, performance optimization",
+        "Rust: Systems programming, compiler design, type systems"
       ]
     },
     {
-      "name": "Data Engineering & Big Data",
+      "name": "Big Data & Distributed Systems",
       "skills": [
-        "Apache Spark: ETL, transformations, performance optimizations",
-        "Apache Airflow: DAG creation, scheduling, orchestration",
-        "AWS: S3, Athena, EC2, data warehousing, analytics",
-        "Docker & Kubernetes: Containerization, orchestration, deployment"
+        "Apache Spark: ETL pipelines, DataFrame/Dataset APIs, performance tuning, Specs2 testing",
+        "Apache Airflow: DAG orchestration, scheduling, monitoring",
+        "Akka Streams: Reactive stream processing, backpressure handling",
+        "Data Architecture: Pipeline design, data lake patterns, schema evolution"
+      ]
+    },
+    {
+      "name": "AI & Machine Learning",
+      "skills": [
+        "LLM Engineering: AWS Bedrock, prompt engineering, ReAct patterns, agent architectures",
+        "NLP: spaCy, intent classification, semantic search, embeddings",
+        "Cognitive Architectures: Dual-process systems, metacognitive agents"
+      ]
+    },
+    {
+      "name": "Cloud & Infrastructure",
+      "skills": [
+        "AWS: S3, Athena, Bedrock, IAM",
+        "Kubernetes: Deployments, Jobs, Helm charts, ArgoCD",
+        "Terraform: Modular IaC, reusable modules",
+        "CI/CD: CircleCI, GitHub Actions, automated pipelines"
       ]
     }
   ],
-  "projects": [],
+  "projects": [
+    {
+      "name": "Valar",
+      "description": "Type-safe validation library for Scala 3 with compile-time macro derivation",
+      "url": "https://central.sonatype.com/artifact/io.github.hakimjonas/valar_3",
+      "repository": "https://github.com/hakimjonas/valar",
+      "technologies": ["Scala 3", "Macros", "Metaprogramming"],
+      "highlights": [
+        "Published to Maven Central",
+        "Compile-time derivation eliminating boilerplate",
+        "Error accumulation with detailed reporting",
+        "Cross-platform support for JVM and Scala Native"
+      ]
+    },
+    {
+      "name": "CV Generator",
+      "description": "High-performance CV/portfolio generator creating HTML and PDF from JSON data",
+      "repository": "https://github.com/hakimjonas/cv",
+      "technologies": ["Rust", "Askama", "Typst", "Functional Programming"],
+      "highlights": [
+        "Immutable data structures using functional patterns",
+        "TTL-based GitHub API caching for sub-second builds",
+        "Dynamic color scheme generation from iTerm2/GitHub themes",
+        "PDF generation via Typst integration"
+      ]
+    },
+    {
+      "name": "Finë",
+      "description": "GTK4-based session transition tool for Linux desktops with functional, modular design",
+      "repository": "https://github.com/hakimjonas/fin",
+      "technologies": ["Rust", "GTK4", "Linux", "Systems Programming"],
+      "highlights": [
+        "Clean GTK4 integration with Rust",
+        "Modular architecture for session management",
+        "Functional design patterns throughout"
+      ]
+    },
+    {
+      "name": "Spore-Print",
+      "description": "Rust library providing a trait and derive macro for immutable string representations",
+      "repository": "https://github.com/fungal-lang/spore-print",
+      "technologies": ["Rust", "Procedural Macros", "Derive Macros"],
+      "highlights": [
+        "Custom derive macro implementation",
+        "Trait-based design for extensibility",
+        "Zero-copy string handling where possible"
+      ]
+    }
+  ],
   "languages": {
     "Danish": "Native",
     "English": "Fluent"

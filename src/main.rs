@@ -204,7 +204,33 @@ async fn main() -> Result<()> {
         }
     }
 
-    // Check if custom profile image exists, clear it if not
+    // Always fetch GitHub avatar URL as fallback
+    let github_username = cv
+        .github_sources
+        .iter()
+        .find_map(|source| source.username.as_ref());
+
+    if let Some(username) = github_username {
+        info!("Fetching GitHub avatar for user: {}", username);
+        match profiler.time_operation("Fetch GitHub avatar", || {
+            github::fetch_github_avatar_cached(username, &mut github_cache)
+        }) {
+            Ok(avatar_url) => {
+                cv.personal_info.github_avatar_url = Some(avatar_url.clone());
+                info!("Successfully fetched GitHub avatar URL (fallback)");
+            }
+            Err(e) => {
+                warn!("Failed to fetch GitHub avatar: {}", e);
+            }
+        }
+    }
+
+    // Ensure output img directory exists
+    let output_img_dir = format!("{}/img", config.output_dir.display());
+    fs::create_dir_all(&output_img_dir).ok();
+
+    // Check if custom profile image exists and copy it to dist/
+    let mut custom_profile_found = false;
     if let Some(ref profile_path) = cv.personal_info.profile_image {
         // Try multiple locations for the profile image:
         // 1. Absolute path or dist/ prefix (as-is)
@@ -220,65 +246,58 @@ async fn main() -> Result<()> {
                 ]
             };
 
-        let resolved_path = candidates.iter().find(|p| p.exists());
+        if let Some(source_path) = candidates.iter().find(|p| p.exists()) {
+            // Determine output filename based on source extension
+            let extension = source_path
+                .extension()
+                .and_then(|e| e.to_str())
+                .unwrap_or("jpg");
+            let dest_path = format!("{}/profile.{}", output_img_dir, extension);
 
-        match resolved_path {
-            Some(path) => {
-                info!("Using custom profile image: {}", path.display());
-                // Update the path to the resolved location for downstream use
-                cv.personal_info.profile_image = Some(path.to_string_lossy().to_string());
+            match fs::copy(source_path, &dest_path) {
+                Ok(_) => {
+                    info!("Copied custom profile image to: {}", dest_path);
+                    cv.personal_info.profile_image = Some(format!("img/profile.{}", extension));
+                    custom_profile_found = true;
+                }
+                Err(e) => {
+                    warn!("Failed to copy profile image: {}", e);
+                }
             }
-            None => {
-                warn!(
-                    "Profile image not found (tried: {}), will fall back to GitHub avatar",
-                    candidates
-                        .iter()
-                        .map(|p| p.display().to_string())
-                        .collect::<Vec<_>>()
-                        .join(", ")
-                );
-                cv.personal_info.profile_image = None;
-            }
+        } else {
+            warn!(
+                "Profile image not found (tried: {}), will fall back to GitHub avatar",
+                candidates
+                    .iter()
+                    .map(|p| p.display().to_string())
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            );
         }
     }
 
-    // Fetch GitHub avatar URL if no valid profile image is available
-    if cv.personal_info.profile_image.is_none() {
-        let github_username = cv
-            .github_sources
-            .iter()
-            .find_map(|source| source.username.as_ref());
+    // If no custom profile image, download GitHub avatar
+    if !custom_profile_found {
+        cv.personal_info.profile_image = None;
 
-        if let Some(username) = github_username {
-            info!("Fetching GitHub avatar for user: {}", username);
-            match profiler.time_operation("Fetch GitHub avatar", || {
-                github::fetch_github_avatar_cached(username, &mut github_cache)
-            }) {
-                Ok(avatar_url) => {
-                    cv.personal_info.github_avatar_url = Some(avatar_url.clone());
-                    info!("Successfully fetched GitHub avatar URL");
-
-                    // Download and save avatar for PDF generation
-                    let avatar_path = format!("{}/img/profile.png", config.output_dir.display());
-                    match download_and_save_image(&avatar_url, &avatar_path).await {
-                        Ok(actual_path) => {
-                            // Keep GitHub avatar URL for HTML, and use local file for PDF
-                            // The profile_image will be used by Typst, github_avatar_url by HTML
-                            cv.personal_info.profile_image = Some(actual_path);
-                            info!("Downloaded GitHub avatar for PDF generation");
-                        }
-                        Err(e) => {
-                            warn!("Failed to download GitHub avatar: {}", e);
-                        }
-                    }
+        if let Some(ref avatar_url) = cv.personal_info.github_avatar_url {
+            let avatar_path = format!("{}/profile.png", output_img_dir);
+            match download_and_save_image(avatar_url, &avatar_path).await {
+                Ok(actual_path) => {
+                    // Extract just the relative path for the template
+                    let relative_path = actual_path
+                        .strip_prefix(&format!("{}/", config.output_dir.display()))
+                        .unwrap_or(&actual_path);
+                    cv.personal_info.profile_image = Some(relative_path.to_string());
+                    info!("Downloaded GitHub avatar to: {}", actual_path);
                 }
                 Err(e) => {
-                    warn!("Failed to fetch GitHub avatar: {}", e);
+                    warn!("Failed to download GitHub avatar: {}", e);
                     info!("Will use default placeholder image");
                 }
             }
         } else {
-            info!("No GitHub username found in sources, using default placeholder image");
+            info!("No GitHub avatar available, using default placeholder image");
         }
     }
 

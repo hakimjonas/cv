@@ -2,11 +2,6 @@
   "title": "Hakim's Portfolio",
   "menu": [
     {
-      "label": "Home",
-      "path": "index.html",
-      "item_type": "home"
-    },
-    {
       "label": "CV",
       "path": "cv.html",
       "item_type": "cv"

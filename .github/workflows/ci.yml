@@ -82,35 +82,23 @@ jobs:
       - name: Install required fonts
         run: |
           echo "📥 Installing fonts for PDF generation..."
-
-          # Install Font Awesome for icons
-          echo "Downloading Font Awesome..."
-          wget https://github.com/FortAwesome/Font-Awesome/releases/download/6.5.1/fontawesome-free-6.5.1-desktop.zip
-          unzip fontawesome-free-6.5.1-desktop.zip
-          sudo mkdir -p /usr/share/fonts/truetype/fontawesome
-          sudo cp fontawesome-free-6.5.1-desktop/otfs/*.otf /usr/share/fonts/truetype/fontawesome/
-
-          # Install Hanken Grotesk
-          echo "Downloading Hanken Grotesk..."
-          git clone --depth 1 https://github.com/marcologous/hanken-grotesk.git
-          sudo mkdir -p /usr/share/fonts/truetype/hanken-grotesk
-          sudo cp hanken-grotesk/fonts/ttf/*.ttf /usr/share/fonts/truetype/hanken-grotesk/
-
-          # Update font cache
-          echo "Updating font cache..."
-          sudo fc-cache -fv
-          echo "✅ Fonts installed (Hanken Grotesk + Font Awesome)"
+          sudo mkdir -p /usr/share/fonts/truetype/cv-fonts
+          sudo cp fonts/*.otf fonts/*.ttf /usr/share/fonts/truetype/cv-fonts/
+          sudo fc-cache -f
+          echo "✅ Fonts installed from repository"
 
       - name: Build CV generator
         run: cargo build --release --bin cv
 
-      - name: Fetch CV data from 'content' branch
+      - name: Fetch content from 'content' branch
         run: |
           echo "📥 Fetching content branch..."
           git fetch origin content
-          echo "📋 Checking out CV data from content branch..."
-          git checkout origin/content -- data/cv_data.json
-          echo "✅ Successfully fetched CV data."
+          echo "📋 Checking out content from content branch..."
+          git checkout origin/content -- data/
+          git checkout origin/content -- config/ 2>/dev/null || echo "ℹ️  No config/ on content branch, using defaults"
+          git checkout origin/content -- img/ 2>/dev/null || echo "ℹ️  No img/ on content branch, will use GitHub avatar"
+          echo "✅ Successfully fetched content."
 
       - name: Generate CV files
         run: |

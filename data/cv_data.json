@@ -27,6 +27,7 @@
         "Integrated UID2 (Unified ID 2.0) protocol for privacy-compliant identity resolution across partner ecosystems",
         "Built PersonID matching system with normalized address resolution for cross-system identity linkage",
         "Architected metacognitive AI agent system with dual-process cognitive architecture (Kahneman's Fast/Slow model), combining deterministic validation with LLM reasoning",
+        "Built compile-time JSON schema derivation using Scala metaprogramming for configuration validation across warehouse systems",
         "Trained NLP intent classification models using spaCy for automated ticket routing",
         "Created Akka Streams testing framework providing standardized patterns for stream-based component validation",
         "Developed developer productivity CLI integrating issue tracking, version control, and MCP (Model Context Protocol) for AI assistant integration"

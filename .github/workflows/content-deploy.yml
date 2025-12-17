@@ -25,9 +25,10 @@ jobs:
           echo "📥 Fetching main branch code..."
           git fetch origin main
           git checkout origin/main -- .
-          # Restore content branch data and config
+          # Restore content branch data, config, and images
           git checkout content -- data/
           git checkout content -- config/ 2>/dev/null || echo "⚠️  No config/ on content branch, using defaults from main"
+          git checkout content -- img/ 2>/dev/null || echo "ℹ️  No img/ on content branch, will use GitHub avatar"
           echo "✅ Code and data merged successfully."
 
       - name: Setup Rust toolchain
@@ -53,6 +54,14 @@ jobs:
         with:
           crate: typst-cli
           version: "^0.13.1"
+
+      - name: Install required fonts
+        run: |
+          echo "📥 Installing fonts for PDF generation..."
+          sudo mkdir -p /usr/share/fonts/truetype/cv-fonts
+          sudo cp fonts/*.otf fonts/*.ttf /usr/share/fonts/truetype/cv-fonts/
+          sudo fc-cache -f
+          echo "✅ Fonts installed from repository"
 
       - name: Build CV generator (release mode)
         run: cargo build --release --bin cv

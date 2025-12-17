@@ -22,11 +22,6 @@
       "item_type": "projects"
     },
     {
-      "label": "Blog",
-      "path": "blog.html",
-      "item_type": "blog"
-    },
-    {
       "label": "Contact",
       "path": "contact.html",
       "item_type": "page"

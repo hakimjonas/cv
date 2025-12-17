@@ -6,7 +6,7 @@
     "phone": "+45 26335577",
     "website": null,
     "location": "Hothers Plads 11, 3, 2200 Cph. N",
-    "summary": "Data Engineer with four years of experience architecting and scaling distributed data systems processing billions of records daily. Expert in Scala, Apache Spark, and functional programming, with a proven track record of building privacy-compliant data frameworks, modernizing legacy pipelines, and pioneering AI agent systems. Led initiatives including warehouse-wide data governance frameworks, metacognitive AI agents, and developer productivity tooling. Strong background in Kubernetes, CI/CD, NLP, and building internal tools that accelerate engineering velocity.",
+    "summary": "Data Engineer with four years of experience architecting distributed data systems. Expert in Scala, Apache Spark, and functional programming, with a focus on building privacy-compliant data frameworks, modernizing legacy pipelines, and designing AI agent systems. Background in cognitive science informs approach to system design, particularly in metacognitive architectures combining deterministic validation with LLM reasoning. Technical owner of warehouse-wide data governance frameworks and developer productivity tooling.",
     "social_links": {
       "LinkedIn": "https://linkedin.com/in/hakimghoula",
       "GitHub": "https://github.com/hakimjonas"
@@ -20,21 +20,22 @@
       "start_date": "2022-01",
       "end_date": null,
       "location": "Copenhagen, Denmark",
-      "description": "Technical owner of distributed data systems processing billions of identity records. Four years focused on Apache Spark pipeline development and testing, with additional contributions spanning data governance frameworks, infrastructure automation, and AI agent systems.",
+      "description": "Technical owner of distributed data systems for AdTech/MarTech identity resolution. Four years focused on Apache Spark pipeline development and testing, with additional contributions spanning data governance, infrastructure automation, and AI agent systems. Code owner for multiple warehouse modules.",
       "achievements": [
-        "Developed and maintained large-scale Apache Spark ETL pipelines with comprehensive Specs2 test coverage, processing billions of records daily for AdTech/MarTech identity resolution",
-        "Designed warehouse-wide data governance framework enabling configurable privacy controls and hash filtering across all pipelines",
-        "Architected metacognitive AI agent system with dual-process cognitive architecture (Fast/Slow brain), combining deterministic validation with LLM reasoning for hallucination-free autonomous operations",
-        "Trained NLP intent classification models using spaCy for automated ticket routing and analysis",
-        "Built compile-time JSON schema derivation system using Scala 3 metaprogramming for configuration validation",
+        "Developed and maintained Apache Spark ETL pipelines with comprehensive Specs2 test coverage for identity resolution and audience segmentation",
+        "Designed warehouse-wide data governance framework enabling configurable privacy controls and hash filtering across all delivery pipelines",
+        "Integrated UID2 (Unified ID 2.0) protocol for privacy-compliant identity resolution across partner ecosystems",
+        "Built PersonID matching system with normalized address resolution for cross-system identity linkage",
+        "Architected metacognitive AI agent system with dual-process cognitive architecture (Kahneman's Fast/Slow model), combining deterministic validation with LLM reasoning",
+        "Trained NLP intent classification models using spaCy for automated ticket routing",
         "Created Akka Streams testing framework providing standardized patterns for stream-based component validation",
-        "Developed developer productivity CLI integrating issue tracking, version control, and AI assistant protocols"
+        "Developed developer productivity CLI integrating issue tracking, version control, and MCP (Model Context Protocol) for AI assistant integration"
       ],
       "technologies": [
         "Apache Spark", "Scala", "Python", "AWS (S3, Athena, Bedrock)",
-        "Functional Programming", "Specs2", "Akka Streams",
+        "Functional Programming", "Specs2", "Akka Streams", "Parquet",
         "Kubernetes", "Helm", "Docker", "Terraform",
-        "LLM/AI Engineering", "spaCy/NLP", "FastAPI",
+        "LLM/AI Engineering", "spaCy/NLP", "MCP Protocol", "FastAPI",
         "Apache Airflow", "CircleCI", "GitHub Actions"
       ]
     },
@@ -44,12 +45,13 @@
       "start_date": "2018",
       "end_date": "2019",
       "location": "Copenhagen, Denmark",
-      "description": "Developed email prediction and language detection modules for the Growth Intelligence platform.",
+      "description": "Developed NLP components for B2B lead intelligence platform, including email prediction models and multilingual language detection.",
       "achievements": [
-        "Maintained and optimized internal APIs to ensure seamless data integration"
+        "Built email prediction pipeline using pattern matching and probabilistic models",
+        "Implemented language detection module for multilingual content classification"
       ],
       "technologies": [
-        "Python", "APIs", "NLP"
+        "Python", "NLP", "REST APIs", "Machine Learning"
       ]
     },
     {
@@ -139,15 +141,15 @@
         "Apache Spark: ETL pipelines, DataFrame/Dataset APIs, performance tuning, Specs2 testing",
         "Apache Airflow: DAG orchestration, scheduling, monitoring",
         "Akka Streams: Reactive stream processing, backpressure handling",
-        "Data Architecture: Pipeline design, data lake patterns, schema evolution"
+        "Data Architecture: Pipeline design, Parquet/columnar storage, data lake patterns, schema evolution"
       ]
     },
     {
       "name": "AI & Machine Learning",
       "skills": [
-        "LLM Engineering: AWS Bedrock, prompt engineering, ReAct patterns, agent architectures",
+        "LLM Engineering: AWS Bedrock, prompt engineering, ReAct patterns, MCP protocol",
         "NLP: spaCy, intent classification, semantic search, embeddings",
-        "Cognitive Architectures: Dual-process systems, metacognitive agents"
+        "Cognitive Architectures: Dual-process systems (Kahneman), metacognitive agents"
       ]
     },
     {

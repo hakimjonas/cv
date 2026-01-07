@@ -360,17 +360,89 @@ fn generate_meta_variable(cv: &Cv, typst_config: &TypstConfig) -> String {
         .pipe(|s| append_line(s, "#let meta = ("))
         // Layout section
         .pipe(|s| append_line(s, "  layout: ("))
-        .pipe(|s| append_line(s, &format!("    fill_color: \"{}\",", typst_config.customization.colors.fill)))
-        .pipe(|s| append_line(s, &format!("    paper_size: \"{}\",", typst_config.customization.layout.paper_size)))
-        .pipe(|s| append_line(s, &format!("    accent_color: \"{}\",", typst_config.customization.colors.accent)))
-        .pipe(|s| append_line(s, &format!("    left_pane_width: \"{}\",", typst_config.customization.layout.left_pane_width)))
+        .pipe(|s| {
+            append_line(
+                s,
+                &format!(
+                    "    fill_color: \"{}\",",
+                    typst_config.customization.colors.fill
+                ),
+            )
+        })
+        .pipe(|s| {
+            append_line(
+                s,
+                &format!(
+                    "    paper_size: \"{}\",",
+                    typst_config.customization.layout.paper_size
+                ),
+            )
+        })
+        .pipe(|s| {
+            append_line(
+                s,
+                &format!(
+                    "    accent_color: \"{}\",",
+                    typst_config.customization.colors.accent
+                ),
+            )
+        })
+        .pipe(|s| {
+            append_line(
+                s,
+                &format!(
+                    "    left_pane_width: \"{}\",",
+                    typst_config.customization.layout.left_pane_width
+                ),
+            )
+        })
         .pipe(|s| append_line(s, "    text: ("))
-        .pipe(|s| append_line(s, &format!("      font: \"{}\",", typst_config.customization.layout.font)))
-        .pipe(|s| append_line(s, &format!("      size: \"{}\",", typst_config.customization.layout.font_size)))
+        .pipe(|s| {
+            append_line(
+                s,
+                &format!(
+                    "      font: \"{}\",",
+                    typst_config.customization.layout.font
+                ),
+            )
+        })
+        .pipe(|s| {
+            append_line(
+                s,
+                &format!(
+                    "      size: \"{}\",",
+                    typst_config.customization.layout.font_size
+                ),
+            )
+        })
         .pipe(|s| append_line(s, "      color: ("))
-        .pipe(|s| append_line(s, &format!("        light: \"{}\",", typst_config.customization.colors.text_light)))
-        .pipe(|s| append_line(s, &format!("        medium: \"{}\",", typst_config.customization.colors.text_medium)))
-        .pipe(|s| append_line(s, &format!("        dark: \"{}\"", typst_config.customization.colors.text_dark)))
+        .pipe(|s| {
+            append_line(
+                s,
+                &format!(
+                    "        light: \"{}\",",
+                    typst_config.customization.colors.text_light
+                ),
+            )
+        })
+        .pipe(|s| {
+            append_line(
+                s,
+                &format!(
+                    "        medium: \"{}\",",
+                    typst_config.customization.colors.text_medium
+                ),
+            )
+        })
+        .pipe(|s| {
+            append_line(
+                s,
+                &format!(
+                    "        dark: \"{}\"",
+                    typst_config.customization.colors.text_dark
+                ),
+            )
+        })
         .pipe(|s| append_line(s, "      )"))
         .pipe(|s| append_line(s, "    )"))
         .pipe(|s| append_line(s, "  ),"))
@@ -378,7 +450,7 @@ fn generate_meta_variable(cv: &Cv, typst_config: &TypstConfig) -> String {
         .pipe(|s| append_line(s, "  language: ("))
         .pipe(|s| append_line(s, "    en: ("))
         .pipe(|s| append_line(s, &format!("      subtitle: \"{}\",", subtitle)))
-        .pipe(|s| append_line(s, "      ai_prompt: \"\","))  // Empty AI prompt - users can enable if desired
+        .pipe(|s| append_line(s, "      ai_prompt: \"\",")) // Empty AI prompt - users can enable if desired
         .pipe(|s| append_line(s, "      cv_document_name: \"CV\""))
         .pipe(|s| append_line(s, "    ),"))
         .pipe(|s| append_line(s, "    dk: ("))

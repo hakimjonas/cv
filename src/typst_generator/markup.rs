@@ -241,25 +241,9 @@ fn generate_personal_info(cv: &Cv) -> String {
         with_phone
     };
 
-    // Title/subtitle
-    let with_title = with_location
-        .pipe(|s| append_markup(s, &format!("subtitle: \"{}", cv.personal_info.title)));
-
-    // Add focus if summary is not empty
-    let with_focus = if !cv.personal_info.summary.is_empty() {
-        with_title.pipe(|s| {
-            append_markup(
-                s,
-                " with a focus on functional programming and scalable solutions",
-            )
-        })
-    } else {
-        with_title
-    };
-
-    // Close the subtitle and the personal_info object
-    with_focus
-        .pipe(|s| append_markup(s, "\""))
+    // Title/subtitle - use title directly from CV data
+    with_location
+        .pipe(|s| append_markup(s, &format!("subtitle: \"{}\"", cv.personal_info.title)))
         .pipe(|s| append_lines(s, ")"))
 }
 
@@ -368,15 +352,8 @@ fn generate_meta_variable(cv: &Cv, typst_config: &TypstConfig) -> String {
     // Extract name components
     let (first_name, last_name) = split_name(&cv.personal_info.name);
 
-    // Create subtitle with optional focus
-    let subtitle = {
-        let base = cv.personal_info.title.clone();
-        if !cv.personal_info.summary.is_empty() {
-            format!("{base} with a focus on functional programming and scalable solutions")
-        } else {
-            base
-        }
-    };
+    // Use title directly from CV data
+    let subtitle = cv.personal_info.title.clone();
 
     // Start building the markup
     let base = String::new()
@@ -400,7 +377,7 @@ fn generate_meta_variable(cv: &Cv, typst_config: &TypstConfig) -> String {
         // Language section
         .pipe(|s| append_line(s, "  language: ("))
         .pipe(|s| append_line(s, "    en: ("))
-        .pipe(|s| append_line(s, "      subtitle: \"Data Engineer with a focus on functional programming and scalable solutions\","))
+        .pipe(|s| append_line(s, &format!("      subtitle: \"{}\",", subtitle)))
         .pipe(|s| append_line(s, "      ai_prompt: \"\","))  // Empty AI prompt - users can enable if desired
         .pipe(|s| append_line(s, "      cv_document_name: \"CV\""))
         .pipe(|s| append_line(s, "    ),"))

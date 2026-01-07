@@ -1,12 +1,12 @@
 {
   "personal_info": {
     "name": "Hakim Jonas Ghoula",
-    "title": "Data Engineer",
+    "title": "Software Engineer & Systems Architect",
     "email": "hakim@walkthisway.dk",
     "phone": "+45 26335577",
     "website": null,
     "location": "Hothers Plads 11, 3, 2200 Cph. N",
-    "summary": "Data Engineer with four years of experience architecting distributed data systems. Expert in Scala, Apache Spark, and functional programming, with a focus on building privacy-compliant data frameworks, modernizing legacy pipelines, and designing AI agent systems. Background in cognitive science informs approach to system design, particularly in metacognitive architectures combining deterministic validation with LLM reasoning. Technical owner of warehouse-wide data governance frameworks and developer productivity tooling.",
+    "summary": "Software engineer with four years of professional experience in distributed data systems, plus independent work spanning library design, compiler development, and AI agent architectures. Primary languages are Scala, Rust, and Python. Professional work includes Apache Spark pipelines for identity resolution at scale, data governance frameworks, and developer productivity tooling. Independent work includes a published validation library (Maven Central) and systems built to understand domains from the ground up. Background in cognitive science (MSc) informs approach to system design, particularly in architectures combining deterministic validation with LLM reasoning.",
     "social_links": {
       "LinkedIn": "https://linkedin.com/in/hakimghoula",
       "GitHub": "https://github.com/hakimjonas"
@@ -22,15 +22,13 @@
       "location": "Copenhagen, Denmark",
       "description": "Technical owner of distributed data systems for AdTech/MarTech identity resolution. Four years focused on Apache Spark pipeline development and testing, with additional contributions spanning data governance, infrastructure automation, and AI agent systems. Code owner for multiple warehouse modules.",
       "achievements": [
-        "Developed and maintained Apache Spark ETL pipelines with comprehensive Specs2 test coverage for identity resolution and audience segmentation",
+        "Architected AI agent system with dual-process cognitive architecture, combining deterministic validation with LLM reasoning for automated configuration workflows",
+        "Developed developer productivity CLI integrating issue tracking, version control, and MCP (Model Context Protocol) for AI assistant integration",
         "Designed warehouse-wide data governance framework enabling configurable privacy controls and hash filtering across all delivery pipelines",
-        "Integrated UID2 (Unified ID 2.0) protocol for privacy-compliant identity resolution across partner ecosystems",
-        "Built PersonID matching system with normalized address resolution for cross-system identity linkage",
-        "Architected metacognitive AI agent system with dual-process cognitive architecture (Kahneman's Fast/Slow model), combining deterministic validation with LLM reasoning",
         "Built compile-time JSON schema derivation using Scala metaprogramming for configuration validation across warehouse systems",
-        "Trained NLP intent classification models using spaCy for automated ticket routing",
-        "Created Akka Streams testing framework providing standardized patterns for stream-based component validation",
-        "Developed developer productivity CLI integrating issue tracking, version control, and MCP (Model Context Protocol) for AI assistant integration"
+        "Developed and maintained Apache Spark ETL pipelines with comprehensive Specs2 test coverage for identity resolution and audience segmentation",
+        "Integrated UID2 (Unified ID 2.0) protocol for privacy-compliant identity resolution across partner ecosystems",
+        "Built PersonID matching system with normalized address resolution for cross-system identity linkage"
       ],
       "technologies": [
         "Apache Spark", "Scala", "Python", "AWS (S3, Athena, Bedrock)",
@@ -67,30 +65,6 @@
       ],
       "technologies": [
         "Front End", "Data Modeling"
-      ]
-    },
-    {
-      "company": "LETSMT! / University of Copenhagen",
-      "position": "Research Assistant",
-      "start_date": "2012",
-      "end_date": "2012",
-      "location": "Copenhagen, Denmark",
-      "description": "Conducted data acquisition and analysis for an EU-funded machine translation project.",
-      "achievements": [],
-      "technologies": [
-        "Data Analysis", "Machine Translation"
-      ]
-    },
-    {
-      "company": "Self-employed",
-      "position": "Independent Web Developer",
-      "start_date": "2004",
-      "end_date": "2010",
-      "location": "Copenhagen, Denmark",
-      "description": "Designed and built websites and portals for a range of clients.",
-      "achievements": [],
-      "technologies": [
-        "Web Development", "HTML/CSS"
       ]
     }
   ],
@@ -131,9 +105,8 @@
       "name": "Programming Languages",
       "skills": [
         "Scala: Advanced FP, Spark applications, Scala 3 metaprogramming, compile-time derivation",
-        "Python: FastAPI, Airflow DAGs, CLI tooling, NLP/ML pipelines",
-        "SQL: AWS Athena, analytical queries, performance optimization",
-        "Rust: Systems programming, compiler design, type systems"
+        "Rust: Systems programming, compiler design, type systems",
+        "Python: FastAPI, Airflow DAGs, CLI tooling, NLP/ML pipelines"
       ]
     },
     {
@@ -166,7 +139,7 @@
   "projects": [
     {
       "name": "Valar",
-      "description": "Type-safe validation library for Scala 3 with compile-time macro derivation",
+      "description": "Type-safe validation library for Scala 3 with compile-time inline metaprogramming",
       "url": "https://central.sonatype.com/artifact/io.github.hakimjonas/valar_3",
       "repository": "https://github.com/hakimjonas/valar",
       "technologies": ["Scala 3", "Macros", "Metaprogramming"],
@@ -179,7 +152,7 @@
     },
     {
       "name": "CV Generator",
-      "description": "High-performance CV/portfolio generator creating HTML and PDF from JSON data",
+      "description": "CV/portfolio generator producing HTML and PDF from structured JSON data",
       "repository": "https://github.com/hakimjonas/cv",
       "technologies": ["Rust", "Askama", "Typst", "Functional Programming"],
       "highlights": [
@@ -216,9 +189,7 @@
     "Danish": "Native",
     "English": "Fluent"
   },
-  "certifications": [
-    "Python Certified Developer Professional – Superusers (2020)"
-  ],
+  "certifications": [],
   "github_sources": [
     {
       "username": "hakimjonas",

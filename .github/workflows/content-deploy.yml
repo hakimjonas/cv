@@ -67,16 +67,16 @@ jobs:
           sudo mkdir -p /usr/share/fonts/truetype/fontawesome
           sudo cp fontawesome-free-6.5.1-desktop/otfs/*.otf /usr/share/fonts/truetype/fontawesome/
 
-          # Install Hanken Grotesk
-          echo "Downloading Hanken Grotesk..."
-          git clone --depth 1 -q https://github.com/marcologous/hanken-grotesk.git
-          sudo mkdir -p /usr/share/fonts/truetype/hanken-grotesk
-          sudo cp hanken-grotesk/fonts/ttf/*.ttf /usr/share/fonts/truetype/hanken-grotesk/
+          # Install HK Grotesk from repo
+          echo "Installing HK Grotesk from static/fonts..."
+          sudo mkdir -p /usr/share/fonts/opentype/hkgrotesk
+          sudo cp static/fonts/HKGrotesk/*.otf /usr/share/fonts/opentype/hkgrotesk/
 
           # Update font cache
           echo "Updating font cache..."
           sudo fc-cache -f
-          echo "✅ Fonts installed (Hanken Grotesk + Font Awesome)"
+          fc-list | grep -i "HK Grotesk" | head -3 || echo "⚠️ HK Grotesk not found in font cache"
+          echo "✅ Fonts installed (HK Grotesk + Font Awesome)"
 
       - name: Build CV generator (release mode)
         run: cargo build --release --bin cv

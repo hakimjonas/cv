@@ -16,6 +16,10 @@ categories = ["command-line-utilities", "web-programming", "template-engine"]
 name = "cv"
 path = "src/main.rs"
 
+[[bin]]
+name = "cover-letter"
+path = "src/bin/cover_letter.rs"
+
 [dependencies]
 # Core functional programming and async runtime
 anyhow = "1.0.100"

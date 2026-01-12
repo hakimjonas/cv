@@ -2,9 +2,12 @@
 ///
 /// This module provides functionality to generate Typst markup from CV data
 /// and compile it to PDF using the Typst CLI.
+mod cover_letter;
 mod markup;
 mod sections;
 mod utils;
+
+pub use cover_letter::generate_cover_letter_pdf;
 
 use anyhow::{Context, Result};
 use std::fs;

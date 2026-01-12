@@ -496,11 +496,26 @@ fn generate_meta_variable(cv: &Cv, typst_config: &TypstConfig) -> String {
             )
         })
         .pipe(|s| append_line(s, &format!("        label: \"{}\"", cv.personal_info.email)))
-        .pipe(|s| append_line(s, "      )"))
-        .pipe(|s| append_line(s, "    ),"));
+        .pipe(|s| append_line(s, "      ),"));
+
+    // Homepage (optional)
+    let with_homepage = if let Some(website) = &cv.personal_info.website {
+        let label = website
+            .trim_start_matches("https://")
+            .trim_start_matches("http://");
+        with_email
+            .pipe(|s| append_line(s, "      homepage: ("))
+            .pipe(|s| append_line(s, &format!("        link: \"{}\",", website)))
+            .pipe(|s| append_line(s, &format!("        label: \"{}\"", label)))
+            .pipe(|s| append_line(s, "      )"))
+    } else {
+        with_email
+    };
+
+    let with_info_close = with_homepage.pipe(|s| append_line(s, "    ),"));
 
     // Complete the rest of the meta variable
-    with_email
+    with_info_close
         // Icons
         .pipe(|s| append_line(s, "    icon: ("))
         .pipe(|s| append_line(s, "      address: \"house\","))

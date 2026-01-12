@@ -57,17 +57,6 @@
             </div>
           </div>
 
-          {% if cv.personal_info.website.is_some() %}
-          <p>
-            <a
-              href="{{ cv.personal_info.website.as_ref().unwrap() }}"
-              target="_blank"
-              rel="noopener"
-              >{{ cv.personal_info.website.as_ref().unwrap() }}</a
-            >
-          </p>
-          {% endif %}
-
         </div>
 
         <div class="cv-section cv-section-profile">

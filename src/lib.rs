@@ -46,6 +46,7 @@
 // Core CV generation modules
 pub mod blog_posts;
 pub mod colorscheme_provider; // Now a directory module
+pub mod cover_letter;
 pub mod css_generator;
 pub mod cv_data;
 pub mod dependencies;

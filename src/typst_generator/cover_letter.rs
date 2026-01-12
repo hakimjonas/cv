@@ -101,7 +101,11 @@ fn generate_imports(markup: String, typst_config: &TypstConfig) -> String {
 }
 
 /// Generate meta variable (matching grotesk-cv expected structure)
-fn generate_meta(markup: String, personal_info: &PersonalInfo, typst_config: &TypstConfig) -> String {
+fn generate_meta(
+    markup: String,
+    personal_info: &PersonalInfo,
+    typst_config: &TypstConfig,
+) -> String {
     let (first_name, last_name) = split_name(&personal_info.name);
     let address = personal_info.location.as_deref().unwrap_or("");
     let phone = personal_info.phone.as_deref().unwrap_or("");
@@ -110,17 +114,73 @@ fn generate_meta(markup: String, personal_info: &PersonalInfo, typst_config: &Ty
         .pipe(|s| append_line(s, "#let meta = ("))
         // Layout section
         .pipe(|s| append_line(s, "  layout: ("))
-        .pipe(|s| append_line(s, &format!("    fill_color: \"{}\",", typst_config.customization.colors.fill)))
-        .pipe(|s| append_line(s, &format!("    paper_size: \"{}\",", typst_config.customization.layout.paper_size)))
-        .pipe(|s| append_line(s, &format!("    accent_color: \"{}\",", typst_config.customization.colors.accent)))
+        .pipe(|s| {
+            append_line(
+                s,
+                &format!(
+                    "    fill_color: \"{}\",",
+                    typst_config.customization.colors.fill
+                ),
+            )
+        })
+        .pipe(|s| {
+            append_line(
+                s,
+                &format!(
+                    "    paper_size: \"{}\",",
+                    typst_config.customization.layout.paper_size
+                ),
+            )
+        })
+        .pipe(|s| {
+            append_line(
+                s,
+                &format!(
+                    "    accent_color: \"{}\",",
+                    typst_config.customization.colors.accent
+                ),
+            )
+        })
         .pipe(|s| append_line(s, "    text: ("))
-        .pipe(|s| append_line(s, &format!("      font: \"{}\",", typst_config.customization.layout.font)))
+        .pipe(|s| {
+            append_line(
+                s,
+                &format!(
+                    "      font: \"{}\",",
+                    typst_config.customization.layout.font
+                ),
+            )
+        })
         .pipe(|s| append_line(s, "      size: \"11pt\","))
         .pipe(|s| append_line(s, "      cover_letter_size: \"11pt\","))
         .pipe(|s| append_line(s, "      color: ("))
-        .pipe(|s| append_line(s, &format!("        light: \"{}\",", typst_config.customization.colors.text_light)))
-        .pipe(|s| append_line(s, &format!("        medium: \"{}\",", typst_config.customization.colors.text_medium)))
-        .pipe(|s| append_line(s, &format!("        dark: \"{}\"", typst_config.customization.colors.text_dark)))
+        .pipe(|s| {
+            append_line(
+                s,
+                &format!(
+                    "        light: \"{}\",",
+                    typst_config.customization.colors.text_light
+                ),
+            )
+        })
+        .pipe(|s| {
+            append_line(
+                s,
+                &format!(
+                    "        medium: \"{}\",",
+                    typst_config.customization.colors.text_medium
+                ),
+            )
+        })
+        .pipe(|s| {
+            append_line(
+                s,
+                &format!(
+                    "        dark: \"{}\"",
+                    typst_config.customization.colors.text_dark
+                ),
+            )
+        })
         .pipe(|s| append_line(s, "      )"))
         .pipe(|s| append_line(s, "    )"))
         .pipe(|s| append_line(s, "  ),"))
@@ -141,7 +201,12 @@ fn generate_meta(markup: String, personal_info: &PersonalInfo, typst_config: &Ty
         .pipe(|s| append_line(s, &format!("      address: \"{}\",", address)))
         .pipe(|s| append_line(s, &format!("      telephone: \"{}\",", phone)))
         .pipe(|s| append_line(s, "      email: ("))
-        .pipe(|s| append_line(s, &format!("        link: \"mailto:{}\",", personal_info.email)))
+        .pipe(|s| {
+            append_line(
+                s,
+                &format!("        link: \"mailto:{}\",", personal_info.email),
+            )
+        })
         .pipe(|s| append_line(s, &format!("        label: \"{}\"", personal_info.email)))
         .pipe(|s| append_line(s, "      ),"))
         .pipe(|s| {
@@ -171,9 +236,9 @@ fn generate_meta(markup: String, personal_info: &PersonalInfo, typst_config: &Ty
                 append_line(s, "      email: \"envelope\"")
             }
         })
-        .pipe(|s| append_line(s, "    )"))   // close icon
-        .pipe(|s| append_line(s, "  )"))     // close personal
-        .pipe(|s| append_lines(s, ")"))      // close meta
+        .pipe(|s| append_line(s, "    )")) // close icon
+        .pipe(|s| append_line(s, "  )")) // close personal
+        .pipe(|s| append_lines(s, ")")) // close meta
 }
 
 /// Generate document setup and apply cover-letter template
@@ -221,12 +286,8 @@ fn generate_body(markup: String, letter: &CoverLetter) -> String {
     };
 
     // Add date
-    let markup = markup.pipe(|s| {
-        append_lines(
-            s,
-            "#datetime.today().display(\"[day]/[month]/[year]\")",
-        )
-    });
+    let markup =
+        markup.pipe(|s| append_lines(s, "#datetime.today().display(\"[day]/[month]/[year]\")"));
 
     // Add spacing before body
     let markup = markup.pipe(|s| append_lines(s, "#v(1em)"));
@@ -255,8 +316,8 @@ fn generate_body(markup: String, letter: &CoverLetter) -> String {
         }
 
         // Check if this is a bullet point (starts with "- ")
-        if para.starts_with("- ") {
-            let item_text = &para[2..]; // Remove "- " prefix
+        if let Some(item_text) = para.strip_prefix("- ") {
+            // Remove "- " prefix
             let escaped = escape_typst(item_text);
             let normalized = escaped.replace('\n', " ");
 
@@ -378,7 +439,9 @@ mod tests {
 
         let markup = generate_cover_letter_markup(&letter, &personal_info, &typst_config);
 
-        assert!(markup.contains("#import \"@preview/grotesk-cv:1.0.5\": cover-letter, recipient-entry"));
+        assert!(
+            markup.contains("#import \"@preview/grotesk-cv:1.0.5\": cover-letter, recipient-entry")
+        );
         assert!(markup.contains("#show: cover-letter.with(meta)"));
         assert!(markup.contains("first_name: \"John\""));
         assert!(markup.contains("last_name: \"Doe\""));

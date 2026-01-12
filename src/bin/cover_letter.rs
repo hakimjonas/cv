@@ -11,11 +11,8 @@
 
 use anyhow::{Context, Result};
 use cv_generator::{
-    cover_letter::CoverLetter,
-    cv_data::Cv,
-    site_config::SiteConfig,
-    typst_generator::generate_cover_letter_pdf,
-    unified_config::AppConfig,
+    cover_letter::CoverLetter, cv_data::Cv, site_config::SiteConfig,
+    typst_generator::generate_cover_letter_pdf, unified_config::AppConfig,
 };
 use std::env;
 use std::path::PathBuf;

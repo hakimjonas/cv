@@ -4,7 +4,7 @@
     "title": "Software Engineer & Systems Architect",
     "email": "hakim@walkthisway.dk",
     "phone": "+45 26335577",
-    "website": null,
+    "website": "https://hakim.ghoula.net",
     "location": "Hothers Plads 11, 3, 2200 Cph. N",
     "summary": "Software engineer with four years of professional experience in distributed data systems, plus independent work spanning library design, compiler development, and AI agent architectures. Primary languages are Scala, Rust, and Python. Professional work includes Apache Spark pipelines for identity resolution at scale, data governance frameworks, and developer productivity tooling. Independent work includes a published validation library (Maven Central) and systems built to understand domains from the ground up. Background in cognitive science (MSc) informs approach to system design, particularly in architectures combining deterministic validation with LLM reasoning.",
     "social_links": {

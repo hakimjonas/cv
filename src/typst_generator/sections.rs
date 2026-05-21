@@ -336,13 +336,11 @@ fn append_education_entry(markup: String, edu: &Education) -> String {
         markup.pipe(|s| append_line(s, &format!("=== {} in {}", edu.degree, edu.field)));
 
     // Institution and date range
-    let institution_line = {
-        let base = format!("{} {}", edu.institution, edu.start_date);
-        if let Some(end_date) = &edu.end_date {
-            format!("{base}-{end_date}")
-        } else {
-            base
-        }
+    let institution_line = match (&edu.start_date, &edu.end_date) {
+        (Some(start), Some(end)) => format!("{} {start}-{end}", edu.institution),
+        (Some(start), None) => format!("{} {start}", edu.institution),
+        (None, Some(end)) => format!("{} {end}", edu.institution),
+        (None, None) => edu.institution.clone(),
     };
 
     let with_institution = with_degree.pipe(|s| append_lines(s, &institution_line));

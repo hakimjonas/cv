@@ -198,7 +198,7 @@ async fn fetch_repos_with_api_async(
 
     // Filter and sort
     repos.retain(|repo| !repo.fork && !repo.archived && repo.description.is_some());
-    repos.sort_by(|a, b| b.stargazers_count.cmp(&a.stargazers_count));
+    repos.sort_by_key(|repo| std::cmp::Reverse(repo.stargazers_count));
     repos.truncate(10);
 
     Ok(repos)
@@ -315,7 +315,7 @@ async fn fetch_org_repos_with_api_async(
 
     // Filter and sort
     repos.retain(|repo| !repo.fork && !repo.archived && repo.description.is_some());
-    repos.sort_by(|a, b| b.stargazers_count.cmp(&a.stargazers_count));
+    repos.sort_by_key(|repo| std::cmp::Reverse(repo.stargazers_count));
     repos.truncate(10);
 
     Ok(repos)

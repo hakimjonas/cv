@@ -179,7 +179,7 @@ pub fn load_posts_from_directory(dir_path: &Path) -> Result<Vector<BlogPost>> {
 
     // Sort posts by date (newest first)
     let mut posts_vec: Vec<_> = posts.into_iter().collect();
-    posts_vec.sort_by(|a, b| b.date.cmp(&a.date));
+    posts_vec.sort_by_key(|post| std::cmp::Reverse(post.date));
 
     Ok(posts_vec.into_iter().collect())
 }

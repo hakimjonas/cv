@@ -118,8 +118,18 @@
                 </p>
               </div>
               <div class="item-date">
-                {{ edu.start_date }} - {% if edu.end_date.is_some() %} {{
-                edu.end_date.as_ref().unwrap() }} {% else %} Present {% endif %}
+                {% if edu.start_date.is_some() %}
+                  {{ edu.start_date.as_ref().unwrap() }} -
+                  {% if edu.end_date.is_some() %}
+                    {{ edu.end_date.as_ref().unwrap() }}
+                  {% else %}
+                    Present
+                  {% endif %}
+                {% else %}
+                  {% if edu.end_date.is_some() %}
+                    {{ edu.end_date.as_ref().unwrap() }}
+                  {% endif %}
+                {% endif %}
               </div>
             </div>
 

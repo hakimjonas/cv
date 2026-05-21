@@ -40,7 +40,8 @@ pub struct Education {
     pub institution: String,
     pub degree: String,
     pub field: String,
-    pub start_date: String,
+    #[serde(default)]
+    pub start_date: Option<String>,
     pub end_date: Option<String>,
     pub location: Option<String>,
     pub gpa: Option<String>,
@@ -433,7 +434,7 @@ mod tests {
             institution: "University of Technology".to_string(),
             degree: "Bachelor of Science".to_string(),
             field: "Computer Science".to_string(),
-            start_date: "2016-09".to_string(),
+            start_date: Some("2016-09".to_string()),
             end_date: Some("2020-05".to_string()),
             location: Some("Tech City".to_string()),
             gpa: Some("3.8".to_string()),

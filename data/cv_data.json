@@ -6,7 +6,7 @@
     "phone": "+45 26335577",
     "website": "https://hakim.ghoula.net",
     "location": "Hothers Plads 11, 3, 2200 Cph. N",
-    "summary": "Software engineer with four years of professional experience in distributed data systems, plus independent work spanning library design, compiler development, and AI agent architectures. Primary languages are Scala, Rust, and Python. Professional work includes Apache Spark pipelines for identity resolution at scale, data governance frameworks, and developer productivity tooling. Independent work includes a published validation library (Maven Central) and systems built to understand domains from the ground up. Background in cognitive science (MSc) informs approach to system design, particularly in architectures combining deterministic validation with LLM reasoning.",
+    "summary": "Software engineer with four years in distributed data systems and an independent track record in library, parser, and language work. Primary languages: Scala 3, Rust, Dart, Python. Verified publisher on pub.dev under ardaproject.org with packages for parser combinators, multi-format parsing, codec derivation, and a total query language. Author and maintainer of a Scala 3 validation library on Maven Central. Educational background in IT and Cognition (MSc) and Philosophy (BA), University of Copenhagen.",
     "social_links": {
       "LinkedIn": "https://linkedin.com/in/hakimghoula",
       "GitHub": "https://github.com/hakimjonas"
@@ -20,15 +20,15 @@
       "start_date": "2022-01",
       "end_date": null,
       "location": "Copenhagen, Denmark",
-      "description": "Technical owner of distributed data systems for AdTech/MarTech identity resolution. Four years focused on Apache Spark pipeline development and testing, with additional contributions spanning data governance, infrastructure automation, and AI agent systems. Code owner for multiple warehouse modules.",
+      "description": "Distributed data systems for AdTech and MarTech identity resolution. Apache Spark pipeline development and testing, with contributions to data governance, infrastructure automation, and AI agent systems. Code owner for multiple warehouse modules.",
       "achievements": [
-        "Architected AI agent system with dual-process cognitive architecture, combining deterministic validation with LLM reasoning for automated configuration workflows",
-        "Developed developer productivity CLI integrating issue tracking, version control, and MCP (Model Context Protocol) for AI assistant integration",
-        "Designed warehouse-wide data governance framework enabling configurable privacy controls and hash filtering across all delivery pipelines",
-        "Built compile-time JSON schema derivation using Scala metaprogramming for configuration validation across warehouse systems",
-        "Developed and maintained Apache Spark ETL pipelines with comprehensive Specs2 test coverage for identity resolution and audience segmentation",
-        "Integrated UID2 (Unified ID 2.0) protocol for privacy-compliant identity resolution across partner ecosystems",
-        "Built PersonID matching system with normalized address resolution for cross-system identity linkage"
+        "Built an AI agent system using a dual-process architecture that separates deterministic fact validation from LLM reasoning. Used for automated configuration workflows.",
+        "Wrote a developer-productivity CLI integrating GitHub, GitLab, and Jira, with an MCP server for AI assistant integration.",
+        "Designed a warehouse-wide exclusion and governance framework. Configuration-driven, applied across delivery pipelines.",
+        "Implemented compile-time JSON schema derivation in Scala for configuration validation.",
+        "Maintained Apache Spark ETL pipelines for identity resolution and audience segmentation, with Specs2 test coverage.",
+        "Integrated the UID2 protocol for cross-partner identity resolution.",
+        "Built a PersonID matching system with normalized address resolution."
       ],
       "technologies": [
         "Apache Spark", "Scala", "Python", "AWS (S3, Athena, Bedrock)",
@@ -72,8 +72,7 @@
     {
       "institution": "University of Copenhagen",
       "degree": "MSc",
-      "field": "IT and Cognition",
-      "start_date": "2014",
+      "field": "Information Technology and Cognition",
       "end_date": "2016",
       "location": "Copenhagen, Denmark",
       "gpa": null,
@@ -81,21 +80,19 @@
     },
     {
       "institution": "University of Copenhagen",
-      "degree": "Bachelor",
+      "degree": "BA",
       "field": "Philosophy",
-      "start_date": "2008",
       "end_date": "2011",
       "location": "Copenhagen, Denmark",
       "gpa": null,
       "achievements": []
     },
     {
-      "institution": "The Royal Danish Conservatory",
+      "institution": "The Royal Academy of Music",
       "degree": "Diploma",
       "field": "Music Management",
-      "start_date": "2009",
       "end_date": "2011",
-      "location": "Copenhagen, Denmark",
+      "location": "Aarhus, Denmark",
       "gpa": null,
       "achievements": []
     }
@@ -104,9 +101,19 @@
     {
       "name": "Programming Languages",
       "skills": [
-        "Scala: Advanced FP, Spark applications, Scala 3 metaprogramming, compile-time derivation",
-        "Rust: Systems programming, compiler design, type systems",
-        "Python: FastAPI, Airflow DAGs, CLI tooling, NLP/ML pipelines"
+        "Scala 3: functional programming, Spark applications, inline and quoted macros, compile-time derivation, library design",
+        "Rust: systems programming, procedural and derive macros, library design",
+        "Dart: library and framework design, parser combinators, binary codecs, verified pub.dev publisher",
+        "Python: FastAPI, Airflow DAGs, CLI tooling, NLP and ML pipelines"
+      ]
+    },
+    {
+      "name": "Compilers and Language Implementation",
+      "skills": [
+        "Type systems: GADTs with refinement, bidirectional inference, typeclasses, variance",
+        "Parsing: parser combinators with left recursion, resilient parsers with recovery, lossless syntax trees",
+        "Code generation and metaprogramming: Scala 3 quoted macros and Mirror-based derivation, Rust procedural and derive macros",
+        "Standards-driven implementation: writing parsers and protocol implementations against published specifications"
       ]
     },
     {
@@ -138,50 +145,73 @@
   ],
   "projects": [
     {
+      "name": "Rumil (Dart monorepo)",
+      "description": "Parser combinator library and downstream packages, published on pub.dev under the ardaproject.org verified publisher.",
+      "url": "https://pub.dev/publishers/ardaproject.org/packages",
+      "repository": "https://github.com/hakimjonas/rumil-dart",
+      "technologies": ["Dart", "Parser Combinators", "Code Generation"],
+      "highlights": [
+        "rumil: parser combinator library with left recursion and stack-safe trampolining",
+        "rumil_parsers: JSON, CSV, XML, TOML, YAML, Proto3, HCL, CommonMark",
+        "rumil_codec and rumil_codec_builder: binary codec with derive codegen",
+        "rumil_expressions: formula evaluator",
+        "MIT licensed"
+      ]
+    },
+    {
+      "name": "Lambë",
+      "description": "Total query language for structured data (JSON, YAML, TOML, HCL, CSV, Markdown). Built on rumil. CLI, Dart library, and MCP server.",
+      "url": "https://pub.dev/packages/lambe",
+      "repository": "https://github.com/hakimjonas/lambe",
+      "technologies": ["Dart", "Language Design", "Total Functional Programming"],
+      "highlights": [
+        "Sub-Turing by design with guaranteed termination",
+        "Multi-format query surface from a single language",
+        "Pipeline DSL: filter, map, sort, group, aggregate, projection",
+        "MIT licensed"
+      ]
+    },
+    {
       "name": "Valar",
-      "description": "Type-safe validation library for Scala 3 with compile-time inline metaprogramming",
+      "description": "Validation library for Scala 3 using compile-time inline metaprogramming. Published to Maven Central.",
       "url": "https://central.sonatype.com/artifact/io.github.hakimjonas/valar_3",
       "repository": "https://github.com/hakimjonas/valar",
       "technologies": ["Scala 3", "Macros", "Metaprogramming"],
       "highlights": [
-        "Published to Maven Central",
-        "Compile-time derivation eliminating boilerplate",
-        "Error accumulation with detailed reporting",
-        "Cross-platform support for JVM and Scala Native"
+        "Compile-time derivation",
+        "Error accumulation",
+        "JVM and Scala Native"
       ]
     },
     {
       "name": "CV Generator",
-      "description": "CV/portfolio generator producing HTML and PDF from structured JSON data",
+      "description": "CV and portfolio generator producing HTML and PDF from structured JSON data.",
       "repository": "https://github.com/hakimjonas/cv",
-      "technologies": ["Rust", "Askama", "Typst", "Functional Programming"],
+      "technologies": ["Rust", "Askama", "Typst"],
       "highlights": [
-        "Immutable data structures using functional patterns",
-        "TTL-based GitHub API caching for sub-second builds",
-        "Dynamic color scheme generation from iTerm2/GitHub themes",
-        "PDF generation via Typst integration"
+        "JSON-driven content with separate generator and data branches",
+        "TTL-based GitHub API caching",
+        "PDF output via Typst"
       ]
     },
     {
       "name": "Finë",
-      "description": "GTK4-based session transition tool for Linux desktops with functional, modular design",
+      "description": "GTK4 session transition tool for Linux desktops.",
       "repository": "https://github.com/hakimjonas/fin",
-      "technologies": ["Rust", "GTK4", "Linux", "Systems Programming"],
+      "technologies": ["Rust", "GTK4", "Linux"],
       "highlights": [
-        "Clean GTK4 integration with Rust",
-        "Modular architecture for session management",
-        "Functional design patterns throughout"
+        "GTK4 integration in Rust",
+        "Modular session management"
       ]
     },
     {
       "name": "Spore-Print",
-      "description": "Rust library providing a trait and derive macro for immutable string representations",
+      "description": "Rust library providing a trait and derive macro for immutable string representations.",
       "repository": "https://github.com/fungal-lang/spore-print",
-      "technologies": ["Rust", "Procedural Macros", "Derive Macros"],
+      "technologies": ["Rust", "Procedural Macros"],
       "highlights": [
-        "Custom derive macro implementation",
-        "Trait-based design for extensibility",
-        "Zero-copy string handling where possible"
+        "Custom derive macro",
+        "Trait-based design"
       ]
     }
   ],

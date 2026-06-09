@@ -10,6 +10,11 @@ permissions:
   pages: write
   id-token: write
 
+# Cancel superseded runs on the same ref (e.g. rapid content pushes)
+concurrency:
+  group: content-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   deploy:
     name: Quick Deploy

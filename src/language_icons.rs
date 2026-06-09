@@ -151,7 +151,10 @@ mod tests {
     #[test]
     fn matches_language_token_in_hyphenated_name() {
         // "rumil-dart" splits into ["rumil", "dart"]; "dart" is a whole token.
-        assert_eq!(icons().detect_language("rumil-dart", &[]), Some("dart".into()));
+        assert_eq!(
+            icons().detect_language("rumil-dart", &[]),
+            Some("dart".into())
+        );
     }
 
     #[test]

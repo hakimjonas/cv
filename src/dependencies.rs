@@ -79,7 +79,6 @@ fn get_dependency_metadata(name: &str) -> (&'static str, &'static str) {
     match name {
         "serde" => ("https://serde.rs/", "Serialization framework"),
         "serde_json" => ("https://github.com/serde-rs/json", "JSON support"),
-        "serde_yaml" => ("https://github.com/dtolnay/serde-yaml", "YAML support"),
         "askama" => ("https://github.com/djc/askama", "Templating engine"),
         "im" => (
             "https://github.com/bodil/im-rs",

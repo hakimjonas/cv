@@ -289,11 +289,9 @@ impl GitHubSchemeProvider {
         self.toml_to_palette(&toml)
     }
 
-    fn parse_yaml(&self, content: &str) -> Result<ColorPalette> {
-        let yaml: serde_yaml::Value =
-            serde_yaml::from_str(content).context("Failed to parse YAML color scheme")?;
-
-        self.yaml_to_palette(&yaml)
+    fn parse_yaml(&self, _content: &str) -> Result<ColorPalette> {
+        // YAML color scheme parsing is not yet implemented.
+        Err(anyhow::anyhow!("YAML parsing not yet fully implemented"))
     }
 
     pub fn parse_xresources(&self, content: &str) -> Result<ColorPalette> {
@@ -398,11 +396,6 @@ impl GitHubSchemeProvider {
     fn toml_to_palette(&self, _toml: &toml::Value) -> Result<ColorPalette> {
         // Placeholder
         Err(anyhow::anyhow!("TOML parsing not yet fully implemented"))
-    }
-
-    fn yaml_to_palette(&self, _yaml: &serde_yaml::Value) -> Result<ColorPalette> {
-        // Placeholder
-        Err(anyhow::anyhow!("YAML parsing not yet fully implemented"))
     }
 
     fn parse_ghostty_toml(&self, toml: &toml::Value) -> Result<ColorPalette> {

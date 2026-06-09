@@ -29,19 +29,19 @@ im = { version = "15.1", features = ["serde"] }
 tokio = { version = "1.47.1", features = ["rt-multi-thread", "macros"] }
 
 # GitHub integration
-reqwest = { version = "0.12.23", features = ["json", "blocking", "stream"] }
-git2 = "0.20.2"
+reqwest = { version = "0.13.4", features = ["json", "blocking", "stream", "query"] }
+git2 = "0.21.0"
 
 # Configuration management
-config = { version = "0.15.17", features = ["toml", "json", "yaml"] }
-toml = "0.9.7"
+config = { version = "0.15.23", features = ["toml", "json", "yaml"] }
+toml = "1.1.2"
 
 # Templating and HTML generation
-askama = "0.14.0"
-minify-html = "0.16.4"
+askama = "0.16.0"
+minify-html = "0.18.1"
 
 # Markdown processing
-pulldown-cmark = "0.13.0"
+pulldown-cmark = "0.13.4"
 gray_matter = "0.3.2"
 
 # Logging
@@ -52,6 +52,5 @@ tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
 chrono = { version = "0.4.42", features = ["serde"] }
 regex = "1.11.3"
 base64 = "0.22.1"
-serde_yaml = "0.9.34-deprecated"
 tempfile = "3.23.0"
 

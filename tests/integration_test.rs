@@ -146,6 +146,8 @@ fn test_minimal_cv_generation() -> Result<()> {
         languages: Default::default(),
         certifications: Vector::new(),
         github_sources: Vector::new(),
+        excluded_repos: Vector::new(),
+        excluded_topics: Vector::new(),
     };
 
     let site_config = SiteConfig::default();

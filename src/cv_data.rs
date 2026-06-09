@@ -94,6 +94,10 @@ pub struct Cv {
     pub certifications: Vector<String>,
     #[serde(default)]
     pub github_sources: Vector<GitHubSource>,
+    #[serde(default)]
+    pub excluded_repos: Vector<String>,
+    #[serde(default)]
+    pub excluded_topics: Vector<String>,
 }
 
 impl Cv {
@@ -177,6 +181,8 @@ impl Cv {
             languages: im::HashMap::new(),
             certifications: Vector::new(),
             github_sources: Vector::new(),
+            excluded_repos: Vector::new(),
+            excluded_topics: Vector::new(),
         }
     }
 }

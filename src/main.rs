@@ -176,7 +176,12 @@ async fn main() -> Result<()> {
     // We're using GitHub CLI (gh) which handles authentication automatically
     info!("Fetching GitHub projects from sources defined in CV data using GitHub CLI");
     match profiler.time_operation("Fetch GitHub projects", || {
-        github::fetch_projects_from_sources_cached(&cv.github_sources, &mut github_cache)
+        github::fetch_projects_from_sources_cached(
+            &cv.github_sources,
+            &cv.excluded_repos,
+            &cv.excluded_topics,
+            &mut github_cache,
+        )
     }) {
         Ok(github_projects) => {
             info!("Found {} GitHub projects", github_projects.len());

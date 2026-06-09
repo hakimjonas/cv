@@ -34,7 +34,9 @@
 //! # fn main() -> anyhow::Result<()> {
 //! let mut cache = GitHubCache::load_or_default("cache/github_cache.json");
 //! let sources = Vector::new(); // Your GitHub sources
-//! let projects = fetch_projects_from_sources_cached(&sources, &mut cache)?;
+//! let excluded_repos = Vector::new();
+//! let excluded_topics = Vector::new();
+//! let projects = fetch_projects_from_sources_cached(&sources, &excluded_repos, &excluded_topics, &mut cache)?;
 //! cache.save("cache/github_cache.json")?;
 //! # Ok(())
 //! # }
@@ -76,6 +78,29 @@ enum AuthStrategy {
     Token(String),
     GhCli,
     Public,
+}
+
+/// Determines whether a repository qualifies as a portfolio project
+///
+/// Excludes forks, archived repos, repos without a description, Homebrew taps
+/// (names starting with `homebrew-`), and any repo/topic listed in the
+/// configured exclusion lists.
+fn is_portfolio_repo(
+    repo: &GitHubRepo,
+    excluded_repos: &Vector<String>,
+    excluded_topics: &Vector<String>,
+) -> bool {
+    !repo.fork
+        && !repo.archived
+        && repo.description.is_some()
+        && !repo.name.starts_with("homebrew-")
+        && !excluded_repos
+            .iter()
+            .any(|r| r.eq_ignore_ascii_case(&repo.name))
+        && repo.topics.as_ref().is_none_or(|ts| {
+            !ts.iter()
+                .any(|t| excluded_topics.iter().any(|x| x.eq_ignore_ascii_case(t)))
+        })
 }
 
 /// Determine the best authentication strategy
@@ -191,15 +216,10 @@ async fn fetch_repos_with_api_async(
         ));
     }
 
-    let mut repos: Vec<GitHubRepo> = response
+    let repos: Vec<GitHubRepo> = response
         .json()
         .await
         .context("Failed to parse GitHub API response")?;
-
-    // Filter and sort
-    repos.retain(|repo| !repo.fork && !repo.archived && repo.description.is_some());
-    repos.sort_by_key(|repo| std::cmp::Reverse(repo.stargazers_count));
-    repos.truncate(10);
 
     Ok(repos)
 }
@@ -218,7 +238,7 @@ fn fetch_repos_with_gh_cli(username: &str) -> Result<Vec<GitHubRepo>> {
             "api",
             &format!("/users/{}/repos", username),
             "--jq",
-            "map(select(.private == false and .fork == false)) | sort_by(.updated_at) | reverse | .[0:10]",
+            "map(select(.private == false))",
         ])
         .output()
         .context("Failed to execute 'gh' command")?;
@@ -256,7 +276,11 @@ fn fetch_repos_with_gh_cli(username: &str) -> Result<Vec<GitHubRepo>> {
 ///
 /// - Authenticated: 5,000 requests per hour
 /// - Unauthenticated: 60 requests per hour
-pub fn fetch_github_projects(username: &str) -> Result<Vector<Project>> {
+pub fn fetch_github_projects(
+    username: &str,
+    excluded_repos: &Vector<String>,
+    excluded_topics: &Vector<String>,
+) -> Result<Vector<Project>> {
     // Validate username format before making API call
     validate_github_username(username)
         .with_context(|| format!("Invalid GitHub username: {}", username))?;
@@ -267,7 +291,11 @@ pub fn fetch_github_projects(username: &str) -> Result<Vector<Project>> {
         || fetch_repos_with_api(username, None),
     )?;
 
-    Ok(convert_repos_to_projects(repos))
+    Ok(convert_repos_to_projects(
+        repos,
+        excluded_repos,
+        excluded_topics,
+    ))
 }
 
 /// Fetch organization repositories using GitHub API with token (async)
@@ -308,15 +336,10 @@ async fn fetch_org_repos_with_api_async(
         ));
     }
 
-    let mut repos: Vec<GitHubRepo> = response
+    let repos: Vec<GitHubRepo> = response
         .json()
         .await
         .context("Failed to parse GitHub API response")?;
-
-    // Filter and sort
-    repos.retain(|repo| !repo.fork && !repo.archived && repo.description.is_some());
-    repos.sort_by_key(|repo| std::cmp::Reverse(repo.stargazers_count));
-    repos.truncate(10);
 
     Ok(repos)
 }
@@ -335,7 +358,7 @@ fn fetch_org_repos_with_gh_cli(org_name: &str) -> Result<Vec<GitHubRepo>> {
             "api",
             &format!("/orgs/{}/repos", org_name),
             "--jq",
-            "map(select(.private == false and .fork == false)) | sort_by(.updated_at) | reverse | .[0:10]",
+            "map(select(.private == false))",
         ])
         .output()
         .context("Failed to execute 'gh' command")?;
@@ -362,14 +385,22 @@ fn fetch_org_repos_with_gh_cli(org_name: &str) -> Result<Vec<GitHubRepo>> {
 /// A Result containing a Vector of Project structs
 ///
 /// Uses the same authentication strategy as fetch_github_projects
-pub fn fetch_github_org_projects(org_name: &str) -> Result<Vector<Project>> {
+pub fn fetch_github_org_projects(
+    org_name: &str,
+    excluded_repos: &Vector<String>,
+    excluded_topics: &Vector<String>,
+) -> Result<Vector<Project>> {
     let repos = with_auth_fallback(
         |token| fetch_org_repos_with_api(org_name, Some(token)),
         || fetch_org_repos_with_gh_cli(org_name),
         || fetch_org_repos_with_api(org_name, None),
     )?;
 
-    Ok(convert_repos_to_projects(repos))
+    Ok(convert_repos_to_projects(
+        repos,
+        excluded_repos,
+        excluded_topics,
+    ))
 }
 
 /// Fetches public GitHub repositories for both a user and an organization
@@ -403,7 +434,7 @@ pub fn fetch_all_github_projects(username: &str, org_name: &str) -> Result<Vecto
     ]);
 
     // Use the recommended function
-    fetch_projects_from_sources(&sources)
+    fetch_projects_from_sources(&sources, &Vector::new(), &Vector::new())
 }
 
 /// Converts GitHub repositories to Project structs
@@ -415,10 +446,21 @@ pub fn fetch_all_github_projects(username: &str, org_name: &str) -> Result<Vecto
 /// # Returns
 ///
 /// A Vector of Project structs
-fn convert_repos_to_projects(repos: Vec<GitHubRepo>) -> Vector<Project> {
+fn convert_repos_to_projects(
+    repos: Vec<GitHubRepo>,
+    excluded_repos: &Vector<String>,
+    excluded_topics: &Vector<String>,
+) -> Vector<Project> {
+    // Centralized portfolio filtering, sorting (by stars, descending), and truncation.
+    let mut repos: Vec<GitHubRepo> = repos
+        .into_iter()
+        .filter(|repo| is_portfolio_repo(repo, excluded_repos, excluded_topics))
+        .collect();
+    repos.sort_by_key(|repo| std::cmp::Reverse(repo.stargazers_count));
+    repos.truncate(10);
+
     repos
         .into_iter()
-        .filter(|repo| !repo.fork && !repo.archived) // Filter out forks and archived repos
         .map(|repo| {
             // Create technologies vector
             let technologies = if let Some(lang) = repo.language.clone() {
@@ -516,7 +558,11 @@ fn convert_repos_to_projects(repos: Vec<GitHubRepo>) -> Vector<Project> {
 /// - Authenticated requests: 5,000 requests per hour
 ///
 /// To avoid rate limiting, provide a GitHub API token.
-pub fn fetch_projects_from_sources(sources: &Vector<GitHubSource>) -> Result<Vector<Project>> {
+pub fn fetch_projects_from_sources(
+    sources: &Vector<GitHubSource>,
+    excluded_repos: &Vector<String>,
+    excluded_topics: &Vector<String>,
+) -> Result<Vector<Project>> {
     // Function to merge projects
     fn merge_projects(base: &Vector<Project>, new_projects: &Vector<Project>) -> Vector<Project> {
         base.iter().chain(new_projects.iter()).cloned().collect()
@@ -530,7 +576,7 @@ pub fn fetch_projects_from_sources(sources: &Vector<GitHubSource>) -> Result<Vec
         // Process username if available
         if let Some(username) = &source.username {
             // Fetch user repositories
-            match fetch_github_projects(username) {
+            match fetch_github_projects(username, excluded_repos, excluded_topics) {
                 Ok(projects) => {
                     // Merge the new projects with the existing ones
                     all_projects = merge_projects(&all_projects, &projects);
@@ -544,7 +590,7 @@ pub fn fetch_projects_from_sources(sources: &Vector<GitHubSource>) -> Result<Vec
         // Process organization if available
         if let Some(org_name) = &source.organization {
             // Fetch organization repositories
-            match fetch_github_org_projects(org_name) {
+            match fetch_github_org_projects(org_name, excluded_repos, excluded_topics) {
                 Ok(projects) => {
                     // Merge the new projects with the existing ones
                     all_projects = merge_projects(&all_projects, &projects);
@@ -665,6 +711,8 @@ pub fn fetch_github_avatar(username: &str) -> Result<String> {
 /// improving performance for subsequent builds.
 pub fn fetch_projects_from_sources_cached(
     sources: &Vector<GitHubSource>,
+    excluded_repos: &Vector<String>,
+    excluded_topics: &Vector<String>,
     cache: &mut GitHubCache,
 ) -> Result<Vector<Project>> {
     let mut all_projects = Vector::new();
@@ -682,7 +730,8 @@ pub fn fetch_projects_from_sources_cached(
             } else {
                 // Cache miss - fetch from API
                 println!("🌐 Fetching fresh projects for user: {}", username);
-                let fresh_projects = fetch_github_projects(username)?;
+                let fresh_projects =
+                    fetch_github_projects(username, excluded_repos, excluded_topics)?;
 
                 // Cache the results
                 cache.cache_projects(username, fresh_projects.clone());
@@ -701,7 +750,8 @@ pub fn fetch_projects_from_sources_cached(
                 cached_projects.clone()
             } else {
                 println!("🌐 Fetching fresh projects for org: {}", org_name);
-                let fresh_projects = fetch_github_org_projects(org_name)?;
+                let fresh_projects =
+                    fetch_github_org_projects(org_name, excluded_repos, excluded_topics)?;
 
                 cache.cache_projects(&cache_key, fresh_projects.clone());
                 fresh_projects

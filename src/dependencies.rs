@@ -111,7 +111,6 @@ fn get_dependency_metadata(name: &str) -> (&'static str, &'static str) {
         ),
         "tracing-subscriber" => ("https://github.com/tokio-rs/tracing", "Logging subscriber"),
         "chrono" => ("https://github.com/chronotope/chrono", "Date and time"),
-        "regex" => ("https://github.com/rust-lang/regex", "Regular expressions"),
         "base64" => (
             "https://github.com/marshallpierce/rust-base64",
             "Base64 encoding",

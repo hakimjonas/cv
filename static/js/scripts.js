@@ -139,48 +139,12 @@ const ThemeModule = (function() {
     };
 })();
 
-// Load language icons from JSON file
-let languageIcons = {};
-
-// Fetch language icons from JSON file
-fetch('data/language_icons.json')
-    .then(response => response.json())
-    .then(data => {
-        languageIcons = data;
-        // Language icons loaded successfully
-
-        // Initialize language icons for GitHub cards after icons are loaded
-        initializeLanguageIcons();
-    })
-    .catch(error => {
-        console.error('Error loading language icons:', error);
-        // Fallback to hardcoded icons
-        languageIcons = {
-            "scala": "",
-            "rust": ""
-        };
-        initializeLanguageIcons();
-    });
-
-// Function to get language icon
-function getLanguageIcon(language) {
-    const normalizedLang = language.toLowerCase();
-
-    // Direct match
-    if (languageIcons[normalizedLang]) {
-        return languageIcons[normalizedLang];
-    }
-
-    // Check for partial matches (e.g., "scala3" should match "scala")
-    for (const [key, value] of Object.entries(languageIcons)) {
-        if (normalizedLang.includes(key)) {
-            return value;
-        }
-    }
-
-    // Default icon for unknown languages
-    return '';
-}
+// Note: project-card language classes and icon glyphs are rendered
+// server-side from the authoritative GitHub primary language. No
+// client-side language detection runs here — re-detecting from titles
+// and tech tags appended spurious classes (e.g. substring hits like
+// "c" inside "calculus-of-constructions") that fought the correct
+// server class and shifted card-header colors.
 
 // Main initialization function
 document.addEventListener('DOMContentLoaded', function() {
@@ -253,55 +217,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
-
-// Function to initialize language icons for GitHub cards
-function initializeLanguageIcons() {
-    const githubCards = document.querySelectorAll('.github-card');
-    githubCards.forEach(card => {
-        const header = card.querySelector('.card-header');
-        const title = card.querySelector('.project-title').textContent.toLowerCase();
-        let languageDetected = false;
-
-        // Function to add language icon
-        function addLanguageIcon(language) {
-            const titleElement = card.querySelector('.project-title');
-            const iconClass = `${language}-icon`;
-
-            if (titleElement && !titleElement.querySelector('i') && !titleElement.querySelector(`span.${iconClass}`)) {
-                const icon = document.createElement('span');
-                icon.textContent = getLanguageIcon(language);
-                icon.className = iconClass;
-                titleElement.prepend(icon);
-                titleElement.insertBefore(document.createTextNode(' '), titleElement.childNodes[1]);
-            }
-
-            header.classList.add(language);
-            languageDetected = true;
-        }
-
-        // Check title for language hints
-        for (const lang in languageIcons) {
-            if (title.includes(lang)) {
-                addLanguageIcon(lang);
-                break;
-            }
-        }
-
-        // If no language detected from title, check technologies
-        if (!languageDetected) {
-            const techTags = card.querySelectorAll('.tech-tag');
-            techTags.forEach(tag => {
-                const tagText = tag.textContent.toLowerCase();
-                for (const lang in languageIcons) {
-                    if (tagText === lang || tagText.includes(lang)) {
-                        addLanguageIcon(lang);
-                        return;
-                    }
-                }
-            });
-        }
-    });
-}
 
 // Service Worker Registration
 if ('serviceWorker' in navigator) {

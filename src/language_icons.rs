@@ -78,49 +78,33 @@ impl LanguageIcons {
     ///
     /// The detected language, or None if no language could be detected
     pub fn detect_language(&self, project_name: &str, technologies: &[String]) -> Option<String> {
-        let normalized_name = project_name.to_lowercase();
-
-        // Collect all language keys and sort by length (longest first)
+        // Collect language keys, longest first, so a longer key (e.g.
+        // "typescript") wins over a shorter substring ("script") when both
+        // appear as tokens.
         let mut lang_keys: Vec<String> = self.0.keys().cloned().collect();
         lang_keys.sort_by_key(|b| std::cmp::Reverse(b.len()));
 
-        // Check project name for language hints, prioritizing longer language names
-        for lang in &lang_keys {
-            // Check if the language name is a whole word
-            if normalized_name == *lang {
-                return Some(lang.clone());
-            }
+        // A language matches only as a *whole token*: the text is split on
+        // any non-alphanumeric boundary and each piece compared exactly.
+        // This is why "rumil-dart" -> dart but "dart3" does not, and why a
+        // single-letter key like "c" never spuriously matches inside a word
+        // such as "calculus-of-constructions".
+        let matches_as_token = |text: &str, lang: &str| -> bool {
+            text.to_lowercase()
+                .split(|c: char| !c.is_ascii_alphanumeric())
+                .any(|token| token == lang)
+        };
 
-            // Check if the language name is part of a compound word
-            // Only match if it's a word boundary or part of a compound word with hyphens/underscores
-            let lang_pattern = format!("\\b{lang}\\b|\\b{lang}-|-{lang}\\b|\\b{lang}_|_{lang}\\b");
-            if regex::Regex::new(&lang_pattern)
-                .ok()
-                .filter(|re| re.is_match(&normalized_name))
-                .is_some()
-            {
+        // Project name takes priority, then technologies, each scanned with
+        // languages in longest-first order.
+        for lang in &lang_keys {
+            if matches_as_token(project_name, lang) {
                 return Some(lang.clone());
             }
         }
-
-        // Check technologies for language hints, prioritizing longer language names
         for tech in technologies {
-            let normalized_tech = tech.to_lowercase();
-
-            // Direct match with a technology
-            if let Some(lang) = lang_keys.iter().find(|&lang| normalized_tech == *lang) {
-                return Some(lang.clone());
-            }
-
-            // Check if the technology contains a language name at word boundaries
             for lang in &lang_keys {
-                let lang_pattern =
-                    format!("\\b{lang}\\b|\\b{lang}-|-{lang}\\b|\\b{lang}_|_{lang}\\b");
-                if regex::Regex::new(&lang_pattern)
-                    .ok()
-                    .filter(|re| re.is_match(&normalized_tech))
-                    .is_some()
-                {
+                if matches_as_token(tech, lang) {
                     return Some(lang.clone());
                 }
             }
@@ -147,5 +131,69 @@ impl LanguageIcons {
         // Convert technologies to a Vec and then get a slice to delegate to the existing method
         let tech_vec: Vec<String> = technologies.iter().cloned().collect();
         self.detect_language(project_name, &tech_vec)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn icons() -> LanguageIcons {
+        // A representative subset, including the single-letter "c" key that
+        // caused spurious substring matches in the old implementation.
+        let json = r#"{
+            "dart": "d", "rust": "r", "scala": "s", "typescript": "t",
+            "c": "c", "lua": "l", "go": "g"
+        }"#;
+        LanguageIcons::from_json_str(json, "test").unwrap()
+    }
+
+    #[test]
+    fn matches_language_token_in_hyphenated_name() {
+        // "rumil-dart" splits into ["rumil", "dart"]; "dart" is a whole token.
+        assert_eq!(
+            icons().detect_language("rumil-dart", &[]),
+            Some("dart".into())
+        );
+    }
+
+    #[test]
+    fn does_not_match_language_as_substring_of_a_token() {
+        // The root-cause regression: "c" must NOT match inside
+        // "calculus-of-constructions" (a tech tag on the Doxa card).
+        let techs = vec!["calculus-of-constructions".to_string()];
+        assert_eq!(icons().detect_language("doxa", &techs), None);
+    }
+
+    #[test]
+    fn does_not_match_when_key_is_a_strict_substring() {
+        // "dart3" is one token that is not equal to "dart" -> no match,
+        // matching the previous behaviour for version-suffixed tokens.
+        assert_eq!(icons().detect_language("dart3", &[]), None);
+    }
+
+    #[test]
+    fn name_takes_priority_over_technologies() {
+        // Name resolves first; technologies are only a fallback.
+        let techs = vec!["rust".to_string()];
+        assert_eq!(
+            icons().detect_language("my-dart-lib", &techs),
+            Some("dart".into())
+        );
+    }
+
+    #[test]
+    fn falls_back_to_technologies_when_name_has_no_language() {
+        let techs = vec!["Rust".to_string()];
+        assert_eq!(icons().detect_language("fin", &techs), Some("rust".into()));
+    }
+
+    #[test]
+    fn prefers_longer_language_key_when_both_are_tokens() {
+        // "typescript" must win over a hypothetical shorter overlap.
+        assert_eq!(
+            icons().detect_language("typescript", &[]),
+            Some("typescript".into())
+        );
     }
 }

@@ -51,10 +51,9 @@ jobs:
             ${{ runner.os }}-cargo-
 
       - name: Install Typst CLI
-        uses: baptiste0928/cargo-install@v3
+        uses: typst-community/setup-typst@v5
         with:
-          crate: typst-cli
-          version: "^0.13.1"
+          typst-version: "0.14.2"
 
       - name: Install required fonts
         run: |

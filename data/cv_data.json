@@ -1,12 +1,12 @@
 {
   "personal_info": {
     "name": "Hakim Jonas Ghoula",
-    "title": "Software Engineer & Systems Architect",
+    "title": "Software Engineer — Compilers, Languages & Distributed Systems",
     "email": "hakim@walkthisway.dk",
     "phone": "+45 26335577",
     "website": "https://hakim.ghoula.net",
     "location": "Hothers Plads 11, 3, 2200 Cph. N",
-    "summary": "Software engineer with four years in distributed data systems and an independent track record in library, parser, and language work. Primary languages: Scala 3, Rust, Dart, Python. Verified publisher on pub.dev under ardaproject.org with packages for parser combinators, multi-format parsing, codec derivation, and a total query language. Author and maintainer of a Scala 3 validation library on Maven Central. Educational background in IT and Cognition (MSc) and Philosophy (BA), University of Copenhagen.",
+    "summary": "Software engineer in distributed data systems, who builds parsers, libraries, and language tooling independently. Verified publisher on pub.dev under ardaproject.org: parser combinators with left recursion and lossless syntax trees, multi-format parsing, binary codec derivation, and a total query language. Author of a dependently-typed proof checker for the Calculus of Inductive Constructions, with an ML-family surface syntax and a stack-safe normalization-by-evaluation kernel, running in the browser. Maintainer of a Scala validation library on Maven Central. Four years building distributed Apache Spark pipelines for identity resolution at LiveIntent (Zeta Global). Primary languages: Scala, Rust, Dart, Python. MSc in IT and Cognition and BA in Philosophy, University of Copenhagen.",
     "social_links": {
       "LinkedIn": "https://linkedin.com/in/hakimghoula",
       "GitHub": "https://github.com/hakimjonas"
